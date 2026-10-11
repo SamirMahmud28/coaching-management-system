@@ -1,0 +1,5 @@
+# Keep LF in the repository and working tree on every OS (the owner's global git converts to CRLF otherwise).
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.ico binary
