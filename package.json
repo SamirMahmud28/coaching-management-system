@@ -13,7 +13,10 @@
     "db:studio": "drizzle-kit studio",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "db:seed": "tsx src/server/core/db/seed-cli.ts",
+    "platform:create-admin": "tsx src/server/modules/auth/platform-admin-cli.ts",
+    "db:migrate:test": "node scripts/with-env.mjs .env.test drizzle-kit migrate"
   },
   "dependencies": {
     "@hookform/resolvers": "5.9.1",
