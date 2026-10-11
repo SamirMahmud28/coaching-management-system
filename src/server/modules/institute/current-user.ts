@@ -20,10 +20,15 @@ export async function getCurrentInstitute(): Promise<Tenant> {
   return resolved.tenant;
 }
 
+/** The signed-in user of this host's institute, or null. No redirects (the sign-in pages use it). */
+export async function getCurrentInstituteUser(): Promise<TenantSession | null> {
+  return getTenantSession(tenantAuth, db, await headers(), hostConfigFromEnv());
+}
+
 /** Signed in, past the temporary-password step, and the institute still active or suspended. */
 export async function requireInstituteUser(): Promise<TenantSession> {
   await getCurrentInstitute();
-  const session = await getTenantSession(tenantAuth, db, await headers(), hostConfigFromEnv());
+  const session = await getCurrentInstituteUser();
   if (!session) redirect("/login");
   if (session.tenant.status === "PENDING" || session.tenant.status === "DEACTIVATED") redirect("/login?inactive=1");
   if (session.mustChangePassword) redirect("/change-password");

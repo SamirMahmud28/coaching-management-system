@@ -8,7 +8,7 @@ import { ACCEPT_ATTRIBUTE, limitMb, useImageUpload } from "./use-image-upload";
 
 const FRAMES = { LOGO: "size-24", SIGNATURE: "h-16 w-48" } as const;
 
-/** Upload-and-preview for a school logo or a signature image (transparent PNG works best). */
+/** Upload-and-preview for an institute logo or a signature image (transparent PNG works best). */
 export function ImageField({
   id,
   value,
@@ -20,7 +20,7 @@ export function ImageField({
   value: string | null;
   onChange: (fileId: string | null) => void;
   category: "LOGO" | "SIGNATURE";
-  /** Used for the preview's alt text, e.g. "School logo". */
+  /** Used for the preview's alt text, e.g. "Institute logo". */
   label: string;
 }) {
   const input = useRef<HTMLInputElement>(null);
