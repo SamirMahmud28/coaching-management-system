@@ -1,0 +1,160 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+/* .theme-light pins a subtree to the light theme. */
+@custom-variant dark (&:is(.dark *):not(.theme-light, .theme-light *));
+
+/*
+ * Design tokens (copied from the EMS). Brand colours are PROVISIONAL (O15); institutes set their own colours in Settings.
+ * Primary is the V1 logo amber (#FEAC00); text on it uses the dark
+ * --primary-foreground. Amber text on white fails contrast, so text/links
+ * use --primary-strong instead of --primary.
+ */
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-inter), var(--font-noto-bengali), ui-sans-serif, system-ui, sans-serif;
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-strong: var(--primary-strong);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+  --shadow-soft: var(--elevation-soft);
+}
+
+:root,
+.theme-light {
+  --radius: 0.75rem;
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+  --primary: #feac00;
+  --primary-foreground: #1c1204;
+  --primary-strong: #b45309;
+  --secondary: #eff6ff;
+  --secondary-foreground: #1d4ed8;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --accent: #fff7e0;
+  --accent-foreground: #7c4a03;
+  --destructive: #ef4444;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --info: #2563eb;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: #feac00;
+  --chart-1: #feac00;
+  --chart-2: #3b82f6;
+  --chart-3: #8b5cf6;
+  --chart-4: #22c55e;
+  --chart-5: #f43f5e;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #334155;
+  --sidebar-primary: #feac00;
+  --sidebar-primary-foreground: #1c1204;
+  --sidebar-accent: #fff7e0;
+  --sidebar-accent-foreground: #7c4a03;
+  --sidebar-border: #e2e8f0;
+  --sidebar-ring: #feac00;
+  --brand-gradient: linear-gradient(135deg, #feac00, #f97316);
+  --elevation-soft: 0 10px 35px rgb(15 23 42 / 0.08);
+}
+
+.dark {
+  --background: #020617;
+  --foreground: #f1f5f9;
+  --card: #0f172a;
+  --card-foreground: #f1f5f9;
+  --popover: #0f172a;
+  --popover-foreground: #f1f5f9;
+  --primary: #feac00;
+  --primary-foreground: #1c1204;
+  --primary-strong: #fbbf24;
+  --secondary: #172554;
+  --secondary-foreground: #bfdbfe;
+  --muted: #1e293b;
+  --muted-foreground: #94a3b8;
+  --accent: #292524;
+  --accent-foreground: #fcd34d;
+  --destructive: #f87171;
+  --success: #34d399;
+  --warning: #fbbf24;
+  --info: #60a5fa;
+  --border: rgb(255 255 255 / 0.1);
+  --input: rgb(255 255 255 / 0.15);
+  --ring: #feac00;
+  --chart-1: #feac00;
+  --chart-2: #60a5fa;
+  --chart-3: #a78bfa;
+  --chart-4: #4ade80;
+  --chart-5: #fb7185;
+  --sidebar: #0f172a;
+  --sidebar-foreground: #cbd5e1;
+  --sidebar-primary: #feac00;
+  --sidebar-primary-foreground: #1c1204;
+  --sidebar-accent: #1e293b;
+  --sidebar-accent-foreground: #fcd34d;
+  --sidebar-border: rgb(255 255 255 / 0.1);
+  --sidebar-ring: #feac00;
+  --elevation-soft: 0 10px 35px rgb(0 0 0 / 0.35);
+}
+
+@utility bg-brand-gradient {
+  background-image: var(--brand-gradient);
+}
+
+/* Letter-spacing splits Bangla conjuncts apart: spaced-out labels keep it for Latin text only. */
+:lang(bn) .tracking-latin {
+  letter-spacing: normal;
+}
+
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background font-sans text-foreground antialiased;
+  }
+}
