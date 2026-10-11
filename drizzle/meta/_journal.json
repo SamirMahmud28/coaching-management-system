@@ -8,6 +8,13 @@
       "when": 1791713178706,
       "tag": "0000_core_saas",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791714508555,
+      "tag": "0001_settings_branding",
+      "breakpoints": true
     }
   ]
 }
