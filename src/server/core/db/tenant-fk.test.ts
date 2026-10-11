@@ -13,6 +13,7 @@ const REVIEWED = [
   // A file reference must stay a single column: ON DELETE SET NULL on a composite key would null tenant_id too.
   // The tenant is checked by assertFileReference before it's stored.
   "institution_profiles.logo_file_id -> files",
+  "instructors.photo_file_id -> files",
   "signatures.signature_file_id -> files",
 ];
 

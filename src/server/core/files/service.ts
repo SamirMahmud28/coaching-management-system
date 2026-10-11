@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import sharp from "sharp";
 import { and, eq } from "drizzle-orm";
-import { files } from "../db/schema";
+import { files, instructors } from "../db/schema";
 import type { DbOrTx } from "../db/types";
 import { NotFoundError, ValidationError } from "../errors";
 import type { PermissionName } from "../rbac/catalog";
@@ -120,18 +120,24 @@ export async function readFileBytes(storage: StorageProvider, row: FileRow): Pro
 
 /**
  * Who may view a file. Photos: whoever may view that kind of person, and instructors for their own batches' students
- * (D24). A person's own photo (student or instructor portal) is added once those records exist (M5, M6). Logos and
+ * (D24), and the person themself (instructor now; students' own photos come with their records, M6). Logos and
  * signatures print on documents anyone in the institute can open.
  */
-export async function canViewFile(_db: DbOrTx, viewer: { tenantId: string; userId: string; permissions: ReadonlySet<string> }, file: FileRow): Promise<boolean> {
+export async function canViewFile(db: DbOrTx, viewer: { tenantId: string; userId: string; permissions: ReadonlySet<string> }, file: FileRow): Promise<boolean> {
   switch (file.category) {
     case "LOGO":
     case "SIGNATURE":
       return true;
     case "STUDENT_PHOTO":
       return ["students.view", "batches.own.view"].some((p) => viewer.permissions.has(p));
-    case "INSTRUCTOR_PHOTO":
-      return viewer.permissions.has("instructors.view");
+    case "INSTRUCTOR_PHOTO": {
+      if (viewer.permissions.has("instructors.view")) return true;
+      const [own] = await db
+        .select({ id: instructors.id })
+        .from(instructors)
+        .where(and(eq(instructors.tenantId, viewer.tenantId), eq(instructors.userId, viewer.userId), eq(instructors.photoFileId, file.id)));
+      return !!own;
+    }
   }
 }
 
