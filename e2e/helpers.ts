@@ -44,3 +44,17 @@ export async function seedInstitute(input: { name: string; subdomain: string; ow
     await close();
   }
 }
+
+/** Sets an institute's status directly (what the Super Admin's status actions do), for pages that depend on it. */
+export async function setInstituteStatus(subdomain: string, status: "ACTIVE" | "SUSPENDED" | "DEACTIVATED") {
+  const { config: loadEnv } = await import("dotenv");
+  loadEnv({ path: ".env.test", override: true, quiet: true });
+  const { createTestDb } = await import("../src/server/core/testing/db");
+  const { sql } = await import("drizzle-orm");
+  const { db, close } = createTestDb();
+  try {
+    await db.execute(sql`update tenants set status = ${status} where subdomain = ${subdomain}`);
+  } finally {
+    await close();
+  }
+}

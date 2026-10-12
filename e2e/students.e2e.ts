@@ -111,7 +111,7 @@ test("the student signs in with the student ID and lands in the student portal (
   await changePassword(page, student.password, "Student12345");
   student.password = "Student12345";
   await expect(page).toHaveURL(url("/app/student"));
-  await expect(page.getByText("Student portal")).toBeVisible();
+  await expect(page.getByText("Student portal", { exact: true })).toBeVisible();
   await page.goto(url("/app/students"));
   await expect(page).toHaveURL(url("/app/student"));
 });

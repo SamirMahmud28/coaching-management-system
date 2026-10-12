@@ -69,7 +69,7 @@ test("the instructor signs in by mobile number and lands in the instructor porta
   await changePassword(page, instructorPassword, "Teach12345");
   instructorPassword = "Teach12345";
   await expect(page).toHaveURL(url("/app/instructor"));
-  await expect(page.getByText("Instructor portal")).toBeVisible();
+  await expect(page.getByText("Instructor portal", { exact: true })).toBeVisible();
 
   // Admin pages send an instructor back to their own portal.
   await page.goto(url("/app/instructors"));

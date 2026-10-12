@@ -6,18 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { GUARDIAN_RELATIONS, type Gender, type GuardianRelation, type StudentFields } from "../../api";
+import { GENDER_LABEL, RELATION_LABEL } from "../../student-labels";
 
-export const GENDER_LABEL: Record<Gender, string> = { MALE: "Male", FEMALE: "Female", OTHER: "Other" };
-export const RELATION_LABEL: Record<GuardianRelation, string> = {
-  FATHER: "Father",
-  MOTHER: "Mother",
-  BROTHER: "Brother",
-  SISTER: "Sister",
-  UNCLE: "Uncle",
-  AUNT: "Aunt",
-  GRANDPARENT: "Grandparent",
-  OTHER: "Other",
-};
+export { GENDER_LABEL, RELATION_LABEL };
+
 
 /** The editable form state: every field as the input shows it (empty string for "not set"). */
 export interface StudentFormValues {
