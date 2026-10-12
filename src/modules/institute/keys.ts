@@ -9,4 +9,8 @@ export const instituteKeys = {
   studentIdPattern: () => ["institute-student-id-pattern"],
   instructors: (params?: object) => ["institute-instructors", params ?? {}],
   instructor: (id: string) => ["institute-instructor", id],
+  courses: (params?: object) => ["institute-courses", params ?? {}],
+  course: (id: string) => ["institute-course", id],
+  batch: (id: string) => ["institute-batch", id],
+  assignableInstructors: () => ["institute-assignable-instructors"],
 };

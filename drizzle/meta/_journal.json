@@ -22,6 +22,13 @@
       "when": 1791716238001,
       "tag": "0002_instructors",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1791783805803,
+      "tag": "0003_academic",
+      "breakpoints": true
     }
   ]
 }

@@ -1,6 +1,7 @@
 import type { FieldPath, FieldValues, UseFormReturn } from "react-hook-form";
 import { toast } from "sonner";
 import { ApiError } from "./api-client";
+import { describeReference } from "./format";
 
 const snake = (s: string) => s.replace(/[A-Z]/g, (c) => `_${c.toLowerCase()}`);
 
@@ -10,7 +11,7 @@ export function describeError(err: unknown, fallback = "Something went wrong. Pl
   if (err.code === "CONFLICT_SYSTEM_RECORD") return "This is a default record and can't be changed or deleted.";
   const references = (err.details.references as { type: string; count: number }[] | undefined) ?? [];
   if (references.length > 0) {
-    return `${err.message} It's in use: ${references.map((r) => `${r.count} ${r.type}`).join(", ")}. Remove those first.`;
+    return `${err.message} It's in use: ${references.map((r) => describeReference(r.type, r.count)).join(", ")}. Remove those first.`;
   }
   return err.message || fallback;
 }
