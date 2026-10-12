@@ -118,6 +118,63 @@ test("F2: a student's own amount, with a reason (D29)", async ({ page }) => {
   await expect(amounts).toContainText("Own amount: Sibling rate");
 });
 
+const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const now = new Date(Date.now() + 6 * 3600_000); // Bangladesh date (UTC+6)
+const thisMonth = `${MONTHS[now.getUTCMonth()]} ${now.getUTCFullYear()}`;
+
+test("F3: the Owner generates this month's tuition and the admission fee from a preview (D30, D62)", async ({ page }) => {
+  await signInAsOwner(page);
+  await page.goto(url("/app/fees"));
+  await page.getByRole("link", { name: "Generate charges" }).click();
+  await pick(page, "Fee", "HSC 2026 Science · Tuition (Monthly)");
+  await page.getByRole("button", { name: "Preview" }).click();
+  const preview = page.getByTestId("generation-preview");
+  await expect(preview).toContainText(`Tuition — ${thisMonth}`);
+  await expect(preview).toContainText("Tania Akter");
+  await expect(preview).toContainText("own amount");
+  await expect(preview.getByLabel("Amount for Tania Akter")).toHaveValue("1800");
+  await preview.getByRole("button", { name: "Create 1 charge" }).click();
+  await expect(page.getByText(/1 charge created, ৳1,800.00 in all/)).toBeVisible();
+  await expect(page.getByTestId("runs")).toContainText("Tuition");
+
+  await pick(page, "Fee", "HSC 2026 Science · Admission (Admission (one-time))");
+  await page.getByRole("button", { name: "Preview" }).click();
+  await expect(preview).toContainText("Admission — One-time");
+  await preview.getByRole("button", { name: "Create 1 charge" }).click();
+  await expect(page.getByText(/1 charge created, ৳1,500.00 in all/)).toBeVisible();
+
+  // Generating the same month again charges nobody.
+  await pick(page, "Fee", "HSC 2026 Science · Tuition (Monthly)");
+  await page.getByRole("button", { name: "Preview" }).click();
+  await expect(preview).toContainText("Nobody to charge.");
+  await expect(preview).toContainText("Already charged");
+});
+
+test("F3: the student's fees page lists the charges; a fine is added and cancelled with reasons (D34, D43)", async ({ page }) => {
+  await signInAsOwner(page);
+  await page.goto(url("/app/students"));
+  await page.getByRole("row", { name: /Tania Akter/ }).click();
+  await page.getByRole("link", { name: "Open fees" }).click();
+  await expect(page.getByRole("heading", { name: "Tania Akter — fees", level: 1 })).toBeVisible();
+  const charges = page.getByTestId("charges");
+  await expect(charges).toContainText(`Tuition — ${thisMonth}`);
+  await expect(charges).toContainText("Admission");
+  await expect(page.getByTestId("due-total")).toHaveText("৳3,300.00");
+
+  await page.getByRole("button", { name: "Add fine" }).click();
+  await page.getByLabel("Amount (৳)").fill("100");
+  await page.getByLabel("Reason").fill("Damaged lab equipment");
+  await page.getByRole("button", { name: "Add fine", exact: true }).last().click();
+  await expect(charges).toContainText("Damaged lab equipment");
+  await expect(page.getByTestId("due-total")).toHaveText("৳3,400.00");
+
+  await charges.getByRole("listitem").filter({ hasText: "Damaged lab equipment" }).getByRole("button", { name: "Cancel" }).click();
+  await page.getByLabel("Reason").fill("Equipment was already broken");
+  await page.getByRole("button", { name: "Cancel charge" }).click();
+  await expect(charges.getByRole("listitem").filter({ hasText: "Damaged lab equipment" })).toContainText("Cancelled");
+  await expect(page.getByTestId("due-total")).toHaveText("৳3,300.00");
+});
+
 test("F2: with Fees switched off, its page and the student's fee card disappear (D5)", async ({ page }) => {
   await setInstituteModules(INSTITUTE.subdomain, { fees: false });
   try {

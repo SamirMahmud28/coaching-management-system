@@ -372,3 +372,59 @@ export const feesApi = {
   settings: () => apiFetch<{ receipt_prefix: string }>("/api/v1/fees/settings"),
   saveSettings: (receiptPrefix: string) => apiFetch<{ receipt_prefix: string }>("/api/v1/fees/settings", { method: "PUT", body: { receipt_prefix: receiptPrefix } }),
 };
+
+export type SkipReason = "ON_HOLD" | "COMPLETED" | "LEFT" | "NOT_IN_COURSE" | "JOINED_LATER" | "ALREADY_CHARGED" | "ZERO_AMOUNT" | "EXCLUDED";
+
+export interface GenerationPreview {
+  fee_item: { id: string; name: string; kind: FeeItemKind; amount: string; course_id: string; course_name: string };
+  period: string;
+  period_label: string;
+  due_date: string;
+  to_charge: { student_id: string; student_code: string; full_name: string; amount: string; own_amount: boolean }[];
+  skipped: { student_id: string; student_code: string; full_name: string; reason: SkipReason }[];
+  total: string;
+}
+
+export interface GenerationRunRow {
+  id: string;
+  fee_item_id: string;
+  fee_item_name: string;
+  course_name: string;
+  period: string;
+  created_count: number;
+  active_count: number;
+  skipped: Partial<Record<SkipReason, number>>;
+  total_amount: string;
+  created_at: string;
+}
+
+export type ChargeState = "DUE" | "PAID" | "WAIVED" | "CANCELLED";
+
+export interface ChargeRow {
+  id: string;
+  course_name: string | null;
+  source: "GENERATED" | "FINE";
+  title: string;
+  period: string | null;
+  amount: string;
+  waived: string;
+  net: string;
+  due_date: string;
+  note: string | null;
+  state: ChargeState;
+  overdue: boolean;
+  paid_by: { payment_id: string; receipt_label: string; paid_on: string; amount: string } | null;
+  refunded: string;
+  cancel_reason: string | null;
+}
+
+export const chargesApi = {
+  preview: (body: { fee_item_id: string; period?: string | null }) => apiFetch<GenerationPreview>("/api/v1/fees/generation/preview", { body }),
+  generate: (body: { fee_item_id: string; period?: string | null; exclude: string[]; amounts: { student_id: string; amount: string }[] }) =>
+    apiFetch<{ id: string; period_label: string; created_count: number; total: string; due_date: string }>("/api/v1/fees/generation", { body }),
+  runs: () => apiFetch<GenerationRunRow[]>("/api/v1/fees/runs"),
+  cancelRun: (id: string, reason: string) => apiFetch<{ cancelled: number; kept_paid: number }>(`/api/v1/fees/runs/${id}/cancel`, { body: { reason } }),
+  studentCharges: (studentId: string) => apiFetch<ChargeRow[]>(`/api/v1/students/${studentId}/fee-charges`),
+  addFine: (studentId: string, body: { amount: string; reason: string; due_date: string | null }) => apiFetch<ChargeRow>(`/api/v1/students/${studentId}/fines`, { body }),
+  cancelCharge: (id: string, reason: string) => apiFetch<ChargeRow>(`/api/v1/fee-charges/${id}/cancel`, { body: { reason } }),
+};

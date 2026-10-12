@@ -5,7 +5,8 @@ import { useState } from "react";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { FormField } from "@/components/shared/form-field";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import Link from "next/link";
+import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { runAction } from "@/lib/feedback";
@@ -27,6 +28,11 @@ export function StudentFeeAmountsCard({ studentId, canAdjust }: { studentId: str
       <CardHeader>
         <CardTitle>Fee amounts</CardTitle>
         <CardDescription>The fees of this student&apos;s current courses. A different amount applies to charges generated from now on.</CardDescription>
+        <CardAction>
+          <Button size="sm" variant="outline" asChild>
+            <Link href={`/app/fees/students/${studentId}`}>Open fees</Link>
+          </Button>
+        </CardAction>
       </CardHeader>
       <CardContent>
         {query.isPending ? (

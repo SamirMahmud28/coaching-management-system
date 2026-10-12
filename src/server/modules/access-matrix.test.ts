@@ -19,6 +19,8 @@ import { createFeesHandlers } from "./fees/http";
 import { createFilesHandlers } from "./files/http";
 import { setModules } from "../core/testing/modules";
 import * as feeSetup from "./fees/setup";
+import * as feeCharges from "./fees/charges";
+import { todayInDhaka } from "@/lib/dates";
 import { createInstituteHandlers } from "./institute/http";
 import { createInstructorHandlers } from "./instructors/http";
 import { seedBaselineRoles } from "./rbac/service";
@@ -39,7 +41,7 @@ const auth = createTenantAuth(db, { secret: "test-secret-".padEnd(40, "x"), host
 let storage: LocalDiskStorage;
 
 const DUMMY = "00000000-0000-4000-8000-000000000000";
-type Entity = "COURSE" | "SUBJECT" | "BATCH" | "BATCH_SUBJECT" | "SCHEDULE_SLOT" | "STUDENT" | "MEMBERSHIP" | "INSTRUCTOR" | "USER" | "SIGNATURE" | "FILE" | "FEE_ITEM" | "STUDENT_FEE_AMOUNT";
+type Entity = "COURSE" | "SUBJECT" | "BATCH" | "BATCH_SUBJECT" | "SCHEDULE_SLOT" | "STUDENT" | "MEMBERSHIP" | "INSTRUCTOR" | "USER" | "SIGNATURE" | "FILE" | "FEE_ITEM" | "STUDENT_FEE_AMOUNT" | "FEE_RUN" | "FEE_CHARGE";
 type Factory = "academic" | "students" | "instructors" | "institute" | "settings" | "files" | "fees";
 
 interface Entry {
@@ -131,6 +133,13 @@ const HANDLERS: Entry[] = [
   { factory: "fees", name: "removeStudentAmount", method: "DELETE", permission: "fees.adjust", id: "STUDENT_FEE_AMOUNT" },
   { factory: "fees", name: "getSettings", method: "GET", permission: "fees.view" },
   { factory: "fees", name: "saveSettings", method: "PUT", permission: "fees.configure", body: { receipt_prefix: "MX" } },
+  { factory: "fees", name: "previewGeneration", method: "POST", permission: "fees.generate", body: { fee_item_id: DUMMY, period: "2026-06" } },
+  { factory: "fees", name: "generate", method: "POST", permission: "fees.generate", body: { fee_item_id: DUMMY, period: "2026-06" } },
+  { factory: "fees", name: "listRuns", method: "GET", permission: "fees.view" },
+  { factory: "fees", name: "cancelRun", method: "POST", permission: "fees.generate", id: "FEE_RUN", body: { reason: "Wrong month" } },
+  { factory: "fees", name: "studentCharges", method: "GET", permission: "fees.view", id: "STUDENT" },
+  { factory: "fees", name: "addFine", method: "POST", permission: "fees.adjust", id: "STUDENT", body: { amount: "50", reason: "Late" } },
+  { factory: "fees", name: "cancelCharge", method: "POST", permission: "fees.generate", id: "FEE_CHARGE", body: { reason: "Wrong" } },
 ];
 /** Handlers deliberately outside the matrix, with the reason. */
 const OUTSIDE: Partial<Record<Factory, Record<string, string>>> = { files: { publicLogo: "public by design: the host's logo while its public page is shown (D58)" } };
@@ -232,7 +241,7 @@ beforeAll(async () => {
   const b = await institute("matrix-b");
   await setModules(db, b.tenant.id, ["fees"]);
   const actor = { tenantId: b.tenant.id, userId: b.owner.id };
-  const course = await academic.createCourse(db, actor, { name: "B course", code: "BC" });
+  const course = await academic.createCourse(db, actor, { name: "B course", code: "BC", dueDay: 10 });
   const subject = await academic.createSubject(db, actor, course.id, { name: "B subject" });
   const batch = await academic.createBatch(db, actor, course.id, { name: "B batch" });
   const batchSubject = await academic.addBatchSubject(db, actor, batch.id, subject.id);
@@ -248,9 +257,11 @@ beforeAll(async () => {
   const file = await uploadFile(db, storage, actor, { category: "LOGO", filename: "b.jpg", bytes });
   const feeItem = await feeSetup.createFeeItem(db, actor, { courseId: course.id, kind: "MONTHLY", name: "B tuition", amount: "1000" });
   const studentAmount = await feeSetup.setStudentFeeAmount(db, actor, s.id, { feeItemId: feeItem.id, amount: "500", reason: "Sibling" });
+  const run = await feeCharges.confirmGeneration(db, actor, { feeItemId: feeItem.id, period: todayInDhaka().slice(0, 7) });
+  const [charge] = await feeCharges.listStudentCharges(db, b.tenant.id, s.id);
   Object.assign(foreign, {
     COURSE: course.id, SUBJECT: subject.id, BATCH: batch.id, BATCH_SUBJECT: batchSubject.id, SCHEDULE_SLOT: slot.id, STUDENT: s.id, MEMBERSHIP: membership.id,
-    INSTRUCTOR: teacher.id, USER: teacherLogin.id, SIGNATURE: signature.id, FILE: file.id, FEE_ITEM: feeItem.id, STUDENT_FEE_AMOUNT: studentAmount.id,
+    INSTRUCTOR: teacher.id, USER: teacherLogin.id, SIGNATURE: signature.id, FILE: file.id, FEE_ITEM: feeItem.id, STUDENT_FEE_AMOUNT: studentAmount.id, FEE_RUN: run.id, FEE_CHARGE: charge.id,
   });
 }, 120_000);
 

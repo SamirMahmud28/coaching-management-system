@@ -19,12 +19,13 @@ import { runAction } from "@/lib/feedback";
 import { formatAmount } from "@/lib/format";
 import { academicApi, feesApi, type FeeItemKind, type FeeItemRow } from "../../api";
 import { instituteKeys } from "../../keys";
+import { FeesTabs } from "./fees-tabs";
 
 export const KIND_LABEL: Record<FeeItemKind, string> = { ADMISSION: "Admission (one-time)", MONTHLY: "Monthly", ONE_TIME: "Other one-time" };
 const dueDayText = (day: number | null) => (day === null ? "due day not set" : day === 31 ? "due on the last day" : `due on day ${day}`);
 
 /** Fee items per course (D28) and the receipt prefix (D38). */
-export function FeeItemsPage({ canConfigure }: { canConfigure: boolean }) {
+export function FeeItemsPage({ canConfigure, canGenerate }: { canConfigure: boolean; canGenerate: boolean }) {
   const queryClient = useQueryClient();
   const items = useQuery({ queryKey: instituteKeys.feeItems(), queryFn: () => feesApi.items() });
   const courses = useQuery({ queryKey: instituteKeys.courses({ status: "ACTIVE" }), queryFn: () => academicApi.courses({ status: "ACTIVE" }) });
@@ -43,6 +44,7 @@ export function FeeItemsPage({ canConfigure }: { canConfigure: boolean }) {
   return (
     <>
       <PageHeader title="Fees" description="Each course's fees. Monthly and one-time charges are generated from these amounts; a student can have their own amount on their profile." />
+      <FeesTabs canGenerate={canGenerate} />
       {byCourse.size === 0 ? (
         <EmptyState icon={Wallet} title="No courses yet" description="Add courses under Courses & batches first." />
       ) : (
