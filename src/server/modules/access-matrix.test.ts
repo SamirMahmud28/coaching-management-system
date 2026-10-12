@@ -20,6 +20,7 @@ import { createFilesHandlers } from "./files/http";
 import { setModules } from "../core/testing/modules";
 import * as feeSetup from "./fees/setup";
 import * as feeCharges from "./fees/charges";
+import * as feePayments from "./fees/payments";
 import { todayInDhaka } from "@/lib/dates";
 import { createInstituteHandlers } from "./institute/http";
 import { createInstructorHandlers } from "./instructors/http";
@@ -41,7 +42,7 @@ const auth = createTenantAuth(db, { secret: "test-secret-".padEnd(40, "x"), host
 let storage: LocalDiskStorage;
 
 const DUMMY = "00000000-0000-4000-8000-000000000000";
-type Entity = "COURSE" | "SUBJECT" | "BATCH" | "BATCH_SUBJECT" | "SCHEDULE_SLOT" | "STUDENT" | "MEMBERSHIP" | "INSTRUCTOR" | "USER" | "SIGNATURE" | "FILE" | "FEE_ITEM" | "STUDENT_FEE_AMOUNT" | "FEE_RUN" | "FEE_CHARGE";
+type Entity = "COURSE" | "SUBJECT" | "BATCH" | "BATCH_SUBJECT" | "SCHEDULE_SLOT" | "STUDENT" | "MEMBERSHIP" | "INSTRUCTOR" | "USER" | "SIGNATURE" | "FILE" | "FEE_ITEM" | "STUDENT_FEE_AMOUNT" | "FEE_RUN" | "FEE_CHARGE" | "FEE_PAYMENT";
 type Factory = "academic" | "students" | "instructors" | "institute" | "settings" | "files" | "fees";
 
 interface Entry {
@@ -140,6 +141,11 @@ const HANDLERS: Entry[] = [
   { factory: "fees", name: "studentCharges", method: "GET", permission: "fees.view", id: "STUDENT" },
   { factory: "fees", name: "addFine", method: "POST", permission: "fees.adjust", id: "STUDENT", body: { amount: "50", reason: "Late" } },
   { factory: "fees", name: "cancelCharge", method: "POST", permission: "fees.generate", id: "FEE_CHARGE", body: { reason: "Wrong" } },
+  { factory: "fees", name: "collect", method: "POST", permission: "fees.collect", id: "STUDENT", body: { charge_ids: [DUMMY], method: "CASH", idempotency_key: "00000000-0000-4000-8000-0000000000aa" } },
+  { factory: "fees", name: "studentPayments", method: "GET", permission: "fees.view", id: "STUDENT" },
+  { factory: "fees", name: "voidPayment", method: "POST", permission: "fees.payment.void", id: "FEE_PAYMENT", body: { reason: "Wrong student" } },
+  { factory: "fees", name: "addWaiver", method: "POST", permission: "fees.waive", id: "FEE_CHARGE", body: { kind: "FIXED", value: "10", reason: "Sibling" } },
+  { factory: "fees", name: "addRefund", method: "POST", permission: "fees.refund", id: "FEE_CHARGE", body: { amount: "10", method: "CASH", reason: "Left early" } },
 ];
 /** Handlers deliberately outside the matrix, with the reason. */
 const OUTSIDE: Partial<Record<Factory, Record<string, string>>> = { files: { publicLogo: "public by design: the host's logo while its public page is shown (D58)" } };
@@ -259,9 +265,10 @@ beforeAll(async () => {
   const studentAmount = await feeSetup.setStudentFeeAmount(db, actor, s.id, { feeItemId: feeItem.id, amount: "500", reason: "Sibling" });
   const run = await feeCharges.confirmGeneration(db, actor, { feeItemId: feeItem.id, period: todayInDhaka().slice(0, 7) });
   const [charge] = await feeCharges.listStudentCharges(db, b.tenant.id, s.id);
+  const { payment } = await feePayments.collectPayment(db, actor, s.id, { chargeIds: [charge.id], method: "CASH", idempotencyKey: "00000000-0000-4000-8000-0000000000bb" });
   Object.assign(foreign, {
     COURSE: course.id, SUBJECT: subject.id, BATCH: batch.id, BATCH_SUBJECT: batchSubject.id, SCHEDULE_SLOT: slot.id, STUDENT: s.id, MEMBERSHIP: membership.id,
-    INSTRUCTOR: teacher.id, USER: teacherLogin.id, SIGNATURE: signature.id, FILE: file.id, FEE_ITEM: feeItem.id, STUDENT_FEE_AMOUNT: studentAmount.id, FEE_RUN: run.id, FEE_CHARGE: charge.id,
+    INSTRUCTOR: teacher.id, USER: teacherLogin.id, SIGNATURE: signature.id, FILE: file.id, FEE_ITEM: feeItem.id, STUDENT_FEE_AMOUNT: studentAmount.id, FEE_RUN: run.id, FEE_CHARGE: charge.id, FEE_PAYMENT: payment.id,
   });
 }, 120_000);
 

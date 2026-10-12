@@ -111,6 +111,6 @@ describe("document registry", () => {
     const type = fakeType();
     expect(getDocumentType("fee-receipt", [type])).toBe(type);
     expect(getDocumentType("nope", [type])).toBeNull();
-    expect(getDocumentType("fee-receipt")).toBeNull(); // no types are registered until the Fees module adds them
+    expect(getDocumentType("fee-receipt")?.label).toBe("Fee receipt"); // registered by the Fees module
   });
 });

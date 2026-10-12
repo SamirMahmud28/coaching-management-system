@@ -22,4 +22,5 @@ export const instituteKeys = {
   studentFeeAmounts: (id: string) => ["institute-student-fee-amounts", id],
   feeRuns: () => ["institute-fee-runs"],
   studentCharges: (id: string) => ["institute-student-charges", id],
+  studentPayments: (id: string) => ["institute-student-payments", id],
 };

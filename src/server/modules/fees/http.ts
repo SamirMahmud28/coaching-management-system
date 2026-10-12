@@ -6,6 +6,7 @@ import type { HostConfig } from "../../core/tenancy/host";
 import type { TenantAuth } from "../auth/tenant-auth";
 import { withAuthorization } from "../authorization/service";
 import * as charges from "./charges";
+import * as payments from "./payments";
 import * as setup from "./setup";
 
 export interface FeesHttpDeps {
@@ -33,6 +34,18 @@ const generateBody = z.object({
 const reasonBody = z.object({ reason: z.string().max(300) });
 const fineBody = z.object({ amount, reason: z.string().max(300), due_date: z.string().max(10).nullable().optional(), course_id: z.uuid().nullable().optional() });
 const runsQuery = z.object({ fee_item_id: z.uuid().optional() });
+const method = z.enum(payments.PAYMENT_METHODS);
+const date = z.string().max(10).nullable().optional();
+const collectBody = z.object({
+  charge_ids: z.array(z.uuid()).min(1).max(100),
+  paid_on: date,
+  method,
+  reference: z.string().max(100).nullable().optional(),
+  remarks: z.string().max(500).nullable().optional(),
+  idempotency_key: z.uuid(),
+});
+const waiverBody = z.object({ kind: z.enum(["FIXED", "PERCENT"]), value: amount, reason: z.string().max(300) });
+const refundBody = z.object({ amount, method, reference: z.string().max(100).nullable().optional(), reason: z.string().max(300), refunded_on: date });
 
 export function createFeesHandlers({ db, auth, host }: FeesHttpDeps) {
   const authorize = async (request: Request, permission: PermissionName) => {
@@ -178,6 +191,48 @@ export function createFeesHandlers({ db, auth, host }: FeesHttpDeps) {
         const actor = await authorize(request, "fees.generate");
         const b = await parseBody(request, reasonBody);
         return json(await charges.cancelCharge(db, actor, pathId(params.id, "FEE_CHARGE"), b));
+      }),
+
+    // POST /api/v1/students/:id/payments — 201 when recorded, 200 when the idempotency key was already used
+    collect: (request: Request, params: { id: string }) =>
+      handle(async () => {
+        const actor = await authorize(request, "fees.collect");
+        const b = await parseBody(request, collectBody);
+        const result = await payments.collectPayment(db, actor, pathId(params.id, "STUDENT"), {
+          chargeIds: b.charge_ids, paidOn: b.paid_on, method: b.method, reference: b.reference, remarks: b.remarks, idempotencyKey: b.idempotency_key,
+        });
+        return json(result.payment, result.repeated ? 200 : 201);
+      }),
+
+    // GET /api/v1/students/:id/payments
+    studentPayments: (request: Request, params: { id: string }) =>
+      handle(async () => {
+        const actor = await authorize(request, "fees.view");
+        return json(await payments.listStudentPayments(db, actor.tenantId, pathId(params.id, "STUDENT")));
+      }),
+
+    // POST /api/v1/fee-payments/:id/void
+    voidPayment: (request: Request, params: { id: string }) =>
+      handle(async () => {
+        const actor = await authorize(request, "fees.payment.void");
+        const b = await parseBody(request, reasonBody);
+        return json(await payments.voidPayment(db, actor, pathId(params.id, "FEE_PAYMENT"), b));
+      }),
+
+    // POST /api/v1/fee-charges/:id/waivers
+    addWaiver: (request: Request, params: { id: string }) =>
+      handle(async () => {
+        const actor = await authorize(request, "fees.waive");
+        const b = await parseBody(request, waiverBody);
+        return json(await payments.addWaiver(db, actor, pathId(params.id, "FEE_CHARGE"), b), 201);
+      }),
+
+    // POST /api/v1/fee-charges/:id/refunds
+    addRefund: (request: Request, params: { id: string }) =>
+      handle(async () => {
+        const actor = await authorize(request, "fees.refund");
+        const b = await parseBody(request, refundBody);
+        return json(await payments.addRefund(db, actor, pathId(params.id, "FEE_CHARGE"), { amount: b.amount, method: b.method, reference: b.reference, reason: b.reason, refundedOn: b.refunded_on }), 201);
       }),
   };
 }

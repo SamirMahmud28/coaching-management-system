@@ -18,6 +18,8 @@ const STATUSES: Record<string, { label: string; tone: Tone }> = {
   PAID: { label: "Paid", tone: "success" },
   WAIVED: { label: "Waived", tone: "secondary" },
   CANCELLED: { label: "Cancelled", tone: "secondary" },
+  VALID: { label: "Valid", tone: "success" },
+  VOID: { label: "Void", tone: "destructive" },
   FULFILLED: { label: "Fulfilled", tone: "success" },
   DISMISSED: { label: "Dismissed", tone: "secondary" },
   ENABLED: { label: "Enabled", tone: "success" },

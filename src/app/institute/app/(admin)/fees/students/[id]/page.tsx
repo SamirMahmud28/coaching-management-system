@@ -14,7 +14,15 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   return (
     <StudentFeesPage
       studentId={id}
-      perms={{ canViewStudent: permissions.has("students.view"), canAdjust: permissions.has("fees.adjust"), canCancel: permissions.has("fees.generate") }}
+      perms={{
+        canViewStudent: permissions.has("students.view"),
+        canAdjust: permissions.has("fees.adjust"),
+        canCancel: permissions.has("fees.generate"),
+        canCollect: permissions.has("fees.collect"),
+        canWaive: permissions.has("fees.waive"),
+        canVoid: permissions.has("fees.payment.void"),
+        canRefund: permissions.has("fees.refund"),
+      }}
     />
   );
 }

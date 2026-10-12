@@ -428,3 +428,43 @@ export const chargesApi = {
   addFine: (studentId: string, body: { amount: string; reason: string; due_date: string | null }) => apiFetch<ChargeRow>(`/api/v1/students/${studentId}/fines`, { body }),
   cancelCharge: (id: string, reason: string) => apiFetch<ChargeRow>(`/api/v1/fee-charges/${id}/cancel`, { body: { reason } }),
 };
+
+export const PAYMENT_METHODS = ["CASH", "BANK_TRANSFER", "CHEQUE", "BKASH", "NAGAD", "ROCKET", "OTHER"] as const;
+export type PaymentMethod = (typeof PAYMENT_METHODS)[number];
+export const METHOD_LABEL: Record<PaymentMethod, string> = {
+  CASH: "Cash",
+  BANK_TRANSFER: "Bank transfer",
+  CHEQUE: "Cheque",
+  BKASH: "bKash",
+  NAGAD: "Nagad",
+  ROCKET: "Rocket",
+  OTHER: "Other",
+};
+
+export interface PaymentRow {
+  id: string;
+  receipt_no: number;
+  receipt_label: string;
+  paid_on: string;
+  method: PaymentMethod;
+  reference: string | null;
+  amount: string;
+  remarks: string | null;
+  status: "VALID" | "VOID";
+  void_reason: string | null;
+  received_by_name: string | null;
+  lines: { charge_id: string; title: string; amount: string }[];
+  refunds?: { amount: string; method: PaymentMethod; reason: string; refunded_on: string }[];
+}
+
+export const paymentsApi = {
+  list: (studentId: string) => apiFetch<PaymentRow[]>(`/api/v1/students/${studentId}/payments`),
+  collect: (studentId: string, body: { charge_ids: string[]; paid_on: string; method: PaymentMethod; reference: string | null; remarks: string | null; idempotency_key: string }) =>
+    apiFetch<PaymentRow>(`/api/v1/students/${studentId}/payments`, { body }),
+  void: (id: string, reason: string) => apiFetch<PaymentRow>(`/api/v1/fee-payments/${id}/void`, { body: { reason } }),
+  waive: (chargeId: string, body: { kind: "FIXED" | "PERCENT"; value: string; reason: string }) => apiFetch<ChargeRow>(`/api/v1/fee-charges/${chargeId}/waivers`, { body }),
+  refund: (chargeId: string, body: { amount: string; method: PaymentMethod; reference: string | null; reason: string; refunded_on: string }) =>
+    apiFetch<ChargeRow>(`/api/v1/fee-charges/${chargeId}/refunds`, { body }),
+};
+
+export const receiptUrl = (paymentId: string) => `/app/print/fee-receipt?payment=${paymentId}`;
