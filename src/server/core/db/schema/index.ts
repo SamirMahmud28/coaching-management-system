@@ -7,3 +7,4 @@ export * from "./branding";
 export * from "./instructors";
 export * from "./academic";
 export * from "./students";
+export * from "./fees";

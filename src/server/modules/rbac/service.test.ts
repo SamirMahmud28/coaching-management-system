@@ -203,7 +203,7 @@ describe("syncSystemRolePermissions (real database)", () => {
     const [custom] = await testDb.insert(roles).values({ tenantId: tenant.id, name: "Custom", isSystem: false }).returning();
 
     const first = await syncSystemRolePermissions(testDb);
-    expect(first.granted).toBe(2); // Owner and Admin (all permissions)
+    expect(first.granted).toBe(3); // Owner and Admin (all permissions), and Accountant (D63)
     expect((await getEffectivePermissions(testDb, tenant.id, owner.id)).has("fees.view")).toBe(true);
     expect(await testDb.select().from(rolePermissions).where(eq(rolePermissions.roleId, custom.id))).toHaveLength(0);
     expect((await syncSystemRolePermissions(testDb)).granted).toBe(0);

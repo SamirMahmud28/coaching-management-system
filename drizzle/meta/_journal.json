@@ -36,6 +36,20 @@
       "when": 1791786985441,
       "tag": "0004_students",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1791793688784,
+      "tag": "0005_fees",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791793698443,
+      "tag": "0006_fees_guards",
+      "breakpoints": true
     }
   ]
 }
