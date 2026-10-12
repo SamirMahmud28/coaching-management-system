@@ -3,7 +3,7 @@ import { sql } from "drizzle-orm";
 import { createTestDb } from "../testing/db";
 
 /**
- * Tenant-isolation guard (docs/04-ARCHITECTURE.md §3): a foreign key between two tenant-scoped tables must include
+ * Tenant-isolation guard (docs/01-architecture/SYSTEM-ARCHITECTURE.md §3): a foreign key between two tenant-scoped tables must include
  * tenant_id, so a row can never point at another institute's row. These are the reviewed exceptions: each one is set
  * by the server, never taken from client input. A new single-column FK fails this test until it's made composite
  * or reviewed and added here.

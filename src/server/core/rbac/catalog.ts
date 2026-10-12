@@ -2,7 +2,7 @@ import type { ModuleKey } from "../modules/registry";
 
 /**
  * Every permission names the module that owns it. Core is itself an always-on module, so the authorization guard
- * can always derive the module from the permission and never skip the module check (docs/04-ARCHITECTURE.md §6).
+ * can always derive the module from the permission and never skip the module check (docs/01-architecture/SYSTEM-ARCHITECTURE.md §6).
  * Paid modules get their full permission sets when each module is built; until then each has a placeholder view.
  */
 export const PERMISSION_CATALOG = [

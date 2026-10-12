@@ -1,4 +1,4 @@
-// Source of truth for the modules and module_dependencies tables (docs/03-PRODUCT-AND-MODULES.md §1).
+// Source of truth for the modules and module_dependencies tables (docs/00-master/PRODUCT-AND-MODULES.md §1).
 export const MODULE_KEYS = ["core", "attendance", "routine", "exams", "fees", "website"] as const;
 export type ModuleKey = (typeof MODULE_KEYS)[number];
 

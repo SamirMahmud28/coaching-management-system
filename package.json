@@ -16,7 +16,8 @@
     "test:e2e": "playwright test",
     "db:seed": "tsx src/server/core/db/seed-cli.ts",
     "platform:create-admin": "tsx src/server/modules/auth/platform-admin-cli.ts",
-    "db:migrate:test": "node scripts/with-env.mjs .env.test drizzle-kit migrate"
+    "db:migrate:test": "node scripts/with-env.mjs .env.test drizzle-kit migrate",
+    "docs:generate": "tsx scripts/docs/generate-reference.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "5.9.1",

@@ -14,7 +14,7 @@ The CMS uses the same stack as the Neo Nexor EMS:
 - **UI:** Tailwind CSS 4 and shadcn/ui
 - **Tests:** Vitest (unit and integration, against a real Postgres test database) and Playwright (end-to-end)
 
-Details: [docs/04-ARCHITECTURE.md](docs/04-ARCHITECTURE.md).
+Details: [docs/01-architecture/SYSTEM-ARCHITECTURE.md](docs/01-architecture/SYSTEM-ARCHITECTURE.md).
 
 ## Requirements
 
