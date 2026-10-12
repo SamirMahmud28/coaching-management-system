@@ -15,6 +15,7 @@ const INSTITUTE = {
 };
 const OWNER_PASSWORD = "OwnerChosen123";
 const url = (path: string) => instituteUrl(INSTITUTE.subdomain, path);
+const student = { id: "", password: "" };
 
 async function signIn(page: Page, password: string) {
   await clearRateLimits();
@@ -69,6 +70,8 @@ test("the Owner sets up a course with a batch and a student", async ({ page }) =
   await page.getByLabel(/Morning/).check();
   await page.getByRole("button", { name: "Generate" }).click();
   await page.getByRole("button", { name: "Admit student" }).click();
+  student.id = (await page.getByTestId("sign-in-id").textContent()) ?? "";
+  student.password = (await page.getByTestId("one-time-password").textContent()) ?? "";
   await page.getByRole("button", { name: "Done" }).click();
   await expect(page.getByRole("heading", { name: /Tania Akter/, level: 1 })).toBeVisible();
 });
@@ -283,6 +286,37 @@ test("F5: reports show collections net of refunds with voids apart, and dues; bo
   await pick(page, "Course", "HSC 2026 Science");
   await pick(page, "Batch", "Morning · HSC 2026 Science");
   await expect(page.getByTestId("dues-report")).toContainText("Nothing is due.");
+});
+
+test("F6: the student sees their own fees and reprints a receipt; corrections stay hidden (D27, D79)", async ({ page }) => {
+  await clearRateLimits();
+  await page.goto(url("/login"));
+  await page.getByLabel("Email, mobile number or student ID").fill(student.id);
+  await page.getByLabel("Password", { exact: true }).fill(student.password);
+  await page.getByRole("button", { name: "Sign in" }).click();
+  await page.getByLabel("Current (temporary) password").fill(student.password);
+  await page.getByLabel("New password", { exact: true }).fill("Student12345");
+  await page.getByLabel("Confirm new password").fill("Student12345");
+  await page.getByRole("button", { name: "Change password" }).click();
+  await expect(page).toHaveURL(url("/app/student"));
+
+  const fees = page.getByTestId("my-fees");
+  await expect(page.getByTestId("my-due-total")).toHaveText("৳0.00");
+  await expect(fees).toContainText("Nothing is due.");
+  await expect(fees).toContainText("Late return of library book");
+  await expect(fees).toContainText("৳100.00 waived");
+  await expect(fees).toContainText("৳500.00 refunded");
+  await expect(fees).toContainText("SHK-000002");
+  // The cancelled fine and the voided receipt stay hidden.
+  await expect(fees).not.toContainText("Damaged lab equipment");
+  await expect(fees).not.toContainText("SHK-000001");
+
+  const [receipt] = await Promise.all([page.waitForEvent("popup"), fees.getByRole("link", { name: "Receipt" }).first().click()]);
+  await expect(receipt.getByTestId("receipt-number")).toBeVisible();
+
+  // A student can't open the admin fee pages.
+  await page.goto(url("/app/fees"));
+  await expect(page).toHaveURL(url("/app/student"));
 });
 
 test("F2: with Fees switched off, its page and the student's fee card disappear (D5)", async ({ page }) => {

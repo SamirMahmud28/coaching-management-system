@@ -1,5 +1,6 @@
 import { and, asc, desc, eq, inArray, sql, type SQL } from "drizzle-orm";
-import { courses, feeCharges } from "../../core/db/schema";
+import { courses, feeCharges, students } from "../../core/db/schema";
+import { NotFoundError } from "../../core/errors";
 import type { DbOrTx } from "../../core/db/types";
 import { fromPoisha, toPoisha } from "@/lib/money";
 import { todayInDhaka } from "@/lib/dates";
@@ -108,4 +109,32 @@ export async function chargeView(db: DbOrTx, tenantId: string, id: string): Prom
 export async function chargeViewsByIds(db: DbOrTx, tenantId: string, ids: string[]): Promise<ChargeView[]> {
   if (!ids.length) return [];
   return chargeViews(db, and(eq(feeCharges.tenantId, tenantId), inArray(feeCharges.id, ids))!, "dueAsc");
+}
+
+/**
+ * A student's own fees for the portal (D27, D79): due charges (overdue first) and paid ones with their receipts. Cancelled
+ * charges, voided payments and staff reasons are left out. Found by the signed-in user's own student record only.
+ */
+export async function myFees(db: DbOrTx, tenantId: string, userId: string) {
+  const [student] = await db.select({ id: students.id }).from(students).where(and(eq(students.tenantId, tenantId), eq(students.userId, userId)));
+  if (!student) throw new NotFoundError("STUDENT");
+  const views = await chargeViews(db, and(eq(feeCharges.tenantId, tenantId), eq(feeCharges.studentId, student.id), eq(feeCharges.status, "ACTIVE"))!, "dueAsc");
+  const shown = (v: ChargeView) => ({
+    id: v.id,
+    title: v.title,
+    courseName: v.courseName,
+    // A fine's reason (D79); generated charges have no note.
+    reason: v.source === "FINE" ? v.note : null,
+    amount: v.amount,
+    waived: v.waived,
+    net: v.net,
+    dueDate: v.dueDate,
+    overdue: v.overdue,
+    receipt: v.paidBy ? { paymentId: v.paidBy.paymentId, receiptLabel: v.paidBy.receiptLabel, paidOn: v.paidBy.paidOn } : null,
+    refunded: v.refunded,
+  });
+  const due = views.filter((v) => v.state === "DUE").sort((a, b) => Number(b.overdue) - Number(a.overdue) || a.dueDate.localeCompare(b.dueDate)).map(shown);
+  const paid = views.filter((v) => v.state === "PAID").sort((a, b) => b.paidBy!.paidOn.localeCompare(a.paidBy!.paidOn)).map(shown);
+  const waived = views.filter((v) => v.state === "WAIVED").map(shown);
+  return { due, paid, waived, totalDue: fromPoisha(due.reduce((sum, c) => sum + toPoisha(c.net), 0)) };
 }

@@ -9,13 +9,17 @@ import { GENDER_LABEL, RELATION_LABEL } from "@/modules/institute/student-labels
 import { db } from "@/server/core/db/client";
 import { requireModulePage } from "@/server/modules/institute/current-user";
 import { getStudentHome } from "@/server/modules/portal/service";
+import { myFees } from "@/server/modules/fees/ledger";
+import { MyFeesCard } from "@/modules/institute/components/portal/my-fees-card";
 
 export const metadata: Metadata = { title: "Student portal" };
 
 // The student's own record, batches and week (D27, Core part). Attendance, results and fees join when those modules exist.
 export default async function Page() {
-  const { session } = await requireModulePage("student.self.view", "student");
+  const { session, permissions } = await requireModulePage("student.self.view", "student");
   const { profile, batches, pastBatches, week } = await getStudentHome(db, session.tenant.id, session.userId);
+  // Permissions are limited to active modules, so My fees appears only while Fees is on (D27).
+  const fees = permissions.has("fees.self.view") ? await myFees(db, session.tenant.id, session.userId) : null;
 
   const details: [string, string][] = [
     ["Student ID", profile.studentCode],
@@ -100,6 +104,7 @@ export default async function Page() {
               <WeekSchedule classes={week} />
             </CardContent>
           </Card>
+          {fees && <MyFeesCard fees={fees} />}
         </div>
         <Card>
           <CardHeader>

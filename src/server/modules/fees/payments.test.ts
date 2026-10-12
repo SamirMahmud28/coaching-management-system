@@ -13,7 +13,8 @@ import { createLogin } from "../auth/credentials";
 import { preparePrint } from "../documents/pipeline";
 import { seedBaselineRoles } from "../rbac/service";
 import * as students from "../students/service";
-import { addFine, confirmGeneration, listStudentCharges } from "./charges";
+import { addFine, cancelCharge, confirmGeneration, listStudentCharges } from "./charges";
+import { myFees } from "./ledger";
 import { addRefund, addWaiver, collectPayment, listStudentPayments, voidPayment } from "./payments";
 import { feeReceiptDocument, type FeeReceiptRecord } from "./receipt-document";
 import { createFeeItem, saveFeeSettings } from "./setup";
@@ -195,5 +196,33 @@ describe("fines are paid like any charge", () => {
     const s = await setUp();
     const fine = await addFine(db, s.actor, s.anika.id, { amount: "50", reason: "Late" });
     expect((await s.pay(s.anika.id, [fine!.id])).payment.amount).toBe("50.00");
+  });
+});
+
+describe("the student's own fees (D27, D79)", () => {
+  it("shows what they owe, overdue first, and what they paid with receipts; hides cancelled charges and voided payments", async () => {
+    const s = await setUp();
+    const c = await s.chargesOf(s.anika.id);
+    const fine = await addFine(db, s.actor, s.anika.id, { amount: "50", reason: "Late return of library book", dueDate: "2026-01-15" });
+    await addWaiver(db, s.actor, c.june.id, { kind: "FIXED", value: "500", reason: "Sibling" });
+    const { payment: june } = await s.pay(s.anika.id, [c.june.id]);
+    await addRefund(db, s.actor, c.june.id, { amount: "200", method: "CASH", reason: "Illness" });
+    const { payment: wrong } = await s.pay(s.anika.id, [c.july.id]);
+    await voidPayment(db, s.actor, wrong.id, { reason: "Bounced cheque" });
+    await cancelCharge(db, s.actor, c.exam.id, { reason: "Exam postponed" });
+
+    const mine = await myFees(db, s.tenant.id, s.anika.userId);
+    expect(mine.due.map((d) => [d.title, d.net, d.overdue, d.reason])).toEqual([
+      ["Fine", "50.00", true, "Late return of library book"],
+      ["Tuition — July 2026", "2000.00", false, null],
+    ]);
+    expect(mine.paid).toEqual([expect.objectContaining({ title: "Tuition — June 2026", waived: "500.00", net: "1500.00", refunded: "200.00", receipt: expect.objectContaining({ paymentId: june.id }) })]);
+    expect(mine.totalDue).toBe("2050.00");
+    const text = JSON.stringify(mine);
+    expect(text).not.toMatch(/Exam fee|Exam postponed|Bounced cheque|Sibling|Illness/);
+    expect(fine).toBeTruthy();
+
+    expect((await myFees(db, s.tenant.id, s.bushra.userId)).due.map((d) => d.title)).not.toContain("Fine");
+    await expect(myFees(db, s.tenant.id, s.owner.id)).rejects.toMatchObject({ code: "NOT_FOUND_STUDENT" });
   });
 });
