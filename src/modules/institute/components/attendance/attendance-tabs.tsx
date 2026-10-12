@@ -4,14 +4,18 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
-/** The Attendance module's sections in the admin panel, each shown only with its permission. */
-export function AttendanceTabs({ canManageLeave }: { canManageLeave: boolean }) {
+/**
+ * The Attendance module's sections, each shown only with its permission (permissions are already limited to active
+ * modules). `base` is the admin panel's or the instructor portal's Attendance page; leave is the office's only.
+ */
+export function AttendanceTabs({ base = "/app/attendance", canManageLeave = false, canReport = false }: { base?: string; canManageLeave?: boolean; canReport?: boolean }) {
   const pathname = usePathname();
-  if (!canManageLeave) return null;
   const tabs = [
-    { href: "/app/attendance", label: "Classes" },
-    { href: "/app/attendance/leave", label: "Leave" },
+    { href: base, label: "Classes" },
+    ...(canManageLeave ? [{ href: `${base}/leave`, label: "Leave" }] : []),
+    ...(canReport ? [{ href: `${base}/reports`, label: "Reports" }] : []),
   ];
+  if (tabs.length < 2) return null;
   return (
     <nav aria-label="Attendance sections" className="flex gap-1 border-b">
       {tabs.map((t) => {

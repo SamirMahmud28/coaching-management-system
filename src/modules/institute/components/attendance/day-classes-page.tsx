@@ -39,12 +39,14 @@ export function DayClassesPage({
   date,
   canTake,
   canManageLeave = false,
+  canReport = false,
   fullGuide = true,
 }: {
   base: string;
   date?: string;
   canTake: boolean;
   canManageLeave?: boolean;
+  canReport?: boolean;
   fullGuide?: boolean;
 }) {
   const router = useRouter();
@@ -80,7 +82,7 @@ export function DayClassesPage({
           ) : null
         }
       />
-      <AttendanceTabs canManageLeave={canManageLeave} />
+      <AttendanceTabs base={base} canManageLeave={canManageLeave} canReport={canReport} />
       <HowThisWorks topic="attendance-registers" fullGuide={fullGuide} />
 
       <div className="flex flex-wrap items-center gap-2">

@@ -627,3 +627,59 @@ export const leaveApi = {
   apply: (body: LeaveDates) => apiFetch<LeaveRow>("/api/v1/me/leave", { body }),
   withdraw: (id: string) => apiFetch<void>(`/api/v1/me/leave/${id}/withdraw`, { method: "POST" }),
 };
+
+// Attendance reports (D87, D88).
+export interface AttendanceTallyWire {
+  present: number;
+  late: number;
+  absent: number;
+  excused: number;
+  percentage: number | null;
+}
+
+export interface AttendanceReportOptions {
+  courses: { id: string; name: string }[];
+  batches: { id: string; name: string; course_id: string; course_name: string; subjects: { id: string; name: string }[] }[];
+  today: string;
+}
+
+export interface MonthlyRegisterReport {
+  batch_id: string;
+  batch_name: string;
+  course_name: string;
+  subject_name: string | null;
+  month: string;
+  month_label: string;
+  classes: { id: string; date: string; starts_at: string; subject_name: string }[];
+  not_held: number;
+  rows: ({ student_id: string; student_code: string; full_name: string; roll_number: string | null; statuses: (AttendanceStatus | null)[] } & AttendanceTallyWire)[];
+}
+
+export interface LowAttendanceReport {
+  range: { from: string; to: string };
+  below: number;
+  rows: ({ student_id: string; student_code: string; full_name: string; guardian_name: string; guardian_phone: string | null } & AttendanceTallyWire)[];
+}
+
+export interface AbsenteesReport {
+  date: string;
+  rows: { student_id: string; student_code: string; full_name: string; guardian_name: string; guardian_phone: string | null; missed: { batch_name: string; subject_name: string; starts_at: string }[] }[];
+}
+
+export interface AttendanceHistory {
+  range: { from: string; to: string };
+  overall: AttendanceTallyWire;
+  by_subject: ({ batch_name: string; subject_name: string } & AttendanceTallyWire)[];
+  entries: { date: string; starts_at: string; batch_name: string; subject_name: string; status: AttendanceStatus | null; on_leave: boolean }[];
+}
+
+export const attendanceReportsApi = {
+  options: () => apiFetch<AttendanceReportOptions>("/api/v1/attendance/reports/options"),
+  register: (q: { batch_id: string; month: string; batch_subject_id?: string }) => apiFetch<MonthlyRegisterReport>("/api/v1/attendance/reports/register", { query: q }),
+  low: (q: { from: string; to: string; below: number; course_id?: string; batch_id?: string }) => apiFetch<LowAttendanceReport>("/api/v1/attendance/reports/low", { query: q }),
+  absentees: (q: { date: string; batch_id?: string }) => apiFetch<AbsenteesReport>("/api/v1/attendance/reports/absentees", { query: q }),
+  studentHistory: (studentId: string, q: { from: string; to: string }) => apiFetch<AttendanceHistory>(`/api/v1/students/${studentId}/attendance`, { query: q }),
+};
+
+export const attendanceRegisterPrintUrl = (q: { batch_id: string; month: string; batch_subject_id?: string }) =>
+  `/app/print/attendance-register?${new URLSearchParams(Object.entries(q).filter((e): e is [string, string] => !!e[1])).toString()}`;

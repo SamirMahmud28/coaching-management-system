@@ -11,15 +11,21 @@ import { requireModulePage } from "@/server/modules/institute/current-user";
 import { getStudentHome } from "@/server/modules/portal/service";
 import { myFees } from "@/server/modules/fees/ledger";
 import { MyFeesCard } from "@/modules/institute/components/portal/my-fees-card";
+import { MyAttendanceCard } from "@/modules/institute/components/portal/my-attendance-card";
+import { myAttendance } from "@/server/modules/attendance/reports";
+import { toSnakeCaseKeys } from "@/server/core/http/case";
+import type { AttendanceHistory } from "@/modules/institute/api";
 
 export const metadata: Metadata = { title: "Student portal" };
 
-// The student's own record, batches and week (D27, Core part). Attendance, results and fees join when those modules exist.
+// The student's own record, batches and week (D27, Core part). Attendance and fees appear while those modules are on; results join with Exams.
 export default async function Page() {
   const { session, permissions } = await requireModulePage("student.self.view", "student");
   const { profile, batches, pastBatches, week } = await getStudentHome(db, session.tenant.id, session.userId);
   // Permissions are limited to active modules, so My fees appears only while Fees is on (D27).
   const fees = permissions.has("fees.self.view") ? await myFees(db, session.tenant.id, session.userId) : null;
+  // My attendance appears only while Attendance is on (D27, D87); sent in the API's wire shape for the shared summary.
+  const attendance = permissions.has("attendance.self.view") ? (toSnakeCaseKeys(await myAttendance(db, session.tenant.id, session.userId)) as AttendanceHistory) : null;
 
   const details: [string, string][] = [
     ["Student ID", profile.studentCode],
@@ -104,6 +110,7 @@ export default async function Page() {
               <WeekSchedule classes={week} />
             </CardContent>
           </Card>
+          {attendance && <MyAttendanceCard data={attendance} />}
           {fees && <MyFeesCard fees={fees} />}
         </div>
         <Card>

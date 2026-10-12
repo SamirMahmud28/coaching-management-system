@@ -47,15 +47,17 @@ function cleanDate(value: string | undefined, field = "date"): string {
 
 /**
  * The batch subjects this viewer may take or see registers for: all of them for staff who see every batch (Owner,
- * Admin, or a custom role with academic.view), otherwise only the ones they teach (D24, D81). Only active batches.
+ * Admin, or a custom role with academic.view), otherwise only the ones they teach (D24, D81). Registers use active
+ * batches only; reports (`includeArchived`) also reach archived ones, so their history stays readable.
  */
-async function scopedBatchSubjects(db: DbOrTx, viewer: Viewer, onlyIds?: string[]) {
+export async function scopedBatchSubjects(db: DbOrTx, viewer: Viewer, onlyIds?: string[], opts: { includeArchived?: boolean } = {}) {
   const all = viewer.permissions.has("attendance.manage") || viewer.permissions.has("academic.view");
   const rows = await db
     .select({
       id: batchSubjects.id,
       batchId: batches.id,
       batchName: batches.name,
+      courseId: courses.id,
       courseName: courses.name,
       subjectName: subjects.name,
     })
@@ -66,7 +68,7 @@ async function scopedBatchSubjects(db: DbOrTx, viewer: Viewer, onlyIds?: string[
     .where(
       and(
         eq(batchSubjects.tenantId, viewer.tenantId),
-        eq(batches.status, "ACTIVE"),
+        opts.includeArchived ? undefined : eq(batches.status, "ACTIVE"),
         onlyIds ? inArray(batchSubjects.id, onlyIds) : undefined,
         all
           ? undefined

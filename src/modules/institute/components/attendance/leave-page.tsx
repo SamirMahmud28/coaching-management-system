@@ -39,7 +39,7 @@ type Dialog = { kind: "enter" } | { kind: "approve" | "reject" | "revoke"; leave
  * The office's leave (D89–D93): applications waiting for a decision first; approve or reject with an optional note the
  * student sees; enter leave for a student (approved at once); revoke approved leave with a reason.
  */
-export function LeavePage() {
+export function LeavePage({ canReport = false }: { canReport?: boolean }) {
   const queryClient = useQueryClient();
   const [filter, setFilter] = useState<LeaveStatus | "ALL">("PENDING");
   const status = filter === "ALL" ? undefined : filter;
@@ -76,7 +76,7 @@ export function LeavePage() {
           </Button>
         }
       />
-      <AttendanceTabs canManageLeave />
+      <AttendanceTabs canManageLeave canReport={canReport} />
       <HowThisWorks topic="attendance-leave" />
 
       <div className="flex flex-wrap gap-1" role="group" aria-label="Show">

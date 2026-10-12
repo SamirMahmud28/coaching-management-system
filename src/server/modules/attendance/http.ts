@@ -8,6 +8,7 @@ import type { TenantAuth } from "../auth/tenant-auth";
 import { withAuthorization } from "../authorization/service";
 import * as leave from "./leave";
 import * as registers from "./registers";
+import * as reports from "./reports";
 
 export interface AttendanceHttpDeps {
   db: Db;
@@ -32,6 +33,11 @@ const leaveQuery = z.object({ status: z.enum(leave.LEAVE_STATUSES).optional(), s
 const leaveBody = z.object({ from_date: date, to_date: date, reason: z.string().max(300) });
 const decisionBody = z.object({ decision: z.enum(["APPROVE", "REJECT"]), note: z.string().max(300).nullable().optional() });
 const revokeBody = z.object({ reason: z.string().max(300) });
+const registerReportQuery = z.object({ batch_id: z.uuid(), month: z.string().max(7), batch_subject_id: z.uuid().optional() });
+const rangeQuery = { from: date.optional(), to: date.optional() };
+const lowQuery = z.object({ ...rangeQuery, below: z.coerce.number().optional(), course_id: z.uuid().optional(), batch_id: z.uuid().optional() });
+const absenteesQuery = z.object({ date: date.optional(), batch_id: z.uuid().optional() });
+const historyQuery = z.object(rangeQuery);
 
 export function createAttendanceHandlers({ db, auth, host }: AttendanceHttpDeps) {
   const noContent = () => new Response(null, { status: 204 });
@@ -144,6 +150,45 @@ export function createAttendanceHandlers({ db, auth, host }: AttendanceHttpDeps)
         const actor = await authorize(request, "leave.self.apply");
         await leave.withdrawLeave(db, actor, pathId(params.id, "LEAVE"));
         return noContent();
+      }),
+
+    // GET /api/v1/attendance/reports/options — batches and subjects the viewer can report on
+    reportOptions: (request: Request) =>
+      handle(async () => {
+        const viewer = await authorize(request, "attendance.report.view");
+        return json(await reports.reportOptions(db, viewer));
+      }),
+
+    // GET /api/v1/attendance/reports/register?batch_id=&month=&batch_subject_id=
+    monthlyRegister: (request: Request) =>
+      handle(async () => {
+        const viewer = await authorize(request, "attendance.report.view");
+        const q = parseQuery(request, registerReportQuery);
+        return json(await reports.monthlyRegister(db, viewer, { batchId: q.batch_id, month: q.month, batchSubjectId: q.batch_subject_id }));
+      }),
+
+    // GET /api/v1/attendance/reports/low?from=&to=&below=&course_id=&batch_id=
+    lowAttendance: (request: Request) =>
+      handle(async () => {
+        const viewer = await authorize(request, "attendance.report.view");
+        const q = parseQuery(request, lowQuery);
+        return json(await reports.lowAttendance(db, viewer, { range: reports.cleanRange(q.from, q.to), below: q.below ?? Number.NaN, courseId: q.course_id, batchId: q.batch_id }));
+      }),
+
+    // GET /api/v1/attendance/reports/absentees?date=&batch_id=
+    dailyAbsentees: (request: Request) =>
+      handle(async () => {
+        const viewer = await authorize(request, "attendance.report.view");
+        const q = parseQuery(request, absenteesQuery);
+        return json(await reports.dailyAbsentees(db, viewer, { date: q.date ?? todayInDhaka(), batchId: q.batch_id }));
+      }),
+
+    // GET /api/v1/students/:id/attendance?from=&to=
+    studentHistory: (request: Request, params: { id: string }) =>
+      handle(async () => {
+        const viewer = await authorize(request, "attendance.report.view");
+        const q = parseQuery(request, historyQuery);
+        return json(await reports.studentHistory(db, viewer, pathId(params.id, "STUDENT"), reports.cleanRange(q.from, q.to)));
       }),
   };
 }

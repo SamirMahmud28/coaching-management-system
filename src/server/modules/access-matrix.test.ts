@@ -170,6 +170,11 @@ const HANDLERS: Entry[] = [
   { factory: "attendance", name: "myLeave", method: "GET", permission: "leave.self.apply" },
   { factory: "attendance", name: "applyForLeave", method: "POST", permission: "leave.self.apply", body: { from_date: TODAY, to_date: TODAY, reason: "Fever" } },
   { factory: "attendance", name: "withdrawLeave", method: "POST", permission: "leave.self.apply", id: "LEAVE" },
+  { factory: "attendance", name: "reportOptions", method: "GET", permission: "attendance.report.view" },
+  { factory: "attendance", name: "monthlyRegister", method: "GET", permission: "attendance.report.view", query: { batch_id: DUMMY, month: TODAY.slice(0, 7) } },
+  { factory: "attendance", name: "lowAttendance", method: "GET", permission: "attendance.report.view", query: { from: TODAY, to: TODAY, below: "75" } },
+  { factory: "attendance", name: "dailyAbsentees", method: "GET", permission: "attendance.report.view" },
+  { factory: "attendance", name: "studentHistory", method: "GET", permission: "attendance.report.view", id: "STUDENT", query: { from: TODAY, to: TODAY } },
 ];
 /** Handlers deliberately outside the matrix, with the reason. */
 const OUTSIDE: Partial<Record<Factory, Record<string, string>>> = { files: { publicLogo: "public by design: the host's logo while its public page is shown (D58)" } };

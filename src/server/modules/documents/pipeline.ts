@@ -62,7 +62,7 @@ export async function preparePrint(db: DbOrTx, viewer: DocumentViewer, type: Any
   const selection = type.parseSelection(query, scope);
   const [branding, loaded] = await Promise.all([
     loadDocumentBranding(db, viewer.tenantId),
-    type.load(db, { tenantId: viewer.tenantId, scope, selection, limit: MAX_RECORDS_PER_PRINT + 1, permissions: viewer.permissions }),
+    type.load(db, { tenantId: viewer.tenantId, scope, selection, limit: MAX_RECORDS_PER_PRINT + 1, permissions: viewer.permissions, userId: viewer.userId }),
   ]);
   if (loaded.records.length > MAX_RECORDS_PER_PRINT) {
     throw new ValidationError("VALIDATION_TOO_MANY_DOCUMENTS", `A print run is limited to ${MAX_RECORDS_PER_PRINT} documents. Narrow the selection and print in parts.`);

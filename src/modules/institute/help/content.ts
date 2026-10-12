@@ -35,7 +35,8 @@ export type HelpTopicKey =
   | "fees-reports"
   | "attendance-registers"
   | "attendance-leave"
-  | "leave-student";
+  | "leave-student"
+  | "attendance-reports";
 
 export const HELP_TOPICS: readonly HelpTopic[] = [
   {
@@ -403,6 +404,32 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     ],
     faqs: [
       { q: "My leave was rejected but I still can't come.", a: "Talk to the office. They can enter leave for you, for any dates." },
+    ],
+  },
+  {
+    key: "attendance-reports",
+    title: "Attendance reports",
+    area: "Attendance",
+    permission: "attendance.report.view",
+    summary: "See a batch's register for a month (and print it), find students whose attendance is low, and list who was absent on a day — with guardian mobiles to call, if you're allowed to see them.",
+    steps: [
+      "Open Attendance → Reports and choose a report.",
+      "Monthly register: choose the batch, one subject or all, and the month. Each column is a class that was taken; click Print for an A4 copy.",
+      "Low attendance: choose the dates, the percentage (for example 75) and optionally a batch. Students below it are listed, lowest first.",
+      "Absentees by day: choose the date and optionally a batch to see who was absent and which classes they missed.",
+      "For one student's attendance, open their profile: the Attendance card shows the last 30 days, or any dates you choose.",
+    ],
+    rules: [
+      "Only registers that were taken count. Classes marked 'No class held' count for nobody.",
+      "Percentage is (Present + Late) ÷ (Present + Late + Absent). Excused classes (approved leave) count neither way.",
+      "Students on approved leave are Excused, so they never appear as absent.",
+      "Guardian mobiles appear only for staff allowed to see student contacts. Instructors never see them.",
+      "Instructors see reports only for the subjects they teach.",
+      "Reports include archived batches, so past months stay available.",
+    ],
+    faqs: [
+      { q: "A student shows no percentage.", a: "All their counted classes were Excused, or no register with them was taken in those dates." },
+      { q: "Why is a day missing from the monthly register?", a: "Either no register was taken that day, or the class was marked not held (the report says how many weren't held)." },
     ],
   },
 ];

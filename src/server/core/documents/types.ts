@@ -5,7 +5,7 @@ import type { PermissionName } from "../rbac/catalog";
 // The document engine's contract (ported from the EMS without QR codes, verification or card layouts: D64). Modules
 // declare document types; the engine checks access, loads records, audits the print and lays them out on A4.
 
-export type DocumentTypeKey = "fee-receipt" | "fee-report";
+export type DocumentTypeKey = "fee-receipt" | "fee-report" | "attendance-register";
 
 export type DocumentFormat =
   /** A4 documents, one or two per page (two for half-page receipts). */
@@ -24,6 +24,8 @@ export interface LoadContext<TSelection> {
   limit: number;
   /** The viewer's permissions, for fields only some may see (e.g. guardian mobiles, D24). */
   permissions: ReadonlySet<string>;
+  /** Who is printing, for documents scoped to what the viewer teaches (an instructor's batch register, D24). */
+  userId: string;
 }
 
 export interface LoadedRecord<TRecord> {

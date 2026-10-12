@@ -6,6 +6,6 @@ export const metadata: Metadata = { title: "Leave" };
 
 // Leave applications and office-entered leave (D89–D93). 404 when Attendance is off or without leave.manage.
 export default async function Page() {
-  await requireModulePage("leave.manage");
-  return <LeavePage />;
+  const { permissions } = await requireModulePage("leave.manage");
+  return <LeavePage canReport={permissions.has("attendance.report.view")} />;
 }

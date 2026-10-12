@@ -180,6 +180,55 @@ test("the student sees the revoked leave with its reason", async ({ page }) => {
   await expect(page.getByText("Note from the office: Get well soon")).toBeVisible();
 });
 
+// By now: yesterday's Physics has Anika Absent (taken late by the Owner); today's Physics has her Present again (her
+// leave was revoked) and Bushra Excused (office leave). So Anika is at 50%.
+test("the Owner reads the reports: monthly register (and its print), low attendance with guardian mobiles, absentees, a student's card (D88)", async ({ page }) => {
+  await signIn(page, INSTITUTE.ownerEmail, OWNER_PASSWORD);
+  await expect(page).toHaveURL(url("/app"));
+  await page.goto(url("/app/attendance"));
+  await page.getByRole("link", { name: "Reports", exact: true }).click();
+
+  const register = page.getByTestId("monthly-register");
+  await expect(register.getByText("Anika Rahman")).toBeVisible();
+  const popup = page.waitForEvent("popup");
+  await page.getByRole("link", { name: "Print" }).click();
+  const print = await popup;
+  await expect(print.getByText("Anika Rahman")).toBeVisible();
+  await print.close();
+
+  await page.getByRole("button", { name: "Low attendance" }).click();
+  const low = page.getByTestId("low-attendance");
+  await expect(low.getByRole("row", { name: /Anika Rahman/ })).toContainText("50%");
+  await expect(low.getByText(/01711000999/).first()).toBeVisible();
+  await expect(low.getByText("Chaity Das")).toHaveCount(0);
+
+  await page.getByRole("button", { name: "Absentees by day" }).click();
+  await expect(page.getByText("Nobody was absent")).toBeVisible(); // today: Bushra is on leave, so Excused
+  await page.getByRole("button", { name: "Low attendance" }).click();
+  await low.getByRole("link", { name: "Anika Rahman" }).click();
+  await expect(page.getByTestId("student-attendance").getByText("50%", { exact: true }).first()).toBeVisible();
+});
+
+test("an instructor's reports cover their subject only, without guardian mobiles (D24)", async ({ page }) => {
+  await signIn(page, TEACHER.email, TEACHER.password);
+  await expect(page).toHaveURL(url("/app/instructor"));
+  await page.goto(url("/app/instructor/attendance"));
+  await page.getByRole("link", { name: "Reports", exact: true }).click();
+  await page.getByRole("button", { name: "Low attendance" }).click();
+  const low = page.getByTestId("low-attendance");
+  await expect(low.getByText("Anika Rahman")).toBeVisible();
+  await expect(low.getByText(/01711000999/)).toHaveCount(0);
+  await expect(low.getByRole("link")).toHaveCount(0); // no student profiles in the instructor portal
+});
+
+test("the student sees My attendance on their home page (D27, D87)", async ({ page }) => {
+  await signIn(page, codes[0], "Student123");
+  await expect(page).toHaveURL(url("/app/student"));
+  const mine = page.getByTestId("my-attendance");
+  await expect(mine.getByText("50%", { exact: true }).first()).toBeVisible();
+  await expect(mine.getByText(/1 attended, 1 absent, 0 excused/)).toBeVisible();
+});
+
 test("Attendance disappears while the module is off (D5)", async ({ page }) => {
   await setInstituteModules(INSTITUTE.subdomain, { attendance: false });
   try {

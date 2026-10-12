@@ -9,5 +9,5 @@ export const metadata: Metadata = { title: "Attendance" };
 export default async function Page({ searchParams }: { searchParams: Promise<{ date?: string }> }) {
   const { permissions } = await requireModulePage("attendance.view", "instructor");
   const { date } = await searchParams;
-  return <DayClassesPage base="/app/instructor/attendance" date={date && isCalendarDate(date) ? date : undefined} canTake={permissions.has("attendance.take")} fullGuide={false} />;
+  return <DayClassesPage base="/app/instructor/attendance" date={date && isCalendarDate(date) ? date : undefined} canTake={permissions.has("attendance.take")} canReport={permissions.has("attendance.report.view")} fullGuide={false} />;
 }

@@ -24,6 +24,7 @@ import { runAction } from "@/lib/feedback";
 import { academicApi, studentsApi, type MembershipRow, type StudentDetail, type StudentStatus } from "../../api";
 import { instituteKeys } from "../../keys";
 import { StudentFeeAmountsCard } from "../fees/student-fee-amounts-card";
+import { StudentAttendanceCard } from "../attendance/student-attendance-card";
 import { GENDER_LABEL, RELATION_LABEL, StudentFieldsForm, studentFieldsFrom, studentFormFrom, studentFormMissing, type StudentFormValues } from "./student-fields";
 import { HowThisWorks } from "@/modules/institute/help/how-this-works";
 
@@ -45,6 +46,8 @@ export interface StudentPermissions {
   /** Fees module on and fees.view held. */
   canViewFees: boolean;
   canAdjustFees: boolean;
+  /** Attendance module on and attendance.report.view held. */
+  canViewAttendance?: boolean;
 }
 
 export function StudentProfilePage({ id, perms }: { id: string; perms: StudentPermissions }) {
@@ -162,6 +165,8 @@ export function StudentProfilePage({ id, perms }: { id: string; perms: StudentPe
               )}
             </CardContent>
           </Card>
+
+          {perms.canViewAttendance && <StudentAttendanceCard studentId={id} />}
 
           {perms.canViewFees && <StudentFeeAmountsCard studentId={id} canAdjust={perms.canAdjustFees} />}
 
