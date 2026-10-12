@@ -7,6 +7,7 @@ import type { TenantAuth } from "../auth/tenant-auth";
 import { withAuthorization } from "../authorization/service";
 import * as charges from "./charges";
 import * as payments from "./payments";
+import * as reports from "./reports";
 import * as setup from "./setup";
 
 export interface FeesHttpDeps {
@@ -45,6 +46,13 @@ const collectBody = z.object({
   idempotency_key: z.uuid(),
 });
 const waiverBody = z.object({ kind: z.enum(["FIXED", "PERCENT"]), value: amount, reason: z.string().max(300) });
+const reportQuery = z.object({
+  from: z.string().max(10).optional(),
+  to: z.string().max(10).optional(),
+  course_id: z.uuid().optional(),
+  batch_id: z.uuid().optional(),
+  former: z.enum(["true", "false"]).optional(),
+});
 const refundBody = z.object({ amount, method, reference: z.string().max(100).nullable().optional(), reason: z.string().max(300), refunded_on: date });
 
 export function createFeesHandlers({ db, auth, host }: FeesHttpDeps) {
@@ -233,6 +241,34 @@ export function createFeesHandlers({ db, auth, host }: FeesHttpDeps) {
         const actor = await authorize(request, "fees.refund");
         const b = await parseBody(request, refundBody);
         return json(await payments.addRefund(db, actor, pathId(params.id, "FEE_CHARGE"), { amount: b.amount, method: b.method, reference: b.reference, reason: b.reason, refundedOn: b.refunded_on }), 201);
+      }),
+
+    // GET /api/v1/fees/reports/collections
+    collectionReport: (request: Request) =>
+      handle(async () => {
+        const actor = await authorize(request, "fees.report.view");
+        const q = parseQuery(request, reportQuery);
+        return json(await reports.collectionReport(db, actor.tenantId, reports.cleanRange(q.from, q.to), { courseId: q.course_id, batchId: q.batch_id }));
+      }),
+
+    // GET /api/v1/fees/reports/dues — current students, or former ones with former=true (D42)
+    duesReport: (request: Request) =>
+      handle(async () => {
+        const actor = await authorize(request, "fees.report.view");
+        const q = parseQuery(request, reportQuery);
+        return json(
+          await reports.duesReport(db, actor.tenantId, {
+            courseId: q.course_id, batchId: q.batch_id, former: q.former === "true", withContacts: actor.permissions.has("students.contact.view"),
+          }),
+        );
+      }),
+
+    // GET /api/v1/fees/reports/refunds
+    refundsReport: (request: Request) =>
+      handle(async () => {
+        const actor = await authorize(request, "fees.report.view");
+        const q = parseQuery(request, reportQuery);
+        return json(await reports.refundsReport(db, actor.tenantId, reports.cleanRange(q.from, q.to), { courseId: q.course_id, batchId: q.batch_id }));
       }),
   };
 }

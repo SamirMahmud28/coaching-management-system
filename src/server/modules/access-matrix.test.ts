@@ -146,6 +146,9 @@ const HANDLERS: Entry[] = [
   { factory: "fees", name: "voidPayment", method: "POST", permission: "fees.payment.void", id: "FEE_PAYMENT", body: { reason: "Wrong student" } },
   { factory: "fees", name: "addWaiver", method: "POST", permission: "fees.waive", id: "FEE_CHARGE", body: { kind: "FIXED", value: "10", reason: "Sibling" } },
   { factory: "fees", name: "addRefund", method: "POST", permission: "fees.refund", id: "FEE_CHARGE", body: { amount: "10", method: "CASH", reason: "Left early" } },
+  { factory: "fees", name: "collectionReport", method: "GET", permission: "fees.report.view" },
+  { factory: "fees", name: "duesReport", method: "GET", permission: "fees.report.view" },
+  { factory: "fees", name: "refundsReport", method: "GET", permission: "fees.report.view" },
 ];
 /** Handlers deliberately outside the matrix, with the reason. */
 const OUTSIDE: Partial<Record<Factory, Record<string, string>>> = { files: { publicLogo: "public by design: the host's logo while its public page is shown (D58)" } };

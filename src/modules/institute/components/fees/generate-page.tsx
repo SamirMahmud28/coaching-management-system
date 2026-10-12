@@ -32,7 +32,7 @@ export const SKIP_LABEL: Record<SkipReason, string> = {
 };
 
 /** Generate monthly or one-time charges from a preview (D30, D40, D62, D65, D67, D68). */
-export function GeneratePage() {
+export function GeneratePage({ canReport }: { canReport: boolean }) {
   const queryClient = useQueryClient();
   const items = useQuery({ queryKey: instituteKeys.feeItems({ status: "ACTIVE" }), queryFn: () => feesApi.items({ status: "ACTIVE" }) });
   const [itemId, setItemId] = useState("");
@@ -80,7 +80,7 @@ export function GeneratePage() {
   return (
     <>
       <PageHeader title="Fees" description="Charges are created only when you confirm a preview; nothing is charged automatically." />
-      <FeesTabs canGenerate />
+      <FeesTabs canGenerate canReport={canReport} />
       <Card>
         <CardHeader>
           <CardTitle>Generate charges</CardTitle>

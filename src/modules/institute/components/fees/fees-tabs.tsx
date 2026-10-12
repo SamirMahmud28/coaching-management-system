@@ -5,9 +5,11 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 /** The Fees module's sections, each shown only with its permission (permissions are already limited to active modules). */
-export function FeesTabs({ canGenerate }: { canGenerate: boolean }) {
+export function FeesTabs({ canGenerate, canReport }: { canGenerate: boolean; canReport: boolean }) {
   const pathname = usePathname();
-  const tabs = [{ href: "/app/fees", label: "Fee setup" }, ...(canGenerate ? [{ href: "/app/fees/generate", label: "Generate charges" }] : [])];
+  const tabs = [{ href: "/app/fees", label: "Fee setup" }, ...(canGenerate ? [{ href: "/app/fees/generate", label: "Generate charges" }] : []),
+    ...(canReport ? [{ href: "/app/fees/reports", label: "Reports" }] : []),
+  ];
   return (
     <nav aria-label="Fees sections" className="flex gap-1 border-b">
       {tabs.map((t) => {

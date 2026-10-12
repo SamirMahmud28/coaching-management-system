@@ -98,10 +98,16 @@ test("F2: the Owner adds the course's fees and sets the receipt prefix (D28, D38
   await page.getByLabel("Amount (৳)").fill("2200");
   await page.getByRole("button", { name: "Save", exact: true }).click();
   await expect(course).toContainText("৳2,200.00");
+  await expect(page.getByRole("dialog")).toHaveCount(0);
 
-  await page.getByLabel("Receipt prefix").fill("shk");
-  await page.getByRole("button", { name: "Save", exact: true }).click();
+  const prefix = page.getByLabel("Receipt prefix");
+  await expect(prefix).toHaveValue("R"); // loaded before typing, so the edit isn't overwritten
+  await prefix.fill("shk");
   await expect(page.getByText("SHK-000123")).toBeVisible();
+  await page.getByRole("button", { name: "Save", exact: true }).click();
+  await expect(page.getByText("Receipt prefix saved.")).toBeVisible();
+  await page.reload();
+  await expect(page.getByLabel("Receipt prefix")).toHaveValue("SHK");
 });
 
 test("F2: a student's own amount, with a reason (D29)", async ({ page }) => {
@@ -252,6 +258,31 @@ test("F4: a fine is waived by half and paid; a paid charge is partly refunded (D
   await page.getByRole("button", { name: "Record refund" }).click();
   await expect(charges.getByRole("listitem").filter({ hasText: "Tuition" })).toContainText("৳500.00 refunded");
   await expect(charges.getByRole("listitem").filter({ hasText: "Tuition" })).toContainText("Paid");
+});
+
+test("F5: reports show collections net of refunds with voids apart, and dues; both print (D75–D78)", async ({ page }) => {
+  await signInAsOwner(page);
+  await page.goto(url("/app/fees"));
+  await page.getByRole("link", { name: "Reports" }).click();
+  const report = page.getByTestId("collection-report");
+  // SHK-000002 (bKash ৳3,300) and SHK-000003 (cash ৳100) count; SHK-000001 was voided; ৳500 was refunded.
+  await expect(report).toContainText("SHK-000002");
+  await expect(report).toContainText("SHK-000003");
+  await expect(page.getByTestId("net")).toHaveText("৳2,900.00");
+  await expect(report).toContainText("bKash ৳3,300.00 · Cash ৳100.00");
+  await expect(report.getByText("Voided receipts (not in the totals)")).toBeVisible();
+  await expect(report).toContainText("Recorded against the wrong student");
+
+  const [printed] = await Promise.all([page.waitForEvent("popup"), page.getByRole("link", { name: "Print" }).click()]);
+  await expect(printed.getByText("Fee collection")).toBeVisible();
+  await expect(printed.getByText("Net collection")).toBeVisible();
+  await printed.close();
+
+  await page.getByRole("tab", { name: "Dues", exact: true }).click();
+  await expect(page.getByTestId("dues-report")).toContainText("Nothing is due.");
+  await pick(page, "Course", "HSC 2026 Science");
+  await pick(page, "Batch", "Morning · HSC 2026 Science");
+  await expect(page.getByTestId("dues-report")).toContainText("Nothing is due.");
 });
 
 test("F2: with Fees switched off, its page and the student's fee card disappear (D5)", async ({ page }) => {

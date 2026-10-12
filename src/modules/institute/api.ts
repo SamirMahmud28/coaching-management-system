@@ -468,3 +468,41 @@ export const paymentsApi = {
 };
 
 export const receiptUrl = (paymentId: string) => `/app/print/fee-receipt?payment=${paymentId}`;
+
+export type FeeReportKind = "collections" | "dues" | "former-dues" | "refunds";
+export interface ReportFilters {
+  from?: string;
+  to?: string;
+  course_id?: string;
+  batch_id?: string;
+}
+
+export interface CollectionReport {
+  range: { from: string; to: string };
+  payments: { payment_id: string; receipt_label: string; paid_on: string; student_name: string; student_code: string; method: PaymentMethod; amount: string }[];
+  by_method: { method: PaymentMethod; amount: string }[];
+  collected: string;
+  refunded: string;
+  net: string;
+  voided: { payment_id: string; receipt_label: string; paid_on: string; student_name: string; student_code: string; amount: string; void_reason: string | null }[];
+}
+
+export interface DuesReport {
+  rows: { student_id: string; student_name: string; student_code: string; status: StudentStatus; guardian_phone: string | null; unpaid_count: number; total_due: string; overdue: string; oldest_due: string | null }[];
+  total_due: string;
+  total_overdue: string;
+}
+
+export interface RefundsReport {
+  refunds: { id: string; refunded_on: string; amount: string; method: PaymentMethod; reason: string; charge_title: string; receipt_label: string; student_name: string; student_code: string }[];
+  total: string;
+}
+
+export const reportsApi = {
+  collections: (q: ReportFilters) => apiFetch<CollectionReport>("/api/v1/fees/reports/collections", { query: { ...q } }),
+  dues: (q: ReportFilters & { former?: "true" }) => apiFetch<DuesReport>("/api/v1/fees/reports/dues", { query: { ...q } }),
+  refunds: (q: ReportFilters) => apiFetch<RefundsReport>("/api/v1/fees/reports/refunds", { query: { ...q } }),
+};
+
+export const reportPrintUrl = (report: FeeReportKind, q: ReportFilters) =>
+  `/app/print/fee-report?${new URLSearchParams({ report, ...Object.fromEntries(Object.entries(q).filter(([, v]) => v)) }).toString()}`;

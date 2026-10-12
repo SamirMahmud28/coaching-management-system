@@ -22,6 +22,8 @@ export interface LoadContext<TSelection> {
   selection: TSelection;
   /** Load at most this many records; the pipeline asks for one more than the cap to detect an oversized run. */
   limit: number;
+  /** The viewer's permissions, for fields only some may see (e.g. guardian mobiles, D24). */
+  permissions: ReadonlySet<string>;
 }
 
 export interface LoadedRecord<TRecord> {
