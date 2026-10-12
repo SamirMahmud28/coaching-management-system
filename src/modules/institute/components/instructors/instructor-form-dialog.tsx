@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { FormField } from "@/components/shared/form-field";
+import { ImageField } from "@/components/shared/image-field";
 import { PasswordField } from "@/components/shared/password-field";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -37,6 +38,7 @@ export function InstructorFormDialog({
   const [email, setEmail] = useState(instructor?.email ?? "");
   const [gender, setGender] = useState<Gender | null>(instructor?.gender ?? null);
   const [address, setAddress] = useState(instructor?.address ?? "");
+  const [photo, setPhoto] = useState<string | null>(instructor?.photo_file_id ?? null);
   const [password, setPassword] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -46,6 +48,7 @@ export function InstructorFormDialog({
     setEmail(instructor?.email ?? "");
     setGender(instructor?.gender ?? null);
     setAddress(instructor?.address ?? "");
+    setPhoto(instructor?.photo_file_id ?? null);
     setPassword("");
   };
 
@@ -53,7 +56,7 @@ export function InstructorFormDialog({
     setSaving(true);
     const ok = await runAction(() =>
       onSubmit(
-        { full_name: fullName.trim(), phone: phone.trim() || null, email: email.trim() || null, gender, address: address.trim() || null },
+        { full_name: fullName.trim(), phone: phone.trim() || null, email: email.trim() || null, gender, address: address.trim() || null, photo_file_id: photo },
         editing ? null : password,
       ),
     );
@@ -84,6 +87,9 @@ export function InstructorFormDialog({
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
+          <FormField id="instructor-photo" label="Photo">
+            <ImageField id="instructor-photo" category="INSTRUCTOR_PHOTO" label="Instructor photo" value={photo} onChange={setPhoto} />
+          </FormField>
           <FormField id="instructor-name" required label="Full name">
             <Input id="instructor-name" value={fullName} onChange={(e) => setFullName(e.target.value)} maxLength={100} />
           </FormField>

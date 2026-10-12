@@ -132,6 +132,7 @@ export interface InstructorFields {
   phone: string | null;
   gender: Gender | null;
   address: string | null;
+  photo_file_id: string | null;
 }
 
 export const instructorsApi = {
@@ -217,6 +218,8 @@ export const academicApi = {
   updateSubject: (id: string, body: NameAndStatus) => apiFetch<SubjectRow>(`/api/v1/subjects/${id}`, { method: "PATCH", body }),
   deleteSubject: (id: string) => apiFetch<void>(`/api/v1/subjects/${id}`, { method: "DELETE" }),
   createBatch: (courseId: string, name: string) => apiFetch<{ id: string }>(`/api/v1/courses/${courseId}/batches`, { body: { name } }),
+  batches: (q: { course_id?: string; status?: AcademicStatus } = {}) =>
+    apiFetch<{ id: string; name: string; status: AcademicStatus; course_id: string; course_name: string; course_code: string }[]>("/api/v1/batches", { query: q }),
   batch: (id: string) => apiFetch<BatchDetail>(`/api/v1/batches/${id}`),
   updateBatch: (id: string, body: NameAndStatus) => apiFetch<unknown>(`/api/v1/batches/${id}`, { method: "PATCH", body }),
   deleteBatch: (id: string) => apiFetch<void>(`/api/v1/batches/${id}`, { method: "DELETE" }),
@@ -228,4 +231,103 @@ export const academicApi = {
     apiFetch<ScheduleSlotRow>(`/api/v1/batch-subjects/${id}/slots`, { body }),
   removeSlot: (id: string) => apiFetch<void>(`/api/v1/schedule-slots/${id}`, { method: "DELETE" }),
   assignableInstructors: () => apiFetch<{ id: string; full_name: string }[]>("/api/v1/academic/assignable-instructors"),
+};
+
+export type StudentStatus = "ACTIVE" | "ON_HOLD" | "COMPLETED" | "LEFT";
+export type MembershipStatus = "ACTIVE" | "COMPLETED" | "LEFT";
+export const GUARDIAN_RELATIONS = ["FATHER", "MOTHER", "BROTHER", "SISTER", "UNCLE", "AUNT", "GRANDPARENT", "OTHER"] as const;
+export type GuardianRelation = (typeof GUARDIAN_RELATIONS)[number];
+
+/** Profile fields an Admin edits. Mobile numbers and the address come back null for viewers without contact access. */
+export interface StudentFields {
+  full_name: string;
+  gender: Gender;
+  date_of_birth: string | null;
+  phone: string | null;
+  school_name: string | null;
+  school_class: string | null;
+  address: string | null;
+  admin_note: string | null;
+  guardian_name: string;
+  guardian_relation: GuardianRelation;
+  guardian_phone: string | null;
+  photo_file_id: string | null;
+}
+
+export interface StudentListRow {
+  id: string;
+  student_code: string;
+  full_name: string;
+  gender: Gender;
+  photo_file_id: string | null;
+  guardian_name: string;
+  guardian_phone: string | null;
+  phone: string | null;
+  status: StudentStatus;
+  batches: { id: string; name: string }[];
+}
+
+export interface MembershipRow {
+  id: string;
+  batch_id: string;
+  batch_name: string;
+  batch_status: AcademicStatus;
+  course_id: string;
+  course_name: string;
+  course_code: string;
+  status: MembershipStatus;
+  started_on: string;
+  ended_on: string | null;
+  roll_number: string | null;
+}
+
+export interface StudentDetail extends StudentFields {
+  id: string;
+  user_id: string;
+  student_code: string;
+  username: string | null;
+  must_change_password: boolean;
+  status: StudentStatus;
+  admission_date: string;
+  admission_course: { id: string; name: string; code: string } | null;
+  created_at: string;
+  memberships: MembershipRow[];
+  status_history: { id: string; from_status: StudentStatus | null; to_status: StudentStatus; reason: string | null; changed_at: string; changed_by_name: string | null }[];
+}
+
+export interface BatchStudentRow {
+  membership_id: string;
+  roll_number: string | null;
+  started_on: string;
+  id: string;
+  student_code: string;
+  full_name: string;
+  status: StudentStatus;
+}
+
+export interface AdmitFields extends Omit<StudentFields, "guardian_phone"> {
+  guardian_phone: string;
+  admission_date: string | null;
+  course_id: string | null;
+  batch_ids: string[];
+  student_code: string | null;
+  temporary_password: string;
+}
+
+export const studentsApi = {
+  list: (q: { q?: string; status?: StudentStatus | "ALL"; course_id?: string; batch_id?: string; no_batch?: "true"; page?: number; page_size?: number }) =>
+    apiFetch<Paginated<StudentListRow>>("/api/v1/students", { query: q }),
+  get: (id: string) => apiFetch<StudentDetail>(`/api/v1/students/${id}`),
+  admit: (body: AdmitFields) => apiFetch<{ student: StudentDetail; temporary_password: string }>("/api/v1/students", { body }),
+  update: (id: string, body: Partial<StudentFields>) => apiFetch<StudentDetail>(`/api/v1/students/${id}`, { method: "PATCH", body }),
+  setStatus: (id: string, status: StudentStatus, reason: string | null) =>
+    apiFetch<StudentDetail>(`/api/v1/students/${id}/status`, { method: "PATCH", body: { status, reason } }),
+  resetPassword: (id: string, temporaryPassword: string) =>
+    apiFetch<{ temporary_password: string }>(`/api/v1/students/${id}/reset-password`, { body: { temporary_password: temporaryPassword } }),
+  join: (id: string, body: { batch_id: string; started_on: string | null; roll_number: string | null }) => apiFetch<unknown>(`/api/v1/students/${id}/memberships`, { body }),
+  setRoll: (membershipId: string, rollNumber: string | null) =>
+    apiFetch<unknown>(`/api/v1/batch-memberships/${membershipId}`, { method: "PATCH", body: { roll_number: rollNumber } }),
+  endMembership: (membershipId: string, body: { status: "COMPLETED" | "LEFT"; ended_on: string | null }) =>
+    apiFetch<void>(`/api/v1/batch-memberships/${membershipId}/end`, { body }),
+  batchStudents: (batchId: string) => apiFetch<BatchStudentRow[]>(`/api/v1/batches/${batchId}/students`),
 };

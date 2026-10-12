@@ -23,12 +23,13 @@ import type { ApiError } from "@/lib/api-client";
 import { runAction } from "@/lib/feedback";
 import { academicApi, WEEKDAYS, type BatchSubjectRow, type Weekday } from "../../api";
 import { instituteKeys } from "../../keys";
+import { BatchStudentsCard } from "../students/batch-students-card";
 import { NameDialog } from "./name-dialog";
 
 const DAY: Record<Weekday, string> = { SAT: "Saturday", SUN: "Sunday", MON: "Monday", TUE: "Tuesday", WED: "Wednesday", THU: "Thursday", FRI: "Friday" };
 const SHORT_DAY = (d: Weekday) => DAY[d].slice(0, 3);
 
-export function BatchPage({ id, canManage }: { id: string; canManage: boolean }) {
+export function BatchPage({ id, canManage, canViewStudents }: { id: string; canManage: boolean; canViewStudents: boolean }) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const query = useQuery({ queryKey: instituteKeys.batch(id), queryFn: () => academicApi.batch(id) });
@@ -143,6 +144,8 @@ export function BatchPage({ id, canManage }: { id: string; canManage: boolean })
           ))}
         </div>
       )}
+
+      {canViewStudents && <BatchStudentsCard batchId={id} />}
 
       <NameDialog
         open={renaming}

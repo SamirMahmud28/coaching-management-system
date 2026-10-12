@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 /** Shows a temporary password once, with Copy (new logins and password resets). Only its hash is stored. */
-export function OneTimePasswordDialog({ value, onClose }: { value: { name: string; password: string } | null; onClose: () => void }) {
+export function OneTimePasswordDialog({ value, onClose }: { value: { name: string; password: string; signInWith?: string } | null; onClose: () => void }) {
   const [copied, setCopied] = useState(false);
   const close = () => {
     setCopied(false);
@@ -19,6 +19,11 @@ export function OneTimePasswordDialog({ value, onClose }: { value: { name: strin
           <DialogTitle>Temporary password for {value?.name}</DialogTitle>
           <DialogDescription>Give it to them through a channel you trust. It won&apos;t be shown again.</DialogDescription>
         </DialogHeader>
+        {value?.signInWith && (
+          <p className="text-sm">
+            Signs in with <span className="font-mono font-medium" data-testid="sign-in-id">{value.signInWith}</span>
+          </p>
+        )}
         <div className="flex items-center justify-between gap-3 rounded-md border bg-muted/40 px-3 py-2">
           <code className="font-mono text-base" data-testid="one-time-password">
             {value?.password}

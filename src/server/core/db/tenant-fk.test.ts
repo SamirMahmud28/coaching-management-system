@@ -15,6 +15,7 @@ const REVIEWED = [
   "institution_profiles.logo_file_id -> files",
   "instructors.photo_file_id -> files",
   "signatures.signature_file_id -> files",
+  "students.photo_file_id -> files",
 ];
 
 const { db, close } = createTestDb();

@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import sharp from "sharp";
-import { and, eq } from "drizzle-orm";
-import { files, instructors } from "../db/schema";
+import { and, eq, exists } from "drizzle-orm";
+import { batchMemberships, batchSubjectInstructors, batchSubjects, files, instructors, students } from "../db/schema";
 import type { DbOrTx } from "../db/types";
 import { NotFoundError, ValidationError } from "../errors";
 import type { PermissionName } from "../rbac/catalog";
@@ -119,17 +119,43 @@ export async function readFileBytes(storage: StorageProvider, row: FileRow): Pro
 }
 
 /**
- * Who may view a file. Photos: whoever may view that kind of person, and instructors for their own batches' students
- * (D24), and the person themself (instructor now; students' own photos come with their records, M6). Logos and
- * signatures print on documents anyone in the institute can open.
+ * Who may view a file. Photos: whoever may view that kind of person, the person themself, and instructors for students
+ * currently in a batch they teach (D24). Logos and signatures print on documents anyone in the institute can open.
  */
 export async function canViewFile(db: DbOrTx, viewer: { tenantId: string; userId: string; permissions: ReadonlySet<string> }, file: FileRow): Promise<boolean> {
   switch (file.category) {
     case "LOGO":
     case "SIGNATURE":
       return true;
-    case "STUDENT_PHOTO":
-      return ["students.view", "batches.own.view"].some((p) => viewer.permissions.has(p));
+    case "STUDENT_PHOTO": {
+      if (viewer.permissions.has("students.view")) return true;
+      const own = and(eq(students.tenantId, viewer.tenantId), eq(students.photoFileId, file.id), eq(students.userId, viewer.userId));
+      const taught = exists(
+        db
+          .select({ one: batchMemberships.id })
+          .from(batchMemberships)
+          .innerJoin(batchSubjects, and(eq(batchSubjects.tenantId, batchMemberships.tenantId), eq(batchSubjects.batchId, batchMemberships.batchId)))
+          .innerJoin(batchSubjectInstructors, and(eq(batchSubjectInstructors.tenantId, batchSubjects.tenantId), eq(batchSubjectInstructors.batchSubjectId, batchSubjects.id)))
+          .innerJoin(instructors, and(eq(instructors.tenantId, batchSubjectInstructors.tenantId), eq(instructors.id, batchSubjectInstructors.instructorId)))
+          .where(
+            and(
+              eq(batchMemberships.tenantId, students.tenantId),
+              eq(batchMemberships.studentId, students.id),
+              eq(batchMemberships.status, "ACTIVE"),
+              eq(instructors.userId, viewer.userId),
+            ),
+          ),
+      );
+      const checks = [
+        viewer.permissions.has("student.self.view") ? own : undefined,
+        viewer.permissions.has("batches.own.view") ? and(eq(students.tenantId, viewer.tenantId), eq(students.photoFileId, file.id), taught) : undefined,
+      ].filter((c) => c !== undefined);
+      for (const where of checks) {
+        const [hit] = await db.select({ id: students.id }).from(students).where(where);
+        if (hit) return true;
+      }
+      return false;
+    }
     case "INSTRUCTOR_PHOTO": {
       if (viewer.permissions.has("instructors.view")) return true;
       const [own] = await db

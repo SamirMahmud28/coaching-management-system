@@ -6,3 +6,4 @@ export * from "./platform-auth";
 export * from "./branding";
 export * from "./instructors";
 export * from "./academic";
+export * from "./students";

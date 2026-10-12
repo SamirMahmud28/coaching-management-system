@@ -123,7 +123,7 @@ function ProfileCard({ profile }: { profile: InstitutionProfileRow }) {
         <form onSubmit={form.handleSubmit(save)} className="space-y-6">
           <FormField id="logo" label="Logo">
             <Controller control={form.control} name="logo_file_id" render={({ field }) => (
-              <ImageField id="logo" category="LOGO" label="School logo" value={field.value || null} onChange={(id) => field.onChange(id ?? "")} />
+              <ImageField id="logo" category="LOGO" label="Institute logo" value={field.value || null} onChange={(id) => field.onChange(id ?? "")} />
             )} />
           </FormField>
           <div className="grid gap-4 sm:grid-cols-2">

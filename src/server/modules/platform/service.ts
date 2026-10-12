@@ -24,6 +24,7 @@ import { validEmail } from "../auth/platform-admin-input";
 import { createPlatformLogin } from "../auth/platform-credentials";
 import { dismissModuleRequest, moduleStatusList, setTenantModules } from "../entitlements/service";
 import { seedBaselineRoles } from "../rbac/service";
+import { isCalendarDate } from "@/lib/dates";
 
 // Callers are responsible for resolving an active Platform Admin; the platform side has no RBAC.
 
@@ -253,12 +254,6 @@ export async function transitionTenantStatus(
 }
 
 /** A real YYYY-MM-DD calendar date (2026-02-30 isn't). */
-function isCalendarDate(value: string): boolean {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
-  const date = new Date(`${value}T00:00:00Z`);
-  return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value;
-}
-
 /** Display-only "paid until" date (D4): nothing is enforced from it in Phase 1. `null` clears it. */
 export async function setTenantPaidUntil(db: DbOrTx, params: { tenantId: string; paidUntil: string | null; platformUserId: string }) {
   if (params.paidUntil !== null && !isCalendarDate(params.paidUntil)) {
