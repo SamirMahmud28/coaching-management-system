@@ -1,3 +1,5 @@
+import { formatTaka, toPoisha } from "./money";
+
 const date = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric" });
 const dateTime = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
 
@@ -15,3 +17,6 @@ export const describeReference = (type: string, count: number) => {
   const noun = type.toLowerCase().replaceAll("_", " ");
   return `${count} ${count === 1 || noun.endsWith("s") ? noun : /(x|ch|sh)$/.test(noun) ? `${noun}es` : `${noun}s`}`;
 };
+
+/** "2000.50" (taka as the API sends it) → "৳2,000.50". */
+export const formatAmount = (taka: string | null | undefined) => (taka == null || taka === "" ? "—" : formatTaka(toPoisha(taka)));

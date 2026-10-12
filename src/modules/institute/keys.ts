@@ -17,4 +17,7 @@ export const instituteKeys = {
   students: (params?: object) => ["institute-students", params ?? {}],
   student: (id: string) => ["institute-student", id],
   batchStudents: (id: string) => ["institute-batch-students", id],
+  feeItems: (params?: object) => ["institute-fee-items", params ?? {}],
+  feeSettings: () => ["institute-fee-settings"],
+  studentFeeAmounts: (id: string) => ["institute-student-fee-amounts", id],
 };

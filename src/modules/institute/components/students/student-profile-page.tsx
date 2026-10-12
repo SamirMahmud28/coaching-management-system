@@ -23,6 +23,7 @@ import { formatDate, formatDateTime } from "@/lib/format";
 import { runAction } from "@/lib/feedback";
 import { academicApi, studentsApi, type MembershipRow, type StudentDetail, type StudentStatus } from "../../api";
 import { instituteKeys } from "../../keys";
+import { StudentFeeAmountsCard } from "../fees/student-fee-amounts-card";
 import { GENDER_LABEL, RELATION_LABEL, StudentFieldsForm, studentFieldsFrom, studentFormFrom, studentFormMissing, type StudentFormValues } from "./student-fields";
 
 const STATUS_LABEL: Record<StudentStatus, string> = { ACTIVE: "Active", ON_HOLD: "On hold", COMPLETED: "Completed", LEFT: "Left" };
@@ -40,6 +41,9 @@ export interface StudentPermissions {
   canSetStatus: boolean;
   canManageBatches: boolean;
   canSeeContacts: boolean;
+  /** Fees module on and fees.view held. */
+  canViewFees: boolean;
+  canAdjustFees: boolean;
 }
 
 export function StudentProfilePage({ id, perms }: { id: string; perms: StudentPermissions }) {
@@ -156,6 +160,8 @@ export function StudentProfilePage({ id, perms }: { id: string; perms: StudentPe
               )}
             </CardContent>
           </Card>
+
+          {perms.canViewFees && <StudentFeeAmountsCard studentId={id} canAdjust={perms.canAdjustFees} />}
 
           <Card>
             <CardHeader>

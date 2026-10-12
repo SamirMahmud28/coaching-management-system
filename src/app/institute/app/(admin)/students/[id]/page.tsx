@@ -19,6 +19,9 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         canSetStatus: permissions.has("students.status"),
         canManageBatches: permissions.has("students.batches.manage") && permissions.has("academic.view"),
         canSeeContacts: permissions.has("students.contact.view"),
+        // Permissions are already limited to active modules, so these are false while Fees is off.
+        canViewFees: permissions.has("fees.view"),
+        canAdjustFees: permissions.has("fees.adjust"),
       }}
     />
   );

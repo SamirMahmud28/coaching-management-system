@@ -64,8 +64,9 @@ test("navigation and direct URLs follow the institute's modules (D5, investigati
   }
   await expect(nav.getByRole("link", { name: "Exams" })).toHaveCount(0);
 
+  // An enabled module's own page opens (Fees has its screens since F2; other modules still show a placeholder).
   await page.goto(url("/app/fees"));
-  await expect(page.getByText("Coming soon")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Fees", level: 1 })).toBeVisible();
   // A switched-off module's page doesn't exist for this institute.
   const res = await page.goto(url("/app/exams"));
   expect(res?.status()).toBe(404);

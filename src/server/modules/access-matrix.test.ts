@@ -15,7 +15,10 @@ import * as academic from "./academic/service";
 import { createAcademicHandlers } from "./academic/http";
 import { createLogin } from "./auth/credentials";
 import { createTenantAuth } from "./auth/tenant-auth";
+import { createFeesHandlers } from "./fees/http";
 import { createFilesHandlers } from "./files/http";
+import { setModules } from "../core/testing/modules";
+import * as feeSetup from "./fees/setup";
 import { createInstituteHandlers } from "./institute/http";
 import { createInstructorHandlers } from "./instructors/http";
 import { seedBaselineRoles } from "./rbac/service";
@@ -36,8 +39,8 @@ const auth = createTenantAuth(db, { secret: "test-secret-".padEnd(40, "x"), host
 let storage: LocalDiskStorage;
 
 const DUMMY = "00000000-0000-4000-8000-000000000000";
-type Entity = "COURSE" | "SUBJECT" | "BATCH" | "BATCH_SUBJECT" | "SCHEDULE_SLOT" | "STUDENT" | "MEMBERSHIP" | "INSTRUCTOR" | "USER" | "SIGNATURE" | "FILE";
-type Factory = "academic" | "students" | "instructors" | "institute" | "settings" | "files";
+type Entity = "COURSE" | "SUBJECT" | "BATCH" | "BATCH_SUBJECT" | "SCHEDULE_SLOT" | "STUDENT" | "MEMBERSHIP" | "INSTRUCTOR" | "USER" | "SIGNATURE" | "FILE" | "FEE_ITEM" | "STUDENT_FEE_AMOUNT";
+type Factory = "academic" | "students" | "instructors" | "institute" | "settings" | "files" | "fees";
 
 interface Entry {
   factory: Factory;
@@ -117,6 +120,17 @@ const HANDLERS: Entry[] = [
   // files: any institute user may call; what they may upload or view is checked per file (canUpload / canViewFile)
   { factory: "files", name: "upload", method: "POST", permission: "signed-in", body: {} },
   { factory: "files", name: "serve", method: "GET", permission: "signed-in", id: "FILE" },
+  // fees (paid module): every handler is also refused while the module is off
+  { factory: "fees", name: "listItems", method: "GET", permission: "fees.view" },
+  { factory: "fees", name: "createItem", method: "POST", permission: "fees.configure", body: { course_id: DUMMY, kind: "MONTHLY", name: "Matrix fee", amount: "100" } },
+  { factory: "fees", name: "updateItem", method: "PATCH", permission: "fees.configure", id: "FEE_ITEM", body: { amount: "200" } },
+  { factory: "fees", name: "setItemStatus", method: "PATCH", permission: "fees.configure", id: "FEE_ITEM", body: { status: "ARCHIVED" } },
+  { factory: "fees", name: "deleteItem", method: "DELETE", permission: "fees.configure", id: "FEE_ITEM" },
+  { factory: "fees", name: "studentAmounts", method: "GET", permission: "fees.view", id: "STUDENT" },
+  { factory: "fees", name: "setStudentAmount", method: "PUT", permission: "fees.adjust", id: "STUDENT", body: { fee_item_id: DUMMY, amount: "100", reason: "Sibling" } },
+  { factory: "fees", name: "removeStudentAmount", method: "DELETE", permission: "fees.adjust", id: "STUDENT_FEE_AMOUNT" },
+  { factory: "fees", name: "getSettings", method: "GET", permission: "fees.view" },
+  { factory: "fees", name: "saveSettings", method: "PUT", permission: "fees.configure", body: { receipt_prefix: "MX" } },
 ];
 /** Handlers deliberately outside the matrix, with the reason. */
 const OUTSIDE: Partial<Record<Factory, Record<string, string>>> = { files: { publicLogo: "public by design: the host's logo while its public page is shown (D58)" } };
@@ -133,12 +147,13 @@ function call(entry: Entry, sub: string, cookie: string | null, id = DUMMY) {
   });
   return factories[entry.factory][entry.name](request, { id });
 }
-async function outcome(res: Response): Promise<"unauthenticated" | "denied" | "suspended" | "passed"> {
+async function outcome(res: Response): Promise<"unauthenticated" | "denied" | "suspended" | "module-off" | "passed"> {
   if (res.status === 401) return "unauthenticated";
   if (res.status !== 403) return "passed";
   const code = ((await res.json()) as { error: { code: string } }).error.code;
   if (code === "PERM_DENIED") return "denied";
   if (code === "TENANT_SUSPENDED") return "suspended";
+  if (code === "MODULE_INACTIVE") return "module-off";
   return "passed"; // e.g. PERM_ESCALATION: past the guard, refused by the service
 }
 
@@ -177,6 +192,7 @@ beforeAll(async () => {
     institute: createInstituteHandlers({ db, auth, host }) as unknown as Handlers,
     settings: createSettingsHandlers({ db, auth, host }) as unknown as Handlers,
     files: createFilesHandlers({ db, auth, host, storage }) as unknown as Handlers,
+    fees: createFeesHandlers({ db, auth, host }) as unknown as Handlers,
   };
 
   const institute = async (sub: string) => {
@@ -190,6 +206,7 @@ beforeAll(async () => {
 
   // Institute A: one user per baseline role, and one per guarded permission holding only that permission.
   const inst = await institute("matrix-a");
+  await setModules(db, inst.tenant.id, ["fees"]);
   a = { id: inst.tenant.id, sub: "matrix-a" };
   const perms = await testDb.select().from(permissionRows);
   for (const role of BASELINE) {
@@ -213,6 +230,7 @@ beforeAll(async () => {
 
   // Institute B: one record of every kind a path id can name.
   const b = await institute("matrix-b");
+  await setModules(db, b.tenant.id, ["fees"]);
   const actor = { tenantId: b.tenant.id, userId: b.owner.id };
   const course = await academic.createCourse(db, actor, { name: "B course", code: "BC" });
   const subject = await academic.createSubject(db, actor, course.id, { name: "B subject" });
@@ -228,9 +246,11 @@ beforeAll(async () => {
   const [signature] = await testDb.insert(signatures).values({ tenantId: b.tenant.id, title: "Head", personName: "H" }).returning();
   const bytes = await sharp({ create: { width: 20, height: 20, channels: 3, background: "#000" } }).jpeg().toBuffer();
   const file = await uploadFile(db, storage, actor, { category: "LOGO", filename: "b.jpg", bytes });
+  const feeItem = await feeSetup.createFeeItem(db, actor, { courseId: course.id, kind: "MONTHLY", name: "B tuition", amount: "1000" });
+  const studentAmount = await feeSetup.setStudentFeeAmount(db, actor, s.id, { feeItemId: feeItem.id, amount: "500", reason: "Sibling" });
   Object.assign(foreign, {
     COURSE: course.id, SUBJECT: subject.id, BATCH: batch.id, BATCH_SUBJECT: batchSubject.id, SCHEDULE_SLOT: slot.id, STUDENT: s.id, MEMBERSHIP: membership.id,
-    INSTRUCTOR: teacher.id, USER: teacherLogin.id, SIGNATURE: signature.id, FILE: file.id,
+    INSTRUCTOR: teacher.id, USER: teacherLogin.id, SIGNATURE: signature.id, FILE: file.id, FEE_ITEM: feeItem.id, STUDENT_FEE_AMOUNT: studentAmount.id,
   });
 }, 120_000);
 
@@ -257,7 +277,7 @@ describe("access matrix: catalogue", () => {
       }
     };
     await walk(root);
-    const moduleOf: Record<string, Factory> = { academic: "academic", students: "students", instructors: "instructors", institute: "institute", settings: "settings", files: "files" };
+    const moduleOf: Record<string, Factory> = { academic: "academic", students: "students", instructors: "instructors", institute: "institute", settings: "settings", files: "files", fees: "fees" };
     const seen: string[] = [];
     for (const file of files) {
       const rel = path.relative(root, file).replaceAll("\\", "/");
@@ -302,6 +322,20 @@ describe("access matrix: who passes the guard", () => {
       }
     }
   }, 120_000);
+});
+
+describe("access matrix: paid module switched off", () => {
+  it("refuses every handler of a switched-off module, even to the Owner, and leaves Core alone", async () => {
+    await setModules(db, a.id, ["fees"], false);
+    try {
+      for (const entry of HANDLERS) {
+        const got = await outcome(await call(entry, a.sub, cookies[INSTITUTE_OWNER_ROLE]));
+        expect(got, `${entry.factory}.${entry.name} with fees off`).toBe(entry.factory === "fees" ? "module-off" : "passed");
+      }
+    } finally {
+      await setModules(db, a.id, ["fees"]);
+    }
+  });
 });
 
 describe("access matrix: institute state and other institutes", () => {

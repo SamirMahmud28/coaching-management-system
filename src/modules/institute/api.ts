@@ -331,3 +331,44 @@ export const studentsApi = {
     apiFetch<void>(`/api/v1/batch-memberships/${membershipId}/end`, { body }),
   batchStudents: (batchId: string) => apiFetch<BatchStudentRow[]>(`/api/v1/batches/${batchId}/students`),
 };
+
+export type FeeItemKind = "ADMISSION" | "MONTHLY" | "ONE_TIME";
+
+export interface FeeItemRow {
+  id: string;
+  course_id: string;
+  course_name: string;
+  course_code: string;
+  course_due_day: number | null;
+  kind: FeeItemKind;
+  name: string;
+  /** Taka as text, e.g. "2000.00". */
+  amount: string;
+  status: AcademicStatus;
+}
+
+export interface StudentFeeAmountRow {
+  fee_item_id: string;
+  course_name: string;
+  kind: FeeItemKind;
+  name: string;
+  course_amount: string;
+  /** The student's own amount row, when set. */
+  id: string | null;
+  amount: string | null;
+  reason: string | null;
+}
+
+export const feesApi = {
+  items: (q: { course_id?: string; status?: AcademicStatus } = {}) => apiFetch<FeeItemRow[]>("/api/v1/fees/items", { query: q }),
+  createItem: (body: { course_id: string; kind: FeeItemKind; name: string; amount: string }) => apiFetch<FeeItemRow>("/api/v1/fees/items", { body }),
+  updateItem: (id: string, body: { name?: string; amount?: string }) => apiFetch<FeeItemRow>(`/api/v1/fees/items/${id}`, { method: "PATCH", body }),
+  setItemStatus: (id: string, status: AcademicStatus) => apiFetch<FeeItemRow>(`/api/v1/fees/items/${id}/status`, { method: "PATCH", body: { status } }),
+  deleteItem: (id: string) => apiFetch<void>(`/api/v1/fees/items/${id}`, { method: "DELETE" }),
+  studentAmounts: (studentId: string) => apiFetch<StudentFeeAmountRow[]>(`/api/v1/students/${studentId}/fee-amounts`),
+  setStudentAmount: (studentId: string, body: { fee_item_id: string; amount: string; reason: string }) =>
+    apiFetch<unknown>(`/api/v1/students/${studentId}/fee-amounts`, { method: "PUT", body }),
+  removeStudentAmount: (id: string) => apiFetch<void>(`/api/v1/student-fee-amounts/${id}`, { method: "DELETE" }),
+  settings: () => apiFetch<{ receipt_prefix: string }>("/api/v1/fees/settings"),
+  saveSettings: (receiptPrefix: string) => apiFetch<{ receipt_prefix: string }>("/api/v1/fees/settings", { method: "PUT", body: { receipt_prefix: receiptPrefix } }),
+};

@@ -58,3 +58,23 @@ export async function setInstituteStatus(subdomain: string, status: "ACTIVE" | "
     await close();
   }
 }
+
+/** Switches modules on or off directly (what the Super Admin's module toggles do), e.g. `{ fees: false }`. */
+export async function setInstituteModules(subdomain: string, changes: Record<string, boolean>) {
+  const { config: loadEnv } = await import("dotenv");
+  loadEnv({ path: ".env.test", override: true, quiet: true });
+  const { createTestDb } = await import("../src/server/core/testing/db");
+  const { sql } = await import("drizzle-orm");
+  const { db, close } = createTestDb();
+  try {
+    for (const [key, enabled] of Object.entries(changes)) {
+      await db.execute(sql`
+        insert into tenant_modules (tenant_id, module_id, enabled, enabled_at)
+        select t.id, m.id, ${enabled}, case when ${enabled} then now() end from tenants t, modules m
+        where t.subdomain = ${subdomain} and m.key = ${key}
+        on conflict (tenant_id, module_id) do update set enabled = excluded.enabled, enabled_at = excluded.enabled_at`);
+    }
+  } finally {
+    await close();
+  }
+}
