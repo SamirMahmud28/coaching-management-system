@@ -23,6 +23,10 @@ const STATUSES: Record<string, { label: string; tone: Tone }> = {
   FULFILLED: { label: "Fulfilled", tone: "success" },
   DISMISSED: { label: "Dismissed", tone: "secondary" },
   ENABLED: { label: "Enabled", tone: "success" },
+  APPROVED: { label: "Approved", tone: "success" },
+  REJECTED: { label: "Rejected", tone: "destructive" },
+  WITHDRAWN: { label: "Withdrawn", tone: "secondary" },
+  REVOKED: { label: "Revoked", tone: "warning" },
 };
 
 export function StatusBadge({ status, label, tone }: { status: string; label?: string; tone?: Tone }) {

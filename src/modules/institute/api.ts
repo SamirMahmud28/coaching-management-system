@@ -587,3 +587,43 @@ export const attendanceApi = {
   addExtra: (batchSubjectId: string, body: ClassRef & { ends_at: string }) =>
     apiFetch<{ id: string; date: string; starts_at: string; ends_at: string }>(`${registerPath(batchSubjectId)}/extra-classes`, { body }),
 };
+
+// Leave (D89–D93).
+export type LeaveStatus = "PENDING" | "APPROVED" | "REJECTED" | "WITHDRAWN" | "REVOKED";
+
+export interface LeaveRow {
+  id: string;
+  student_id: string;
+  student_code: string;
+  student_name: string;
+  from_date: string;
+  to_date: string;
+  days: number;
+  reason: string;
+  source: "STUDENT" | "OFFICE";
+  status: LeaveStatus;
+  applied_at: string;
+  applied_by_name?: string | null;
+  decided_at: string | null;
+  decided_by_name?: string | null;
+  decision_note: string | null;
+  revoked_at: string | null;
+  revoke_reason: string | null;
+}
+
+export interface LeaveDates {
+  from_date: string;
+  to_date: string;
+  reason: string;
+}
+
+export const leaveApi = {
+  list: (q: { status?: LeaveStatus; student_id?: string } = {}) => apiFetch<LeaveRow[]>("/api/v1/leave", { query: q }),
+  enter: (studentId: string, body: LeaveDates) => apiFetch<LeaveRow & { classes_excused: number }>(`/api/v1/students/${studentId}/leave`, { body }),
+  decide: (id: string, body: { decision: "APPROVE" | "REJECT"; note?: string | null }) =>
+    apiFetch<LeaveRow & { classes_excused: number }>(`/api/v1/leave/${id}/decision`, { body }),
+  revoke: (id: string, reason: string) => apiFetch<LeaveRow & { classes_restored: number }>(`/api/v1/leave/${id}/revoke`, { body: { reason } }),
+  mine: () => apiFetch<LeaveRow[]>("/api/v1/me/leave"),
+  apply: (body: LeaveDates) => apiFetch<LeaveRow>("/api/v1/me/leave", { body }),
+  withdraw: (id: string) => apiFetch<void>(`/api/v1/me/leave/${id}/withdraw`, { method: "POST" }),
+};

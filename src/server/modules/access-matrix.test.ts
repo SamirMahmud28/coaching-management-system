@@ -22,6 +22,7 @@ import { setModules } from "../core/testing/modules";
 import * as feeSetup from "./fees/setup";
 import * as feeCharges from "./fees/charges";
 import * as feePayments from "./fees/payments";
+import * as leave from "./attendance/leave";
 import { todayInDhaka } from "@/lib/dates";
 import { createInstituteHandlers } from "./institute/http";
 import { createInstructorHandlers } from "./instructors/http";
@@ -43,7 +44,7 @@ const auth = createTenantAuth(db, { secret: "test-secret-".padEnd(40, "x"), host
 let storage: LocalDiskStorage;
 
 const DUMMY = "00000000-0000-4000-8000-000000000000";
-type Entity = "COURSE" | "SUBJECT" | "BATCH" | "BATCH_SUBJECT" | "SCHEDULE_SLOT" | "STUDENT" | "MEMBERSHIP" | "INSTRUCTOR" | "USER" | "SIGNATURE" | "FILE" | "FEE_ITEM" | "STUDENT_FEE_AMOUNT" | "FEE_RUN" | "FEE_CHARGE" | "FEE_PAYMENT";
+type Entity = "COURSE" | "SUBJECT" | "BATCH" | "BATCH_SUBJECT" | "SCHEDULE_SLOT" | "STUDENT" | "MEMBERSHIP" | "INSTRUCTOR" | "USER" | "SIGNATURE" | "FILE" | "FEE_ITEM" | "STUDENT_FEE_AMOUNT" | "FEE_RUN" | "FEE_CHARGE" | "FEE_PAYMENT" | "LEAVE";
 type Factory = "academic" | "students" | "instructors" | "institute" | "settings" | "files" | "fees" | "attendance";
 /** Paid modules: each handler of these factories is refused while its module is off. */
 const PAID: Partial<Record<Factory, "fees" | "attendance">> = { fees: "fees", attendance: "attendance" };
@@ -161,6 +162,14 @@ const HANDLERS: Entry[] = [
   { factory: "attendance", name: "saveRegister", method: "PUT", permission: "attendance.take", id: "BATCH_SUBJECT", body: { date: TODAY, starts_at: "09:00", marks: [] } },
   { factory: "attendance", name: "markNotHeld", method: "POST", permission: "attendance.take", id: "BATCH_SUBJECT", body: { date: TODAY, starts_at: "09:00", reason: "Holiday" } },
   { factory: "attendance", name: "addExtraClass", method: "POST", permission: "attendance.take", id: "BATCH_SUBJECT", body: { date: TODAY, starts_at: "18:00", ends_at: "19:00" } },
+  { factory: "attendance", name: "listLeave", method: "GET", permission: "leave.manage" },
+  { factory: "attendance", name: "enterLeave", method: "POST", permission: "leave.manage", id: "STUDENT", body: { from_date: TODAY, to_date: TODAY, reason: "Fever" } },
+  { factory: "attendance", name: "decideLeave", method: "POST", permission: "leave.manage", id: "LEAVE", body: { decision: "APPROVE" } },
+  { factory: "attendance", name: "revokeLeave", method: "POST", permission: "leave.manage", id: "LEAVE", body: { reason: "Entered by mistake" } },
+  // a student's own leave: callers without a student record of their own get 404 from the service
+  { factory: "attendance", name: "myLeave", method: "GET", permission: "leave.self.apply" },
+  { factory: "attendance", name: "applyForLeave", method: "POST", permission: "leave.self.apply", body: { from_date: TODAY, to_date: TODAY, reason: "Fever" } },
+  { factory: "attendance", name: "withdrawLeave", method: "POST", permission: "leave.self.apply", id: "LEAVE" },
 ];
 /** Handlers deliberately outside the matrix, with the reason. */
 const OUTSIDE: Partial<Record<Factory, Record<string, string>>> = { files: { publicLogo: "public by design: the host's logo while its public page is shown (D58)" } };
@@ -283,9 +292,10 @@ beforeAll(async () => {
   const run = await feeCharges.confirmGeneration(db, actor, { feeItemId: feeItem.id, period: todayInDhaka().slice(0, 7) });
   const [charge] = await feeCharges.listStudentCharges(db, b.tenant.id, s.id);
   const { payment } = await feePayments.collectPayment(db, actor, s.id, { chargeIds: [charge.id], method: "CASH", idempotencyKey: "00000000-0000-4000-8000-0000000000bb" });
+  const leaveRow = await leave.enterLeave(db, actor, s.id, { fromDate: "2026-01-05", toDate: "2026-01-06", reason: "Fever" });
   Object.assign(foreign, {
     COURSE: course.id, SUBJECT: subject.id, BATCH: batch.id, BATCH_SUBJECT: batchSubject.id, SCHEDULE_SLOT: slot.id, STUDENT: s.id, MEMBERSHIP: membership.id,
-    INSTRUCTOR: teacher.id, USER: teacherLogin.id, SIGNATURE: signature.id, FILE: file.id, FEE_ITEM: feeItem.id, STUDENT_FEE_AMOUNT: studentAmount.id, FEE_RUN: run.id, FEE_CHARGE: charge.id, FEE_PAYMENT: payment.id,
+    INSTRUCTOR: teacher.id, USER: teacherLogin.id, SIGNATURE: signature.id, FILE: file.id, FEE_ITEM: feeItem.id, STUDENT_FEE_AMOUNT: studentAmount.id, FEE_RUN: run.id, FEE_CHARGE: charge.id, FEE_PAYMENT: payment.id, LEAVE: leaveRow.id,
   });
 }, 120_000);
 

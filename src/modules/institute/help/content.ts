@@ -33,7 +33,9 @@ export type HelpTopicKey =
   | "fees-generate"
   | "fees-student"
   | "fees-reports"
-  | "attendance-registers";
+  | "attendance-registers"
+  | "attendance-leave"
+  | "leave-student";
 
 export const HELP_TOPICS: readonly HelpTopic[] = [
   {
@@ -354,6 +356,53 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
       { q: "I forgot to take yesterday's register.", a: "Ask an Owner or Admin. They can open yesterday's class and take it, with a reason such as 'Taken on paper'." },
       { q: "A student is missing from the register.", a: "They are either On Hold, not in this batch, or joined the batch after this day. Check the student's batches on their profile." },
       { q: "I marked a class as not held by mistake.", a: "On the same day, open it and take the register — it becomes a normal class again. Later, ask an Admin." },
+    ],
+  },
+  {
+    key: "attendance-leave",
+    title: "Student leave",
+    area: "Attendance",
+    permission: "leave.manage",
+    summary: "Students apply for leave in their portal and you approve or reject it here. You can also enter leave yourself when a guardian calls. Approved leave marks the student Excused for those days.",
+    steps: [
+      "Open Attendance → Leave. Applications waiting for a decision are shown first.",
+      "Click Approve or Reject. You can add a note — the student sees it.",
+      "When a guardian asks by phone or in person, click Enter leave, find the student, choose the first and last day and give the reason. It is approved at once.",
+      "If leave was approved by mistake, or the student came after all, click Revoke and give the reason.",
+    ],
+    rules: [
+      "Approved leave makes the student Excused in every class on those days — registers already taken change, and registers taken later start with the student as Excused.",
+      "Excused classes count neither for nor against the attendance percentage.",
+      "Revoking leave puts each class back as it was marked before, or unmarked if nobody marked it. The leave stays on record as revoked.",
+      "A student can apply for up to 7 days back, or any future date. The office can enter any dates.",
+      "A student can't have two applications covering the same day while one is waiting or approved.",
+      "Students can withdraw an application only while it's waiting. Rejected, withdrawn and revoked leave change nothing on the registers.",
+      "Every decision is recorded in the audit log.",
+    ],
+    faqs: [
+      { q: "A student came to class on a day they had leave.", a: "Revoke the leave with a reason (or enter a shorter leave after revoking). The classes go back to how they were marked." },
+      { q: "The register still shows the student Present on a leave day.", a: "Only approved leave excuses classes. Check the application isn't still waiting for a decision." },
+    ],
+  },
+  {
+    key: "leave-student",
+    title: "Leave in the student portal",
+    area: "Attendance",
+    permission: "leave.self.apply",
+    summary: "Apply for leave for days you'll miss, or missed in the last 7 days. The office approves or rejects it; approved leave marks you Excused for those days.",
+    steps: [
+      "Choose the first and last day, write the reason, and click Apply.",
+      "Your application shows as Waiting for a decision until the office decides.",
+      "If you no longer need it, click Withdraw while it's still waiting.",
+    ],
+    rules: [
+      "You can apply for up to 7 days back, or any day in the future. For earlier days, ask the office.",
+      "You can't apply twice for the same day while an application is waiting or approved.",
+      "Approved leave marks you Excused, which doesn't lower your attendance percentage.",
+      "The office may add a note to its decision; you'll see it here.",
+    ],
+    faqs: [
+      { q: "My leave was rejected but I still can't come.", a: "Talk to the office. They can enter leave for you, for any dates." },
     ],
   },
 ];

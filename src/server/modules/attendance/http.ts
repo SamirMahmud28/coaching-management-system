@@ -6,6 +6,7 @@ import type { PermissionName } from "../../core/rbac/catalog";
 import type { HostConfig } from "../../core/tenancy/host";
 import type { TenantAuth } from "../auth/tenant-auth";
 import { withAuthorization } from "../authorization/service";
+import * as leave from "./leave";
 import * as registers from "./registers";
 
 export interface AttendanceHttpDeps {
@@ -27,8 +28,13 @@ const registerBody = z.object({
 });
 const notHeldBody = z.object({ date, starts_at: time, reason: z.string().max(300) });
 const extraBody = z.object({ date, starts_at: time, ends_at: time });
+const leaveQuery = z.object({ status: z.enum(leave.LEAVE_STATUSES).optional(), student_id: z.uuid().optional() });
+const leaveBody = z.object({ from_date: date, to_date: date, reason: z.string().max(300) });
+const decisionBody = z.object({ decision: z.enum(["APPROVE", "REJECT"]), note: z.string().max(300).nullable().optional() });
+const revokeBody = z.object({ reason: z.string().max(300) });
 
 export function createAttendanceHandlers({ db, auth, host }: AttendanceHttpDeps) {
+  const noContent = () => new Response(null, { status: 204 });
   const authorize = async (request: Request, permission: PermissionName) => {
     const ctx = await withAuthorization({ db, auth, headers: request.headers, host, method: request.method, permission });
     return { tenantId: ctx.tenant.id, userId: ctx.userId, permissions: ctx.permissions };
@@ -83,6 +89,61 @@ export function createAttendanceHandlers({ db, auth, host }: AttendanceHttpDeps)
         const viewer = await authorize(request, "attendance.take");
         const b = await parseBody(request, extraBody);
         return json(await registers.addExtraClass(db, viewer, { batchSubjectId: pathId(params.id, "BATCH_SUBJECT"), date: b.date, startsAt: b.starts_at, endsAt: b.ends_at }), 201);
+      }),
+
+    // GET /api/v1/leave?status=&student_id=
+    listLeave: (request: Request) =>
+      handle(async () => {
+        const actor = await authorize(request, "leave.manage");
+        const q = parseQuery(request, leaveQuery);
+        return json(await leave.listLeave(db, actor.tenantId, { status: q.status, studentId: q.student_id }));
+      }),
+
+    // POST /api/v1/students/:id/leave — the office enters leave, approved at once (D90)
+    enterLeave: (request: Request, params: { id: string }) =>
+      handle(async () => {
+        const actor = await authorize(request, "leave.manage");
+        const b = await parseBody(request, leaveBody);
+        return json(await leave.enterLeave(db, actor, pathId(params.id, "STUDENT"), { fromDate: b.from_date, toDate: b.to_date, reason: b.reason }), 201);
+      }),
+
+    // POST /api/v1/leave/:id/decision
+    decideLeave: (request: Request, params: { id: string }) =>
+      handle(async () => {
+        const actor = await authorize(request, "leave.manage");
+        const b = await parseBody(request, decisionBody);
+        return json(await leave.decideLeave(db, actor, pathId(params.id, "LEAVE"), { decision: b.decision, note: b.note }));
+      }),
+
+    // POST /api/v1/leave/:id/revoke
+    revokeLeave: (request: Request, params: { id: string }) =>
+      handle(async () => {
+        const actor = await authorize(request, "leave.manage");
+        const b = await parseBody(request, revokeBody);
+        return json(await leave.revokeLeave(db, actor, pathId(params.id, "LEAVE"), { reason: b.reason }));
+      }),
+
+    // GET /api/v1/me/leave — the signed-in student's own applications
+    myLeave: (request: Request) =>
+      handle(async () => {
+        const actor = await authorize(request, "leave.self.apply");
+        return json(await leave.myLeave(db, actor.tenantId, actor.userId));
+      }),
+
+    // POST /api/v1/me/leave
+    applyForLeave: (request: Request) =>
+      handle(async () => {
+        const actor = await authorize(request, "leave.self.apply");
+        const b = await parseBody(request, leaveBody);
+        return json(await leave.applyForLeave(db, actor, { fromDate: b.from_date, toDate: b.to_date, reason: b.reason }), 201);
+      }),
+
+    // POST /api/v1/me/leave/:id/withdraw
+    withdrawLeave: (request: Request, params: { id: string }) =>
+      handle(async () => {
+        const actor = await authorize(request, "leave.self.apply");
+        await leave.withdrawLeave(db, actor, pathId(params.id, "LEAVE"));
+        return noContent();
       }),
   };
 }

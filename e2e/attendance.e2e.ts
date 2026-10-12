@@ -122,6 +122,64 @@ test("the Owner takes a missed register with a reason, marks a class not held, a
   await expect(classes.getByText("No class held")).toBeVisible();
 });
 
+test("a student applies for leave in their portal (D89, D92)", async ({ page }) => {
+  await signIn(page, codes[0], "Student123");
+  await expect(page).toHaveURL(url("/app/student"));
+  await page.getByRole("link", { name: "Leave", exact: true }).click();
+  await page.getByLabel("Reason").fill("Fever");
+  await page.getByRole("button", { name: "Apply" }).click();
+  await expect(page.getByText("Leave application sent. The office will decide on it.")).toBeVisible();
+  await expect(page.getByTestId("my-leave").getByText("Waiting for a decision")).toBeVisible();
+});
+
+test("the Owner approves it, the register shows the student Excused, then revokes it (D90, D91, D93)", async ({ page }) => {
+  await signIn(page, INSTITUTE.ownerEmail, OWNER_PASSWORD);
+  await expect(page).toHaveURL(url("/app"));
+  await page.goto(url("/app/attendance"));
+  await page.getByRole("link", { name: "Leave", exact: true }).click();
+  const row = page.getByTestId(`leave-${codes[0]}`);
+  await row.getByRole("button", { name: "Approve" }).click();
+  await page.getByLabel("Note for the student (optional)").fill("Get well soon");
+  await page.getByRole("alertdialog").getByRole("button", { name: "Approve" }).click();
+  // Today's Physics register was taken earlier, so it changes at once.
+  await expect(page.getByText("Leave approved. 1 class already taken marked Excused.")).toBeVisible();
+
+  await page.goto(url("/app/attendance"));
+  await page.getByTestId("day-classes").getByRole("link", { name: /Physics/ }).first().click();
+  await expect(page.getByTestId(`row-${codes[0]}`).getByText("Excused · on leave")).toBeVisible();
+
+  await page.goto(url("/app/attendance/leave"));
+  await page.getByRole("button", { name: "Approved", exact: true }).click();
+  await page.getByTestId(`leave-${codes[0]}`).getByRole("button", { name: "Revoke" }).click();
+  await page.getByRole("alertdialog").getByLabel("Reason").fill("She attended");
+  await page.getByRole("button", { name: "Revoke leave" }).click();
+  await expect(page.getByText("Leave revoked. 1 class restored.")).toBeVisible();
+});
+
+test("the Owner enters leave for a student who phoned, approved at once (D89, D90)", async ({ page }) => {
+  await signIn(page, INSTITUTE.ownerEmail, OWNER_PASSWORD);
+  await expect(page).toHaveURL(url("/app"));
+  await page.goto(url("/app/attendance/leave"));
+  await page.getByRole("button", { name: "Enter leave" }).click();
+  const dialog = page.getByRole("alertdialog");
+  await dialog.getByLabel("Student", { exact: true }).fill("Bushra");
+  await dialog.getByRole("button", { name: /Bushra Khan/ }).click();
+  await dialog.getByLabel("Reason").fill("Guardian phoned: family wedding");
+  await dialog.getByRole("button", { name: "Enter leave" }).click();
+  await expect(page.getByText(/Leave entered for Bushra Khan/)).toBeVisible();
+  await page.getByRole("button", { name: "Approved", exact: true }).click();
+  await expect(page.getByTestId(`leave-${codes[1]}`).getByText(/Entered by/)).toBeVisible();
+});
+
+test("the student sees the revoked leave with its reason", async ({ page }) => {
+  await signIn(page, codes[0], "Student123");
+  await expect(page).toHaveURL(url("/app/student"));
+  await page.goto(url("/app/student/leave"));
+  await expect(page.getByTestId("my-leave").getByText("Revoked", { exact: true })).toBeVisible();
+  await expect(page.getByText("Revoked: She attended")).toBeVisible();
+  await expect(page.getByText("Note from the office: Get well soon")).toBeVisible();
+});
+
 test("Attendance disappears while the module is off (D5)", async ({ page }) => {
   await setInstituteModules(INSTITUTE.subdomain, { attendance: false });
   try {

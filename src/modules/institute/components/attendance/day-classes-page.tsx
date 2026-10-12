@@ -17,6 +17,7 @@ import { formatDate } from "@/lib/format";
 import { HowThisWorks } from "@/modules/institute/help/how-this-works";
 import { attendanceApi, type DayClassRow } from "../../api";
 import { instituteKeys } from "../../keys";
+import { AttendanceTabs } from "./attendance-tabs";
 
 export const CLASS_STATE: Record<DayClassRow["state"], { label: string; tone: "info" | "success" | "secondary" | "warning" }> = {
   NOT_TAKEN: { label: "Not taken", tone: "warning" },
@@ -33,7 +34,19 @@ export const registerHref = (base: string, c: { batch_subject_id: string; starts
  * A day's classes with the state of each register (D80, D81): everyone at the office sees every class, an instructor
  * only their own. Used by the admin panel and the instructor portal (`base` is where its register page lives).
  */
-export function DayClassesPage({ base, date, canTake, fullGuide = true }: { base: string; date?: string; canTake: boolean; fullGuide?: boolean }) {
+export function DayClassesPage({
+  base,
+  date,
+  canTake,
+  canManageLeave = false,
+  fullGuide = true,
+}: {
+  base: string;
+  date?: string;
+  canTake: boolean;
+  canManageLeave?: boolean;
+  fullGuide?: boolean;
+}) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const day = useQuery({ queryKey: instituteKeys.attendanceDay(date), queryFn: () => attendanceApi.classes(date) });
@@ -67,6 +80,7 @@ export function DayClassesPage({ base, date, canTake, fullGuide = true }: { base
           ) : null
         }
       />
+      <AttendanceTabs canManageLeave={canManageLeave} />
       <HowThisWorks topic="attendance-registers" fullGuide={fullGuide} />
 
       <div className="flex flex-wrap items-center gap-2">

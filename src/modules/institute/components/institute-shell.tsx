@@ -1,6 +1,6 @@
 "use client";
 
-import { BookOpen, CalendarCheck, CircleHelp, GraduationCap, LayoutDashboard, PauseCircle, ScrollText, Settings, ToggleLeft, UserRound, Users } from "lucide-react";
+import { BookOpen, CalendarCheck, CalendarOff, CircleHelp, GraduationCap, LayoutDashboard, PauseCircle, ScrollText, Settings, ToggleLeft, UserRound, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { AppShell, type NavItem } from "@/components/shell/app-shell";
 import { Badge } from "@/components/ui/badge";
@@ -21,7 +21,12 @@ function buildNav(portal: PortalKind, permissions: ReadonlySet<string>): NavItem
       ...(permissions.has("attendance.view") ? [{ href: "/app/instructor/attendance", label: "Attendance", icon: CalendarCheck }] : []),
     ];
   }
-  if (portal === "student") return [{ href: "/app/student", label: "Dashboard", icon: LayoutDashboard, exact: true }];
+  if (portal === "student") {
+    return [
+      { href: "/app/student", label: "Dashboard", icon: LayoutDashboard, exact: true },
+      ...(permissions.has("leave.self.apply") ? [{ href: "/app/student/leave", label: "Leave", icon: CalendarOff }] : []),
+    ];
+  }
   const can = (p: string) => permissions.has(p);
   return [
     { href: "/app", label: "Dashboard", icon: LayoutDashboard, exact: true },

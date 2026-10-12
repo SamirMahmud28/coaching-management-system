@@ -82,7 +82,8 @@ export async function setInstituteModules(subdomain: string, changes: Record<str
 /**
  * Sets up teaching through the real services (what the Owner does on screen in courses/portals specs): a course with
  * two subjects in one batch, each with a class every day of the week, an instructor teaching the first subject, and
- * students admitted 30 days ago. The instructor can sign in with `instructorPassword` straight away.
+ * students admitted 30 days ago. The instructor (with their password) and the students (by student ID, password
+ * "Student123") can sign in straight away.
  */
 export async function seedTeaching(input: {
   subdomain: string;
@@ -124,6 +125,7 @@ export async function seedTeaching(input: {
         fullName, gender: "FEMALE", guardianName: "Guardian", guardianRelation: "MOTHER", guardianPhone: "01711000999", admissionDate, batchIds: [batch.id], temporaryPassword: "Student123",
       });
       codes.push(student.studentCode);
+      await db.execute(sql`update users set must_change_password = false where tenant_id = ${t.id} and id = ${student.userId}`);
     }
     return { codes };
   } finally {

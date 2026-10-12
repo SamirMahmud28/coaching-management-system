@@ -24,5 +24,7 @@ export const instituteKeys = {
   studentCharges: (id: string) => ["institute-student-charges", id],
   studentPayments: (id: string) => ["institute-student-payments", id],
   attendanceDay: (date?: string) => ["institute-attendance-day", date ?? "today"],
+  leave: (params?: object) => ["institute-leave", params ?? {}],
+  myLeave: () => ["institute-my-leave"],
   register: (batchSubjectId: string, date: string, startsAt: string) => ["institute-register", batchSubjectId, date, startsAt],
 };
