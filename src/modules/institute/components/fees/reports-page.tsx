@@ -15,6 +15,7 @@ import { todayInDhaka } from "@/lib/dates";
 import { formatAmount, formatDate } from "@/lib/format";
 import { METHOD_LABEL, academicApi, reportPrintUrl, reportsApi, type FeeReportKind, type ReportFilters } from "../../api";
 import { instituteKeys } from "../../keys";
+import type { FeesNav } from "./fees-nav";
 import { FeesTabs } from "./fees-tabs";
 import { HowThisWorks } from "@/modules/institute/help/how-this-works";
 
@@ -27,7 +28,7 @@ const REPORTS: { kind: FeeReportKind; label: string }[] = [
 ];
 
 /** Fee reports with date range, course and batch filters (D75–D78), each printable on A4. */
-export function ReportsPage({ canGenerate }: { canGenerate: boolean }) {
+export function ReportsPage({ nav }: { nav: FeesNav }) {
   const today = todayInDhaka();
   const [kind, setKind] = useState<FeeReportKind>("collections");
   const [from, setFrom] = useState(`${today.slice(0, 7)}-01`);
@@ -47,7 +48,7 @@ export function ReportsPage({ canGenerate }: { canGenerate: boolean }) {
     <>
       <PageHeader title="Fees" description="Reports by date, course and batch. Totals count valid payments; voided receipts are listed apart." />
       <HowThisWorks topic="fees-reports" />
-      <FeesTabs canGenerate={canGenerate} canReport />
+      <FeesTabs nav={nav} />
       <div className="flex flex-wrap gap-1" role="tablist" aria-label="Report">
         {REPORTS.map((r) => (
           <Button key={r.kind} role="tab" aria-selected={kind === r.kind} size="sm" variant={kind === r.kind ? "default" : "outline"} onClick={() => setKind(r.kind)}>

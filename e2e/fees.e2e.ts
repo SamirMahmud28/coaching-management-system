@@ -170,7 +170,7 @@ test("F3: the student's fees page lists the charges; a fine is added and cancell
   await expect(charges).toContainText("Admission");
   await expect(page.getByTestId("due-total")).toHaveText("৳3,300.00");
 
-  await page.getByRole("button", { name: "Add fine" }).click();
+  await page.getByRole("button", { name: "Add fine", exact: true }).click();
   await page.getByLabel("Amount (৳)").fill("100");
   await page.getByLabel("Reason").fill("Damaged lab equipment");
   await page.getByRole("button", { name: "Add fine", exact: true }).last().click();
@@ -236,7 +236,7 @@ test("F4: a voided payment makes its charges due again and its receipt prints VO
 
 test("F4: a fine is waived by half and paid; a paid charge is partly refunded (D33, D37)", async ({ page }) => {
   await openStudentFees(page);
-  await page.getByRole("button", { name: "Add fine" }).click();
+  await page.getByRole("button", { name: "Add fine", exact: true }).click();
   await page.getByLabel("Amount (৳)").fill("200");
   await page.getByLabel("Reason").fill("Late return of library book");
   await page.getByRole("button", { name: "Add fine", exact: true }).last().click();
@@ -246,7 +246,7 @@ test("F4: a fine is waived by half and paid; a paid charge is partly refunded (D
   await pick(page, "Waive by", "Percent of the charge");
   await page.getByLabel("Percent", { exact: true }).fill("50");
   await page.getByLabel("Reason").fill("First time");
-  await page.getByRole("button", { name: "Add waiver" }).click();
+  await page.getByRole("button", { name: "Add waiver", exact: true }).click();
   await expect(page.getByTestId("due-total")).toHaveText("৳100.00");
 
   const collect = page.getByTestId("collect");
@@ -317,6 +317,45 @@ test("F6: the student sees their own fees and reprints a receipt; corrections st
   // A student can't open the admin fee pages.
   await page.goto(url("/app/fees"));
   await expect(page).toHaveURL(url("/app/student"));
+});
+
+test("F7: at the counter the Owner finds the student and collects a charge with a waiver and a new fine in one step (D99)", async ({ page }) => {
+  await openStudentFees(page);
+  await page.getByRole("button", { name: "Add fine", exact: true }).click();
+  await page.getByLabel("Amount (৳)").fill("300");
+  await page.getByLabel("Reason").fill("Broken window");
+  await page.getByRole("button", { name: "Add fine", exact: true }).last().click();
+  await expect(page.getByTestId("due-total")).toHaveText("৳300.00");
+
+  await page.goto(url("/app/fees"));
+  await page.getByRole("link", { name: "Collect", exact: true }).click();
+  await page.getByLabel("Find a student by name or student ID").fill("Tania");
+  await page.getByTestId("collect-results").getByRole("button", { name: /Tania Akter/ }).click();
+  await expect(page.getByTestId("collect-student")).toContainText("1 due · ৳300.00");
+
+  const collect = page.getByTestId("collect");
+  await collect.getByLabel(/Fine/).check();
+  await collect.getByRole("button", { name: "Add waiver to payment" }).click();
+  await collect.getByLabel("Amount", { exact: true }).fill("100");
+  await collect.getByLabel("Waiver reason").fill("Agreed with guardian");
+  await collect.getByRole("button", { name: "Add fine to payment" }).click();
+  await collect.getByLabel("Fine (৳)").fill("40");
+  await collect.getByLabel("Fine reason").fill("Late payment");
+  await expect(page.getByTestId("collect-total")).toHaveText("৳240.00");
+  await collect.getByRole("button", { name: "Record payment" }).click();
+  await expect(collect.getByRole("status")).toContainText("SHK-000004");
+  await expect(page.getByTestId("collect-student")).toContainText("0 due · ৳0.00");
+});
+
+test("F7: the Payments list shows the day's receipts with the total, voids apart, and reprints (D99)", async ({ page }) => {
+  await signInAsOwner(page);
+  await page.goto(url("/app/fees/payments"));
+  // Today: SHK-000002 (৳3,300), SHK-000003 (৳100), SHK-000004 (৳240); SHK-000001 is void.
+  await expect(page.getByTestId("payments-total")).toContainText("3 valid receipts");
+  await expect(page.getByTestId("payments-total")).toContainText("৳3,640.00");
+  await expect(page.getByTestId("payment-SHK-000001")).toContainText("Void");
+  const [receipt] = await Promise.all([page.waitForEvent("popup"), page.getByTestId("payment-SHK-000004").getByRole("link", { name: "Print" }).click()]);
+  await expect(receipt.getByTestId("receipt-total")).toHaveText("৳240.00");
 });
 
 test("F2: with Fees switched off, its page and the student's fee card disappear (D5)", async ({ page }) => {

@@ -18,6 +18,7 @@ import { fromPoisha, isAmountText, sumPoisha, toPoisha } from "@/lib/money";
 import { chargesApi, feesApi, type GenerationPreview, type GenerationRunRow, type SkipReason } from "../../api";
 import { instituteKeys } from "../../keys";
 import { KIND_LABEL } from "./fee-items-page";
+import type { FeesNav } from "./fees-nav";
 import { FeesTabs } from "./fees-tabs";
 import { HowThisWorks } from "@/modules/institute/help/how-this-works";
 
@@ -33,7 +34,7 @@ export const SKIP_LABEL: Record<SkipReason, string> = {
 };
 
 /** Generate monthly or one-time charges from a preview (D30, D40, D62, D65, D67, D68). */
-export function GeneratePage({ canReport }: { canReport: boolean }) {
+export function GeneratePage({ nav }: { nav: FeesNav }) {
   const queryClient = useQueryClient();
   const items = useQuery({ queryKey: instituteKeys.feeItems({ status: "ACTIVE" }), queryFn: () => feesApi.items({ status: "ACTIVE" }) });
   const [itemId, setItemId] = useState("");
@@ -82,7 +83,7 @@ export function GeneratePage({ canReport }: { canReport: boolean }) {
     <>
       <PageHeader title="Fees" description="Charges are created only when you confirm a preview; nothing is charged automatically." />
       <HowThisWorks topic="fees-generate" />
-      <FeesTabs canGenerate canReport={canReport} />
+      <FeesTabs nav={nav} />
       <Card>
         <CardHeader>
           <CardTitle>Generate charges</CardTitle>

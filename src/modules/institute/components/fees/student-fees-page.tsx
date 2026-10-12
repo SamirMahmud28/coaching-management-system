@@ -89,7 +89,7 @@ export function StudentFeesPage({ studentId, perms }: { studentId: string; perms
       </div>
 
       <div className="grid gap-4 xl:grid-cols-2">
-        {perms.canCollect && <CollectPanel studentId={studentId} due={due} onRecorded={refresh} />}
+        {perms.canCollect && <CollectPanel studentId={studentId} due={due} onRecorded={refresh} canWaive={perms.canWaive} canFine={perms.canAdjust} />}
         <Card>
           <CardHeader>
             <CardTitle>Charges</CardTitle>

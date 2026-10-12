@@ -459,7 +459,19 @@ export interface PaymentRow {
 
 export const paymentsApi = {
   list: (studentId: string) => apiFetch<PaymentRow[]>(`/api/v1/students/${studentId}/payments`),
-  collect: (studentId: string, body: { charge_ids: string[]; paid_on: string; method: PaymentMethod; reference: string | null; remarks: string | null; idempotency_key: string }) =>
+  collect: (
+    studentId: string,
+    body: {
+      charge_ids: string[];
+      paid_on: string;
+      method: PaymentMethod;
+      reference: string | null;
+      remarks: string | null;
+      idempotency_key: string;
+      waivers?: { charge_id: string; kind: "FIXED" | "PERCENT"; value: string; reason: string }[];
+      fines?: { amount: string; reason: string }[];
+    },
+  ) =>
     apiFetch<PaymentRow>(`/api/v1/students/${studentId}/payments`, { body }),
   void: (id: string, reason: string) => apiFetch<PaymentRow>(`/api/v1/fee-payments/${id}/void`, { body: { reason } }),
   waive: (chargeId: string, body: { kind: "FIXED" | "PERCENT"; value: string; reason: string }) => apiFetch<ChargeRow>(`/api/v1/fee-charges/${chargeId}/waivers`, { body }),
@@ -683,3 +695,25 @@ export const attendanceReportsApi = {
 
 export const attendanceRegisterPrintUrl = (q: { batch_id: string; month: string; batch_subject_id?: string }) =>
   `/app/print/attendance-register?${new URLSearchParams(Object.entries(q).filter((e): e is [string, string] => !!e[1])).toString()}`;
+
+// Fees F7 (D99): every receipt in a date range.
+export interface PaymentListRow {
+  id: string;
+  receipt_label: string;
+  paid_on: string;
+  method: PaymentMethod;
+  reference: string | null;
+  amount: string;
+  status: "VALID" | "VOID";
+  void_reason: string | null;
+  student_id: string;
+  student_name: string;
+  student_code: string;
+  received_by_name: string | null;
+  refunds: number;
+}
+
+export const paymentListApi = {
+  list: (q: { from: string; to: string; status?: "VALID" | "VOID" }) =>
+    apiFetch<{ range: { from: string; to: string }; total: string; count: number; payments: PaymentListRow[] }>("/api/v1/fees/payments", { query: q }),
+};

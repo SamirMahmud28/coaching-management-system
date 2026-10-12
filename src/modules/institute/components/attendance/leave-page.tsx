@@ -203,7 +203,7 @@ export function LeavePage({ canReport = false }: { canReport?: boolean }) {
               </Button>
             </div>
           ) : (
-            <FormField id="leave-student" required label="Student" hint="Type at least 2 letters of the name, student ID or mobile number.">
+            <FormField id="leave-student" required label="Student" hint="Type at least 2 letters of the name or student ID (or the mobile number, if you can see contacts).">
               <Input id="leave-student" value={search} onChange={(e) => setSearch(e.target.value)} autoComplete="off" />
             </FormField>
           )}

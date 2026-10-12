@@ -23,6 +23,7 @@ export const instituteKeys = {
   feeRuns: () => ["institute-fee-runs"],
   studentCharges: (id: string) => ["institute-student-charges", id],
   studentPayments: (id: string) => ["institute-student-payments", id],
+  payments: (params: object) => ["institute-payments", params],
   attendanceDay: (date?: string) => ["institute-attendance-day", date ?? "today"],
   leave: (params?: object) => ["institute-leave", params ?? {}],
   myLeave: () => ["institute-my-leave"],

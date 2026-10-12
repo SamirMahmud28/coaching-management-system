@@ -33,6 +33,7 @@ export type HelpTopicKey =
   | "fees-generate"
   | "fees-student"
   | "fees-reports"
+  | "fees-counter"
   | "attendance-registers"
   | "attendance-leave"
   | "leave-student"
@@ -296,6 +297,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
       "Choose the method. Every method except cash needs a reference — the bKash/Nagad/Rocket transaction ID, cheque or bank reference.",
       "Choose the date the money was received (today or earlier) and click Record payment.",
       "Click Print receipt (or Print in Payments later) — reprinting never creates a new payment.",
+      "To give a discount or add a fine at the same time, click Add waiver to payment (on a ticked charge) or Add fine to payment before Record payment — they are saved together with the payment.",
       "Corrections: Void a wrong payment (with a reason) and record the right one; Waive part of an unpaid charge; Refund money given back; Add fine for a manual fine.",
     ],
     rules: [
@@ -310,6 +312,32 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     faqs: [
       { q: "The parent paid part of the month.", a: "Each charge is paid in full. Either collect the full amount, or waive the agreed part first (with a reason) and then collect the rest." },
       { q: "I recorded a payment against the wrong student.", a: "Void it with a reason, then record it again on the right student. The voided receipt stays on record." },
+    ],
+  },
+  {
+    key: "fees-counter",
+    title: "The fees counter: Collect and Payments",
+    area: "Fees",
+    permission: "fees.view",
+    summary: "Collect is the quickest way to take money at the counter: find the student, tick what they're paying, record it and print the receipt. Payments lists every receipt for the days you choose.",
+    steps: [
+      "Open Fees → Collect and type the student's name or ID (staff who can see contacts can also type a mobile number). Click the student.",
+      "Tick the charges being paid. If you're giving a discount, click Add waiver to payment; for a late fine, click Add fine to payment (a fine can also be collected on its own). The total updates as you go.",
+      "Choose the method (and reference, except for cash) and the date received, then click Record payment.",
+      "Click Print receipt. Click Another student for the next person in the queue.",
+      "Open Fees → Payments to see every receipt for a day or range — today by default — with the total. Print any receipt again, or Void one with a reason.",
+    ],
+    rules: [
+      "Each charge is paid in full; there are no part-payments.",
+      "Waivers and fines added while collecting are saved together with the payment. If anything is wrong, nothing is saved.",
+      "A waiver can only be on a ticked charge and can't take it below zero. If a waiver covers a charge completely, that charge is settled by the waiver and isn't on the receipt.",
+      "Adding waivers needs Owner or Admin (the waive permission); adding fines needs the adjust permission.",
+      "Pressing Record payment twice records one payment, and its waivers and fines once.",
+      "The Payments total leaves out voided receipts. Only Owner and Admin can void, and a payment with refunds can't be voided.",
+    ],
+    faqs: [
+      { q: "The waivers cover everything I ticked.", a: "Then there's nothing to collect. Use Waive on the student's fees page instead." },
+      { q: "Where's the receipt for yesterday?", a: "Fees → Payments, choose yesterday's date, and click Print on the receipt." },
     ],
   },
   {

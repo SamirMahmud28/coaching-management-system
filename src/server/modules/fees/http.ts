@@ -38,13 +38,16 @@ const runsQuery = z.object({ fee_item_id: z.uuid().optional() });
 const method = z.enum(payments.PAYMENT_METHODS);
 const date = z.string().max(10).nullable().optional();
 const collectBody = z.object({
-  charge_ids: z.array(z.uuid()).min(1).max(100),
+  charge_ids: z.array(z.uuid()).max(100),
   paid_on: date,
   method,
   reference: z.string().max(100).nullable().optional(),
   remarks: z.string().max(500).nullable().optional(),
   idempotency_key: z.uuid(),
+  waivers: z.array(z.object({ charge_id: z.uuid(), kind: z.enum(["FIXED", "PERCENT"]), value: amount, reason: z.string().max(300) })).max(20).optional(),
+  fines: z.array(z.object({ amount, reason: z.string().max(300) })).max(20).optional(),
 });
+const paymentsQuery = z.object({ from: z.string().max(10).optional(), to: z.string().max(10).optional(), status: z.enum(["VALID", "VOID"]).optional() });
 const waiverBody = z.object({ kind: z.enum(["FIXED", "PERCENT"]), value: amount, reason: z.string().max(300) });
 const reportQuery = z.object({
   from: z.string().max(10).optional(),
@@ -208,8 +211,18 @@ export function createFeesHandlers({ db, auth, host }: FeesHttpDeps) {
         const b = await parseBody(request, collectBody);
         const result = await payments.collectPayment(db, actor, pathId(params.id, "STUDENT"), {
           chargeIds: b.charge_ids, paidOn: b.paid_on, method: b.method, reference: b.reference, remarks: b.remarks, idempotencyKey: b.idempotency_key,
+          waivers: b.waivers?.map((w) => ({ chargeId: w.charge_id, kind: w.kind, value: w.value, reason: w.reason })),
+          fines: b.fines,
         });
         return json(result.payment, result.repeated ? 200 : 201);
+      }),
+
+    // GET /api/v1/fees/payments?from=&to=&status= — every receipt in a date range (D99)
+    listPayments: (request: Request) =>
+      handle(async () => {
+        const actor = await authorize(request, "fees.view");
+        const q = parseQuery(request, paymentsQuery);
+        return json(await payments.listPayments(db, actor.tenantId, { range: reports.cleanRange(q.from, q.to), status: q.status }));
       }),
 
     // GET /api/v1/students/:id/payments

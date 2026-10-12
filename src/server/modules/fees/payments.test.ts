@@ -3,7 +3,7 @@ import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { eq } from "drizzle-orm";
 import { createTestDb } from "../../core/testing/db";
 import { setModules } from "../../core/testing/modules";
-import { auditLogs, feePayments, tenants, userRoles } from "../../core/db/schema";
+import { auditLogs, feeCharges, feePayments, feeWaivers, tenants, userRoles } from "../../core/db/schema";
 import type { Db } from "../../core/db/types";
 import { seedPlatformCatalog } from "../../core/db/seed";
 import { INSTITUTE_OWNER_ROLE } from "../../core/rbac/catalog";
@@ -15,7 +15,7 @@ import { seedBaselineRoles } from "../rbac/service";
 import * as students from "../students/service";
 import { addFine, cancelCharge, confirmGeneration, listStudentCharges } from "./charges";
 import { myFees } from "./ledger";
-import { addRefund, addWaiver, collectPayment, listStudentPayments, voidPayment } from "./payments";
+import { addRefund, addWaiver, collectPayment, listPayments, listStudentPayments, voidPayment } from "./payments";
 import { feeReceiptDocument, type FeeReceiptRecord } from "./receipt-document";
 import { createFeeItem, saveFeeSettings } from "./setup";
 
@@ -224,5 +224,86 @@ describe("the student's own fees (D27, D79)", () => {
 
     expect((await myFees(db, s.tenant.id, s.bushra.userId)).due.map((d) => d.title)).not.toContain("Fine");
     await expect(myFees(db, s.tenant.id, s.owner.id)).rejects.toMatchObject({ code: "NOT_FOUND_STUDENT" });
+  });
+});
+
+describe("collecting with waivers and fines in the same step (D99)", () => {
+  const office = (s: Awaited<ReturnType<typeof setUp>>, permissions = ["fees.collect", "fees.waive", "fees.adjust"]) => ({ ...s.actor, permissions: new Set(permissions) });
+
+  it("saves the waivers, the fines and the payment together, paying what is left", async () => {
+    const s = await setUp();
+    const c = await s.chargesOf(s.anika.id);
+    const { payment } = await collectPayment(db, office(s), s.anika.id, {
+      chargeIds: [c.june.id, c.exam.id], method: "CASH", idempotencyKey: randomUUID(),
+      waivers: [{ chargeId: c.june.id, kind: "PERCENT", value: "25", reason: "Sibling" }, { chargeId: c.exam.id, kind: "FIXED", value: "500", reason: "Scholarship" }],
+      fines: [{ amount: "50", reason: "Late payment" }],
+    });
+    // June 2000 − 25% = 1500; the exam fee is fully waived, so it is settled by the waiver and left out; plus the 50 fine.
+    expect(payment.amount).toBe("1550.00");
+    expect(payment.lines.map((l) => [l.title, l.amount])).toEqual(expect.arrayContaining([["Fine", "50.00"]]));
+    expect(payment.lines).toHaveLength(2);
+    const after = await s.chargesOf(s.anika.id);
+    expect(after.june.state).toBe("PAID");
+    expect(after.exam.state).toBe("WAIVED");
+    const actions = (await testDb.select().from(auditLogs)).map((l) => l.action);
+    expect(actions.filter((a) => a === "FEE_WAIVER_ADDED")).toHaveLength(2);
+    expect(actions).toContain("FEE_FINE_ADDED");
+  });
+
+  it("saves nothing when any part is wrong, and applies nothing twice on a repeat", async () => {
+    const s = await setUp();
+    const c = await s.chargesOf(s.anika.id);
+    const key = randomUUID();
+    const bad = { chargeIds: [c.june.id], method: "CASH", idempotencyKey: key, fines: [{ amount: "50", reason: "Late" }], waivers: [{ chargeId: c.june.id, kind: "FIXED" as const, value: "2500", reason: "Too much" }] };
+    await expect(collectPayment(db, office(s), s.anika.id, bad)).rejects.toMatchObject({ code: "VALIDATION_WAIVER_TOO_LARGE" });
+    expect(await testDb.select().from(feeWaivers)).toHaveLength(0);
+    expect(await testDb.select().from(feeCharges).where(eq(feeCharges.source, "FINE"))).toHaveLength(0);
+    expect(await testDb.select().from(feePayments)).toHaveLength(0);
+
+    const good = { ...bad, waivers: [{ chargeId: c.june.id, kind: "FIXED" as const, value: "200", reason: "Sibling" }] };
+    const first = await collectPayment(db, office(s), s.anika.id, good);
+    const again = await collectPayment(db, office(s), s.anika.id, good);
+    expect(again).toMatchObject({ repeated: true, payment: { id: first.payment.id, amount: "1850.00" } });
+    expect(await testDb.select().from(feeWaivers)).toHaveLength(1);
+    expect(await testDb.select().from(feeCharges).where(eq(feeCharges.source, "FINE"))).toHaveLength(1);
+  });
+
+  it("needs the waive and fine permissions, waivers only on ticked charges, and something left to pay", async () => {
+    const s = await setUp();
+    const c = await s.chargesOf(s.anika.id);
+    const base = { chargeIds: [c.june.id], method: "CASH", idempotencyKey: randomUUID() };
+    const waiver = { chargeId: c.june.id, kind: "FIXED" as const, value: "100", reason: "Sibling" };
+    await expect(collectPayment(db, office(s, ["fees.collect", "fees.adjust"]), s.anika.id, { ...base, waivers: [waiver] })).rejects.toMatchObject({ status: 403 });
+    await expect(collectPayment(db, office(s, ["fees.collect", "fees.waive"]), s.anika.id, { ...base, fines: [{ amount: "10", reason: "Late" }] })).rejects.toMatchObject({ status: 403 });
+    await expect(collectPayment(db, office(s), s.anika.id, { ...base, waivers: [{ ...waiver, chargeId: c.july.id }] })).rejects.toMatchObject({ code: "VALIDATION_WAIVER_CHARGE" });
+    await expect(collectPayment(db, office(s), s.anika.id, { ...base, waivers: [{ ...waiver, kind: "PERCENT", value: "100" }] })).rejects.toMatchObject({ code: "VALIDATION_NOTHING_TO_PAY" });
+  });
+});
+
+describe("a fine on its own at the counter (D99)", () => {
+  it("is added and paid in one step; with nothing ticked and no fine there is nothing to record", async () => {
+    const s = await setUp();
+    const actor = { ...s.actor, permissions: new Set(["fees.collect", "fees.adjust"]) };
+    const { payment } = await collectPayment(db, actor, s.anika.id, { chargeIds: [], method: "CASH", idempotencyKey: randomUUID(), fines: [{ amount: "40", reason: "Late fee" }] });
+    expect(payment).toMatchObject({ amount: "40.00", lines: [{ title: "Fine", amount: "40.00" }] });
+    await expect(collectPayment(db, actor, s.anika.id, { chargeIds: [], method: "CASH", idempotencyKey: randomUUID() })).rejects.toMatchObject({ code: "VALIDATION_NO_CHARGES" });
+  });
+});
+
+describe("the payments list (D99)", () => {
+  it("lists every receipt in the dates, newest first, with voids marked and left out of the total", async () => {
+    const s = await setUp();
+    const a = await s.chargesOf(s.anika.id);
+    const b = await s.chargesOf(s.bushra.id);
+    const first = await s.pay(s.anika.id, [a.june.id], { paidOn: yesterday });
+    await s.pay(s.bushra.id, [b.june.id, b.exam.id]);
+    await voidPayment(db, s.actor, first.payment.id, { reason: "Wrong student" });
+    const list = await listPayments(db, s.tenant.id, { range: { from: yesterday, to: today } });
+    expect(list.payments.map((p) => [p.studentName, p.status])).toEqual([
+      ["Bushra", "VALID"],
+      ["Anika", "VOID"],
+    ]);
+    expect(list).toMatchObject({ total: "2500.00", count: 1 });
+    expect((await listPayments(db, s.tenant.id, { range: { from: today, to: today }, status: "VOID" })).payments).toHaveLength(0);
   });
 });

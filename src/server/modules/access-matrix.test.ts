@@ -150,6 +150,7 @@ const HANDLERS: Entry[] = [
   { factory: "fees", name: "cancelCharge", method: "POST", permission: "fees.generate", id: "FEE_CHARGE", body: { reason: "Wrong" } },
   { factory: "fees", name: "collect", method: "POST", permission: "fees.collect", id: "STUDENT", body: { charge_ids: [DUMMY], method: "CASH", idempotency_key: "00000000-0000-4000-8000-0000000000aa" } },
   { factory: "fees", name: "studentPayments", method: "GET", permission: "fees.view", id: "STUDENT" },
+  { factory: "fees", name: "listPayments", method: "GET", permission: "fees.view" },
   { factory: "fees", name: "voidPayment", method: "POST", permission: "fees.payment.void", id: "FEE_PAYMENT", body: { reason: "Wrong student" } },
   { factory: "fees", name: "addWaiver", method: "POST", permission: "fees.waive", id: "FEE_CHARGE", body: { kind: "FIXED", value: "10", reason: "Sibling" } },
   { factory: "fees", name: "addRefund", method: "POST", permission: "fees.refund", id: "FEE_CHARGE", body: { amount: "10", method: "CASH", reason: "Left early" } },
