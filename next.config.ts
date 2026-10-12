@@ -3,6 +3,8 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   // E2E uses its own build directory so it can run alongside `npm run dev`.
   distDir: process.env.NEXT_DIST_DIR || ".next",
+  // Don't announce the framework in every response.
+  poweredByHeader: false,
   async headers() {
     return [
       {
