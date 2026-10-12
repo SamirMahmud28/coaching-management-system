@@ -1,11 +1,12 @@
 "use client";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check, Copy, KeyRound, MoreHorizontal, Plus, Power, ShieldCheck } from "lucide-react";
+import { KeyRound, MoreHorizontal, Plus, Power, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { DataTable, type Column } from "@/components/shared/data-table";
 import { FormField } from "@/components/shared/form-field";
+import { OneTimePasswordDialog } from "@/components/shared/one-time-password-dialog";
 import { PageHeader } from "@/components/shared/page-header";
 import { PasswordField } from "@/components/shared/password-field";
 import { StatusBadge } from "@/components/shared/status-badge";
@@ -257,37 +258,5 @@ function ResetDialog({ user, onClose, onReset }: { user: UserRow | null; onClose
         <PasswordField id="reset-password" value={password} onChange={setPassword} withGenerate />
       </FormField>
     </ConfirmDialog>
-  );
-}
-
-function OneTimePasswordDialog({ value, onClose }: { value: { name: string; password: string } | null; onClose: () => void }) {
-  const [copied, setCopied] = useState(false);
-  return (
-    <Dialog open={value !== null} onOpenChange={(open) => !open && (setCopied(false), onClose())}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Temporary password for {value?.name}</DialogTitle>
-          <DialogDescription>Give it to them through a channel you trust. It won&apos;t be shown again.</DialogDescription>
-        </DialogHeader>
-        <div className="flex items-center justify-between gap-3 rounded-md border bg-muted/40 px-3 py-2">
-          <code className="font-mono text-base" data-testid="one-time-password">
-            {value?.password}
-          </code>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={async () => {
-              await navigator.clipboard.writeText(value?.password ?? "");
-              setCopied(true);
-            }}
-          >
-            {copied ? <Check /> : <Copy />} {copied ? "Copied" : "Copy"}
-          </Button>
-        </div>
-        <DialogFooter>
-          <Button onClick={() => (setCopied(false), onClose())}>Done</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
   );
 }

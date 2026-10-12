@@ -1,6 +1,6 @@
 "use client";
 
-import { LayoutDashboard, PauseCircle, ScrollText, Settings, ToggleLeft, Users } from "lucide-react";
+import { GraduationCap, LayoutDashboard, PauseCircle, ScrollText, Settings, ToggleLeft, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { AppShell, type NavItem } from "@/components/shell/app-shell";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +20,7 @@ function buildNav(portal: PortalKind, permissions: ReadonlySet<string>): NavItem
   const can = (p: string) => permissions.has(p);
   return [
     { href: "/app", label: "Dashboard", icon: LayoutDashboard, exact: true },
+    ...(can("instructors.view") ? [{ href: "/app/instructors", label: "Instructors", icon: GraduationCap }] : []),
     ...Object.values(PAID_MODULE_NAV).filter((m) => can(m.permission)),
     ...(can("users.view") ? [{ href: "/app/users", label: "Users", icon: Users }] : []),
     ...(can("modules.view") ? [{ href: "/app/modules", label: "Modules", icon: ToggleLeft }] : []),

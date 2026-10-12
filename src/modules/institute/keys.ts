@@ -7,4 +7,6 @@ export const instituteKeys = {
   profile: () => ["institute-profile"],
   signatures: () => ["institute-signatures"],
   studentIdPattern: () => ["institute-student-id-pattern"],
+  instructors: (params?: object) => ["institute-instructors", params ?? {}],
+  instructor: (id: string) => ["institute-instructor", id],
 };

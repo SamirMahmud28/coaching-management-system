@@ -8,6 +8,7 @@ const STATUSES: Record<string, { label: string; tone: Tone }> = {
   SUSPENDED: { label: "Suspended", tone: "warning" },
   DEACTIVATED: { label: "Deactivated", tone: "destructive" },
   DISABLED: { label: "Disabled", tone: "secondary" },
+  INACTIVE: { label: "Inactive", tone: "secondary" },
   FULFILLED: { label: "Fulfilled", tone: "success" },
   DISMISSED: { label: "Dismissed", tone: "secondary" },
   ENABLED: { label: "Enabled", tone: "success" },

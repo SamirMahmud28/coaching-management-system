@@ -108,3 +108,40 @@ export const settingsApi = {
   saveStudentIdPattern: (body: Omit<StudentIdPatternRow, "example" | "is_default">) =>
     apiFetch<StudentIdPatternRow>("/api/v1/settings/student-id", { method: "PUT", body }),
 };
+
+export type InstructorStatus = "ACTIVE" | "INACTIVE";
+export type Gender = "MALE" | "FEMALE" | "OTHER";
+
+export interface InstructorRow {
+  id: string;
+  user_id: string;
+  full_name: string;
+  gender: Gender | null;
+  address: string | null;
+  photo_file_id: string | null;
+  status: InstructorStatus;
+  created_at: string;
+  email: string | null;
+  phone: string | null;
+  must_change_password: boolean;
+}
+
+export interface InstructorFields {
+  full_name: string;
+  email: string | null;
+  phone: string | null;
+  gender: Gender | null;
+  address: string | null;
+}
+
+export const instructorsApi = {
+  list: (q: { q?: string; status?: InstructorStatus; page?: number; page_size?: number }) =>
+    apiFetch<Paginated<InstructorRow>>("/api/v1/instructors", { query: q }),
+  get: (id: string) => apiFetch<InstructorRow>(`/api/v1/instructors/${id}`),
+  create: (body: InstructorFields & { temporary_password: string }) =>
+    apiFetch<{ instructor: InstructorRow; temporary_password: string }>("/api/v1/instructors", { body }),
+  update: (id: string, body: Partial<InstructorFields>) => apiFetch<InstructorRow>(`/api/v1/instructors/${id}`, { method: "PATCH", body }),
+  setStatus: (id: string, status: InstructorStatus) => apiFetch<InstructorRow>(`/api/v1/instructors/${id}/status`, { method: "PATCH", body: { status } }),
+  resetPassword: (id: string, temporaryPassword: string) =>
+    apiFetch<{ temporary_password: string }>(`/api/v1/instructors/${id}/reset-password`, { body: { temporary_password: temporaryPassword } }),
+};
