@@ -1,6 +1,6 @@
 "use client";
 
-import { BookOpen, GraduationCap, LayoutDashboard, PauseCircle, ScrollText, Settings, ToggleLeft, UserRound, Users } from "lucide-react";
+import { BookOpen, CircleHelp, GraduationCap, LayoutDashboard, PauseCircle, ScrollText, Settings, ToggleLeft, UserRound, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { AppShell, type NavItem } from "@/components/shell/app-shell";
 import { Badge } from "@/components/ui/badge";
@@ -28,6 +28,7 @@ function buildNav(portal: PortalKind, permissions: ReadonlySet<string>): NavItem
     ...(can("modules.view") ? [{ href: "/app/modules", label: "Modules", icon: ToggleLeft }] : []),
     ...(can("audit.view") ? [{ href: "/app/audit-log", label: "Audit log", icon: ScrollText }] : []),
     ...(can("settings.manage") ? [{ href: "/app/settings", label: "Settings", icon: Settings }] : []),
+    { href: "/app/help", label: "Help", icon: CircleHelp },
   ];
 }
 

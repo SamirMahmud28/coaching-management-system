@@ -16,6 +16,7 @@ import { useDebouncedValue } from "@/lib/use-debounced-value";
 import { instructorsApi, type InstructorRow, type InstructorStatus } from "../../api";
 import { instituteKeys } from "../../keys";
 import { InstructorFormDialog } from "./instructor-form-dialog";
+import { HowThisWorks } from "@/modules/institute/help/how-this-works";
 
 const PAGE_SIZE = 25;
 
@@ -47,6 +48,7 @@ export function InstructorsListPage({ canManage }: { canManage: boolean }) {
   return (
     <>
       <PageHeader title="Instructors" description="Everyone who teaches at your institute. Each instructor signs in to the instructor portal." actions={add} />
+      <HowThisWorks topic="instructors" />
       <div className="flex flex-col gap-2 sm:flex-row">
         <Input
           className="sm:w-72"

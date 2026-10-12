@@ -25,6 +25,7 @@ import { academicApi, WEEKDAYS, type BatchSubjectRow, type Weekday } from "../..
 import { instituteKeys } from "../../keys";
 import { BatchStudentsCard } from "../students/batch-students-card";
 import { NameDialog } from "./name-dialog";
+import { HowThisWorks } from "@/modules/institute/help/how-this-works";
 
 const DAY: Record<Weekday, string> = { SAT: "Saturday", SUN: "Sunday", MON: "Monday", TUE: "Tuesday", WED: "Wednesday", THU: "Thursday", FRI: "Friday" };
 const SHORT_DAY = (d: Weekday) => DAY[d].slice(0, 3);
@@ -102,6 +103,7 @@ export function BatchPage({ id, canManage, canViewStudents }: { id: string; canM
         description={`Batch of ${batch.course.name} (${batch.course.code}): its subjects, who teaches them, and when classes meet.`}
         actions={actions}
       />
+      <HowThisWorks topic="batches" />
 
       {canManage && addable.length > 0 && (
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">

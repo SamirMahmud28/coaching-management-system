@@ -6,6 +6,7 @@ import { AuditLogTable } from "@/components/shared/audit-log-table";
 import { PageHeader } from "@/components/shared/page-header";
 import { instituteApi } from "../api";
 import { instituteKeys } from "../keys";
+import { HowThisWorks } from "@/modules/institute/help/how-this-works";
 
 const PAGE_SIZE = 25;
 
@@ -17,6 +18,7 @@ export function InstituteAuditLogPage() {
   return (
     <>
       <PageHeader title="Audit log" description="Actions taken on your institute's account, including by Neo Nexor." />
+      <HowThisWorks topic="audit-log" />
       <AuditLogTable
         items={query.data?.items}
         total={query.data?.total ?? 0}

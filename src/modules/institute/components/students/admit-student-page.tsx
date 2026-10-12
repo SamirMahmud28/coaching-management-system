@@ -21,6 +21,7 @@ import { runAction } from "@/lib/feedback";
 import { academicApi, settingsApi, studentsApi } from "../../api";
 import { instituteKeys } from "../../keys";
 import { StudentFieldsForm, emptyStudentForm, studentFieldsFrom, studentFormMissing, type StudentFormValues } from "./student-fields";
+import { HowThisWorks } from "@/modules/institute/help/how-this-works";
 
 const NO_COURSE = "none"; // Radix Select values can't be empty strings.
 
@@ -74,6 +75,7 @@ export function AdmitStudentPage({ canJoinBatches }: { canJoinBatches: boolean }
         <ArrowLeft className="size-4" /> Students
       </Link>
       <PageHeader title="Admit a student" description="Required: name, gender and the guardian's name, relation and mobile number. The rest can be filled in later." />
+      <HowThisWorks topic="admission" />
 
       <div className="grid gap-6 lg:grid-cols-[3fr_2fr]">
         <Card>

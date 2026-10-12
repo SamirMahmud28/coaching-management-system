@@ -22,6 +22,7 @@ import { METHOD_LABEL, PAYMENT_METHODS, chargesApi, paymentsApi, studentsApi, ty
 import { instituteKeys } from "../../keys";
 import { CollectPanel } from "./collect-panel";
 import { PaymentsCard } from "./payments-card";
+import { HowThisWorks } from "@/modules/institute/help/how-this-works";
 
 export interface StudentFeesPermissions {
   canViewStudent: boolean;
@@ -73,6 +74,7 @@ export function StudentFeesPage({ studentId, perms }: { studentId: string; perms
         title={student.data ? `${student.data.full_name} — fees` : "Student fees"}
         description={student.data ? <span className="font-mono">{student.data.student_code}</span> : undefined}
       />
+      <HowThisWorks topic="fees-student" />
       <div className="grid gap-3 sm:grid-cols-3">
         <div className="rounded-lg border p-4">
           <p className="text-2xl font-semibold tabular-nums" data-testid="due-total">

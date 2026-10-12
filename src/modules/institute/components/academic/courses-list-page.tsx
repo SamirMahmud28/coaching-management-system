@@ -14,6 +14,7 @@ import { notifySuccess } from "@/lib/feedback";
 import { academicApi, type AcademicStatus, type CourseRow } from "../../api";
 import { instituteKeys } from "../../keys";
 import { CourseFormDialog } from "./course-form-dialog";
+import { HowThisWorks } from "@/modules/institute/help/how-this-works";
 
 export function CoursesListPage({ canManage }: { canManage: boolean }) {
   const router = useRouter();
@@ -40,6 +41,7 @@ export function CoursesListPage({ canManage }: { canManage: boolean }) {
   return (
     <>
       <PageHeader title="Courses & batches" description="Each course has its subjects and its batches; each batch has its instructors and weekly schedule." actions={add} />
+      <HowThisWorks topic="courses" />
       <Select value={status} onValueChange={(v) => setStatus(v as AcademicStatus | "ALL")}>
         <SelectTrigger className="sm:w-40" aria-label="Filter by status">
           <SelectValue />

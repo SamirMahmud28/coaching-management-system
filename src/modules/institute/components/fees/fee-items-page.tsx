@@ -20,6 +20,7 @@ import { formatAmount } from "@/lib/format";
 import { academicApi, feesApi, type FeeItemKind, type FeeItemRow } from "../../api";
 import { instituteKeys } from "../../keys";
 import { FeesTabs } from "./fees-tabs";
+import { HowThisWorks } from "@/modules/institute/help/how-this-works";
 
 export const KIND_LABEL: Record<FeeItemKind, string> = { ADMISSION: "Admission (one-time)", MONTHLY: "Monthly", ONE_TIME: "Other one-time" };
 const dueDayText = (day: number | null) => (day === null ? "due day not set" : day === 31 ? "due on the last day" : `due on day ${day}`);
@@ -44,6 +45,7 @@ export function FeeItemsPage({ canConfigure, canGenerate, canReport }: { canConf
   return (
     <>
       <PageHeader title="Fees" description="Each course's fees. Monthly and one-time charges are generated from these amounts; a student can have their own amount on their profile." />
+      <HowThisWorks topic="fees-setup" />
       <FeesTabs canGenerate={canGenerate} canReport={canReport} />
       {byCourse.size === 0 ? (
         <EmptyState icon={Wallet} title="No courses yet" description="Add courses under Courses & batches first." />

@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useDebouncedValue } from "@/lib/use-debounced-value";
 import { academicApi, studentsApi, type StudentListRow, type StudentStatus } from "../../api";
 import { instituteKeys } from "../../keys";
+import { HowThisWorks } from "@/modules/institute/help/how-this-works";
 
 const PAGE_SIZE = 25;
 const ANY = "any";
@@ -65,6 +66,7 @@ export function StudentsListPage({ canAdmit, canSeeContacts, canSeeBatches }: { 
   return (
     <>
       <PageHeader title="Students" description="Everyone admitted to your institute. Students sign in with their student ID." actions={add} />
+      <HowThisWorks topic="student-records" />
       <div className="flex flex-col gap-2 sm:flex-row">
         <Input
           className="sm:w-72"

@@ -123,3 +123,29 @@ test("modules: the institute requests a module; only a Super Admin can switch it
   await page.getByRole("button", { name: "Send request" }).click();
   await expect(row.getByRole("button", { name: "Requested" })).toBeDisabled();
 });
+
+test("help: every page explains itself on request, and the Help centre has the guides for what this user can use (D96, D98)", async ({ page }) => {
+  await signIn(page, INSTITUTE.ownerEmail, ownerPassword);
+  await expect(page).toHaveURL(url("/app"));
+  const panel = page.getByTestId("how-this-works");
+  await expect(panel).not.toContainText("Set your institute up in this order"); // collapsed until clicked
+  await panel.getByRole("button", { name: /How this works/ }).click();
+  await expect(panel).toContainText("Set your institute up in this order");
+
+  await page.getByRole("navigation").first().getByRole("link", { name: "Help" }).click();
+  await expect(page.getByRole("heading", { name: "Help", level: 1 })).toBeVisible();
+  const guide = page.getByTestId("guide-fees-student"); // Fees is on here
+  await expect(guide).toContainText("A student's fees page shows");
+  await expect(guide).not.toContainText("Each charge is paid in full");
+  await guide.getByRole("button", { name: /Collecting payments and receipts/ }).click();
+  await expect(guide).toContainText("Each charge is paid in full");
+  await guide.getByText("The parent paid part of the month.").click();
+  await expect(page.getByText(/waive the agreed part first/)).toBeVisible();
+
+  // A page panel's link opens that guide in the Help centre.
+  await page.goto(url("/app/courses"));
+  await page.getByTestId("how-this-works").getByRole("button", { name: /How this works/ }).click();
+  await page.getByRole("link", { name: /Read the full guide/ }).click();
+  await expect(page).toHaveURL(url("/app/help#courses"));
+  await expect(page.getByTestId("guide-courses")).toContainText("Why can't I delete a course?");
+});

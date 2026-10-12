@@ -77,13 +77,13 @@ test("the Owner sets up a course with subjects", async ({ page }) => {
   await page.getByRole("button", { name: "Add course" }).click();
 
   await expect(page.getByRole("heading", { name: /HSC 2026 Science/, level: 1 })).toBeVisible();
-  await expect(page.getByText("HSC26")).toBeVisible();
+  await expect(page.getByText("HSC26", { exact: true })).toBeVisible();
   await expect(page.getByText("Monthly fee due: Day 10")).toBeVisible();
   for (const subject of ["Physics", "Chemistry"]) {
     await page.getByRole("button", { name: "Add subject" }).click();
     await page.getByLabel("Subject name").fill(subject);
     await page.getByRole("dialog").getByRole("button", { name: "Add subject" }).click();
-    await expect(page.getByRole("listitem").filter({ hasText: subject })).toBeVisible();
+    await expect(page.getByRole("listitem").filter({ has: page.getByText(subject, { exact: true }) })).toBeVisible();
   }
 });
 

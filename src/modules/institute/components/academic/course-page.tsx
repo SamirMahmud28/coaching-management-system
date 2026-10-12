@@ -19,6 +19,7 @@ import { academicApi, type SubjectRow } from "../../api";
 import { instituteKeys } from "../../keys";
 import { CourseFormDialog, dueDayLabel } from "./course-form-dialog";
 import { NameDialog } from "./name-dialog";
+import { HowThisWorks } from "@/modules/institute/help/how-this-works";
 
 export function CoursePage({ id, canManage }: { id: string; canManage: boolean }) {
   const router = useRouter();
@@ -91,6 +92,7 @@ export function CoursePage({ id, canManage }: { id: string; canManage: boolean }
         }
         actions={actions}
       />
+      <HowThisWorks topic="courses" />
       {!active && <p className="rounded-md border border-dashed p-3 text-sm text-muted-foreground">This course is archived. Restore it to add subjects or batches.</p>}
 
       <div className="grid gap-4 lg:grid-cols-2">

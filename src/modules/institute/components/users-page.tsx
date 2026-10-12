@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { runAction } from "@/lib/feedback";
 import { instituteApi, type RoleRow, type UserRow } from "../api";
 import { instituteKeys } from "../keys";
+import { HowThisWorks } from "@/modules/institute/help/how-this-works";
 
 // Instructors and students get their logins with their records (M5, M6); ownership is changed by a Platform Admin.
 const NOT_ASSIGNABLE_HERE = new Set(["Owner", "Instructor", "Student"]);
@@ -93,6 +94,7 @@ export function InstituteUsersPage({ canManage }: { canManage: boolean }) {
           ) : null
         }
       />
+      <HowThisWorks topic="users" />
       <DataTable columns={columns} rows={users.data?.items} getRowId={(u) => u.id} isLoading={users.isPending} error={users.error} onRetry={() => users.refetch()} />
 
       <NewUserDialog open={creating} onOpenChange={setCreating} roles={assignable} onCreated={(name, password) => setOneTime({ name, password })} />

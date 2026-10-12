@@ -19,6 +19,7 @@ import { chargesApi, feesApi, type GenerationPreview, type GenerationRunRow, typ
 import { instituteKeys } from "../../keys";
 import { KIND_LABEL } from "./fee-items-page";
 import { FeesTabs } from "./fees-tabs";
+import { HowThisWorks } from "@/modules/institute/help/how-this-works";
 
 export const SKIP_LABEL: Record<SkipReason, string> = {
   ON_HOLD: "On hold",
@@ -80,6 +81,7 @@ export function GeneratePage({ canReport }: { canReport: boolean }) {
   return (
     <>
       <PageHeader title="Fees" description="Charges are created only when you confirm a preview; nothing is charged automatically." />
+      <HowThisWorks topic="fees-generate" />
       <FeesTabs canGenerate canReport={canReport} />
       <Card>
         <CardHeader>

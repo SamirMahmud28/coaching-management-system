@@ -21,6 +21,7 @@ import { runAction, submitForm } from "@/lib/feedback";
 import { settingsApi, type InstitutionProfileRow, type SignatureRow } from "../../api";
 import { instituteKeys } from "../../keys";
 import { StudentIdCard } from "./student-id-card";
+import { HowThisWorks } from "@/modules/institute/help/how-this-works";
 
 const optionalText = (max: number, message: string) => z.string().trim().max(max, message);
 const color = z.string().refine((v) => v === "" || /^#[0-9a-fA-F]{6}$/.test(v), "Use a colour like #1f6feb.");
@@ -53,6 +54,7 @@ export function InstituteSettingsPage() {
   return (
     <>
       <PageHeader title="Institute Settings" description="Your institute's name, contact details and branding, and the people who sign documents. These appear on receipts, marksheets and other printed documents." />
+      <HowThisWorks topic="settings" />
       {profile.isPending ? (
         <LoadingState />
       ) : profile.error ? (

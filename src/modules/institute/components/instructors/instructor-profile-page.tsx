@@ -17,6 +17,7 @@ import { formatDate } from "@/lib/format";
 import { instructorsApi, type InstructorRow } from "../../api";
 import { instituteKeys } from "../../keys";
 import { InstructorFormDialog } from "./instructor-form-dialog";
+import { HowThisWorks } from "@/modules/institute/help/how-this-works";
 
 const GENDER_LABEL = { MALE: "Male", FEMALE: "Female", OTHER: "Other" } as const;
 
@@ -77,6 +78,7 @@ export function InstructorProfilePage({ id, canManage, canSetStatus }: { id: str
         description={instructor.must_change_password ? "Hasn't signed in yet (temporary password)." : undefined}
         actions={actions}
       />
+      <HowThisWorks topic="instructors" />
       <Details instructor={instructor} />
 
       <InstructorFormDialog

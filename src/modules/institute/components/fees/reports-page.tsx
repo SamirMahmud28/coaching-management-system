@@ -16,6 +16,7 @@ import { formatAmount, formatDate } from "@/lib/format";
 import { METHOD_LABEL, academicApi, reportPrintUrl, reportsApi, type FeeReportKind, type ReportFilters } from "../../api";
 import { instituteKeys } from "../../keys";
 import { FeesTabs } from "./fees-tabs";
+import { HowThisWorks } from "@/modules/institute/help/how-this-works";
 
 const ALL = "all";
 const REPORTS: { kind: FeeReportKind; label: string }[] = [
@@ -45,6 +46,7 @@ export function ReportsPage({ canGenerate }: { canGenerate: boolean }) {
   return (
     <>
       <PageHeader title="Fees" description="Reports by date, course and batch. Totals count valid payments; voided receipts are listed apart." />
+      <HowThisWorks topic="fees-reports" />
       <FeesTabs canGenerate={canGenerate} canReport />
       <div className="flex flex-wrap gap-1" role="tablist" aria-label="Report">
         {REPORTS.map((r) => (

@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { instituteApi, type InstituteModuleStatus } from "../api";
 import { instituteKeys } from "../keys";
+import { HowThisWorks } from "@/modules/institute/help/how-this-works";
 
 export function InstituteModulesPage() {
   const queryClient = useQueryClient();
@@ -42,6 +43,7 @@ export function InstituteModulesPage() {
   return (
     <>
       <PageHeader title="Modules" description="What your institute currently has access to." />
+      <HowThisWorks topic="modules" />
       <DataTable columns={columns} rows={query.data?.items} getRowId={(m) => m.key} isLoading={query.isPending} error={query.error} onRetry={() => query.refetch()} />
 
       <ConfirmDialog

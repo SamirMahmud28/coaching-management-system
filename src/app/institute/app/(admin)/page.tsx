@@ -6,6 +6,7 @@ import { PAID_MODULE_NAV } from "@/modules/institute/modules";
 import { db } from "@/server/core/db/client";
 import { requirePortal } from "@/server/modules/institute/current-user";
 import { getDashboardCounts } from "@/server/modules/portal/service";
+import { HowThisWorks } from "@/modules/institute/help/how-this-works";
 
 export const metadata: Metadata = { title: "Dashboard" };
 
@@ -34,6 +35,7 @@ export default async function InstituteDashboardPage() {
   return (
     <>
       <PageHeader title={`Welcome, ${session.name}`} description={session.tenant.name} />
+      <HowThisWorks topic="getting-started" />
       {stats.length > 0 && (
         <section aria-label="At a glance" className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
           {stats.map((s) => (

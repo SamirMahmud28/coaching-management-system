@@ -25,6 +25,7 @@ import { academicApi, studentsApi, type MembershipRow, type StudentDetail, type 
 import { instituteKeys } from "../../keys";
 import { StudentFeeAmountsCard } from "../fees/student-fee-amounts-card";
 import { GENDER_LABEL, RELATION_LABEL, StudentFieldsForm, studentFieldsFrom, studentFormFrom, studentFormMissing, type StudentFormValues } from "./student-fields";
+import { HowThisWorks } from "@/modules/institute/help/how-this-works";
 
 const STATUS_LABEL: Record<StudentStatus, string> = { ACTIVE: "Active", ON_HOLD: "On hold", COMPLETED: "Completed", LEFT: "Left" };
 // The decided moves (D9, D10, D18); the server enforces the same table.
@@ -125,6 +126,7 @@ export function StudentProfilePage({ id, perms }: { id: string; perms: StudentPe
           actions={actions}
         />
       </div>
+      <HowThisWorks topic="student-records" />
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
