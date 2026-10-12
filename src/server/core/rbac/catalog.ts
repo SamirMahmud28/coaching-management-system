@@ -30,11 +30,19 @@ export const PERMISSION_CATALOG = [
   // Core: portals. An instructor's own batches and their students (D24); a student's own records (D27).
   { name: "batches.own.view", module: "core" },
   { name: "student.self.view", module: "core" },
-  // Paid modules (placeholders until each module is built; Fees is complete below)
-  { name: "attendance.view", module: "attendance" },
+  // Paid modules (placeholders until each module is built; Attendance and Fees are complete below)
   { name: "routine.view", module: "routine" },
   { name: "exams.view", module: "exams" },
   { name: "website.manage", module: "website" },
+  // Attendance & Leave (D80–D95). Instructors' grants reach only their own batch subjects (checked per request, D24).
+  { name: "attendance.view", module: "attendance" },
+  { name: "attendance.take", module: "attendance" },
+  { name: "attendance.manage", module: "attendance" },
+  { name: "attendance.report.view", module: "attendance" },
+  { name: "leave.manage", module: "attendance" },
+  // A student's own attendance and leave (D27, D89).
+  { name: "attendance.self.view", module: "attendance" },
+  { name: "leave.self.apply", module: "attendance" },
   // Fees & Payments (D28–D44, D62–D65). Waivers, voids and refunds are kept apart for separation of duties (D35, D37, D63).
   { name: "fees.view", module: "fees" },
   { name: "fees.configure", module: "fees" },
@@ -69,7 +77,7 @@ export interface RoleTemplate {
 
 export const INSTITUTE_OWNER_ROLE = "Owner";
 
-/** System roles created for every new institute. Accountant follows D63, Instructor D24, Student D27. */
+/** System roles created for every new institute. Accountant follows D63 and D95, Instructor D24 and D81, Student D27 and D89. */
 export const ROLE_TEMPLATES: readonly RoleTemplate[] = [
   { name: INSTITUTE_OWNER_ROLE, grantsAll: true, permissions: [] },
   { name: "Admin", grantsAll: true, permissions: [] },
@@ -78,8 +86,8 @@ export const ROLE_TEMPLATES: readonly RoleTemplate[] = [
     grantsAll: false,
     permissions: ["academic.view", "students.view", "students.contact.view", "fees.view", "fees.configure", "fees.generate", "fees.collect", "fees.adjust", "fees.report.view"],
   },
-  { name: "Instructor", grantsAll: false, permissions: ["batches.own.view"] },
-  { name: "Student", grantsAll: false, permissions: ["student.self.view", "fees.self.view"] },
+  { name: "Instructor", grantsAll: false, permissions: ["batches.own.view", "attendance.view", "attendance.take", "attendance.report.view"] },
+  { name: "Student", grantsAll: false, permissions: ["student.self.view", "fees.self.view", "attendance.self.view", "leave.self.apply"] },
 ];
 
 export function resolveTemplatePermissions(template: RoleTemplate): PermissionName[] {

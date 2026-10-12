@@ -50,6 +50,13 @@
       "when": 1791793698443,
       "tag": "0006_fees_guards",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1791802641476,
+      "tag": "0007_attendance",
+      "breakpoints": true
     }
   ]
 }
