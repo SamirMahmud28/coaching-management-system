@@ -61,6 +61,15 @@ export async function requireModulePage(permission: PermissionName, portal: Port
   return ctx;
 }
 
+/**
+ * The print route, shared by every portal (a student reprints their own receipt, staff print anything they may see).
+ * Signed in only; the document pipeline then checks the type's module and permission (or own-record access) and
+ * answers 404 when either is missing.
+ */
+export async function requirePrintPage(): Promise<PageContext> {
+  return pageContext();
+}
+
 /** A portal's landing page or layout, which needs no particular permission beyond reaching that portal. */
 export async function requirePortal(portal: PortalKind): Promise<PageContext> {
   const ctx = await pageContext();

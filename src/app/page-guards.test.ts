@@ -19,13 +19,13 @@ async function pages(dir: string): Promise<string[]> {
 const rel = (file: string) => path.relative(process.cwd(), file).replaceAll("\\", "/");
 
 describe("page guards", () => {
-  it("every institute app page calls requireModulePage or requirePortal", async () => {
+  it("every institute app page calls requireModulePage, requirePortal or requirePrintPage", async () => {
     const files = await pages(path.join(process.cwd(), "src/app/institute/app"));
     expect(files.length).toBeGreaterThan(10);
     const unguarded = [];
     for (const file of files) {
       const source = await readFile(file, "utf8");
-      if (!/\b(requireModulePage|requirePortal)\(/.test(source)) unguarded.push(rel(file));
+      if (!/\b(requireModulePage|requirePortal|requirePrintPage)\(/.test(source)) unguarded.push(rel(file));
     }
     expect(unguarded).toEqual([]);
   });
