@@ -23,4 +23,6 @@ export const instituteKeys = {
   feeRuns: () => ["institute-fee-runs"],
   studentCharges: (id: string) => ["institute-student-charges", id],
   studentPayments: (id: string) => ["institute-student-payments", id],
+  attendanceDay: (date?: string) => ["institute-attendance-day", date ?? "today"],
+  register: (batchSubjectId: string, date: string, startsAt: string) => ["institute-register", batchSubjectId, date, startsAt],
 };

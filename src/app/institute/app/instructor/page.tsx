@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ChevronRight } from "lucide-react";
+import { CalendarCheck, ChevronRight } from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { WeekSchedule } from "@/modules/institute/components/portal/week-schedule";
 import { db } from "@/server/core/db/client";
@@ -10,14 +11,26 @@ import { getInstructorHome } from "@/server/modules/portal/service";
 
 export const metadata: Metadata = { title: "Instructor portal" };
 
-// The instructor's own batches and week (D24). Paid-module sections (attendance, marks, …) join when those modules exist.
+// The instructor's own batches and week (D24), with a shortcut to today's registers when Attendance is on.
 export default async function Page() {
-  const { session } = await requireModulePage("batches.own.view", "instructor");
+  const { session, permissions } = await requireModulePage("batches.own.view", "instructor");
   const home = await getInstructorHome(db, session.tenant.id, session.userId);
 
   return (
     <>
-      <PageHeader title={`Welcome, ${home.fullName}`} description={session.tenant.name} />
+      <PageHeader
+        title={`Welcome, ${home.fullName}`}
+        description={session.tenant.name}
+        actions={
+          permissions.has("attendance.view") ? (
+            <Button asChild>
+              <Link href="/app/instructor/attendance">
+                <CalendarCheck /> Today&apos;s attendance
+              </Link>
+            </Button>
+          ) : null
+        }
+      />
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>

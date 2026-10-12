@@ -8,9 +8,10 @@ import { helpTopic, type HelpTopicKey } from "./content";
 
 /**
  * The "How this works" panel at the top of a feature page (D96): what the feature is for, its steps and the rules the
- * system enforces, with a link to the full guide. Collapsed until clicked (D98).
+ * system enforces, with a link to the full guide. Collapsed until clicked (D98). The portals have no Help centre, so
+ * their pages pass `fullGuide={false}` and show the common questions in the panel instead.
  */
-export function HowThisWorks({ topic }: { topic: HelpTopicKey }) {
+export function HowThisWorks({ topic, fullGuide = true }: { topic: HelpTopicKey; fullGuide?: boolean }) {
   const t = helpTopic(topic);
   const [open, setOpen] = useState(false);
 
@@ -44,10 +45,23 @@ export function HowThisWorks({ topic }: { topic: HelpTopicKey }) {
               </div>
             )}
           </div>
+          {!fullGuide && t.faqs.length > 0 && (
+            <div className="space-y-2">
+              <p className="font-medium">Common questions</p>
+              {t.faqs.map((f) => (
+                <details key={f.q} className="rounded-md border px-3 py-2">
+                  <summary className="cursor-pointer font-medium">{f.q}</summary>
+                  <p className="mt-1 text-muted-foreground">{f.a}</p>
+                </details>
+              ))}
+            </div>
+          )}
           <div className="flex flex-wrap items-center gap-3">
-            <Button variant="link" className="h-auto p-0" asChild>
-              <Link href={`/app/help#${t.key}`}>Read the full guide{t.faqs.length ? " and common questions" : ""} →</Link>
-            </Button>
+            {fullGuide && (
+              <Button variant="link" className="h-auto p-0" asChild>
+                <Link href={`/app/help#${t.key}`}>Read the full guide{t.faqs.length ? " and common questions" : ""} →</Link>
+              </Button>
+            )}
             <Button variant="ghost" size="sm" className="ml-auto h-7" onClick={() => setOpen(false)}>
               Hide
             </Button>

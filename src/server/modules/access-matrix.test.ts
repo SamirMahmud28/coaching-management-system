@@ -15,6 +15,7 @@ import * as academic from "./academic/service";
 import { createAcademicHandlers } from "./academic/http";
 import { createLogin } from "./auth/credentials";
 import { createTenantAuth } from "./auth/tenant-auth";
+import { createAttendanceHandlers } from "./attendance/http";
 import { createFeesHandlers } from "./fees/http";
 import { createFilesHandlers } from "./files/http";
 import { setModules } from "../core/testing/modules";
@@ -43,7 +44,10 @@ let storage: LocalDiskStorage;
 
 const DUMMY = "00000000-0000-4000-8000-000000000000";
 type Entity = "COURSE" | "SUBJECT" | "BATCH" | "BATCH_SUBJECT" | "SCHEDULE_SLOT" | "STUDENT" | "MEMBERSHIP" | "INSTRUCTOR" | "USER" | "SIGNATURE" | "FILE" | "FEE_ITEM" | "STUDENT_FEE_AMOUNT" | "FEE_RUN" | "FEE_CHARGE" | "FEE_PAYMENT";
-type Factory = "academic" | "students" | "instructors" | "institute" | "settings" | "files" | "fees";
+type Factory = "academic" | "students" | "instructors" | "institute" | "settings" | "files" | "fees" | "attendance";
+/** Paid modules: each handler of these factories is refused while its module is off. */
+const PAID: Partial<Record<Factory, "fees" | "attendance">> = { fees: "fees", attendance: "attendance" };
+const TODAY = todayInDhaka();
 
 interface Entry {
   factory: Factory;
@@ -55,6 +59,8 @@ interface Entry {
   id?: Entity;
   /** A well-formed body, so a request with another institute's id reaches the id lookup. */
   body?: unknown;
+  /** A well-formed query string, for the same reason. */
+  query?: Record<string, string>;
 }
 
 const student = {
@@ -149,6 +155,12 @@ const HANDLERS: Entry[] = [
   { factory: "fees", name: "collectionReport", method: "GET", permission: "fees.report.view" },
   { factory: "fees", name: "duesReport", method: "GET", permission: "fees.report.view" },
   { factory: "fees", name: "refundsReport", method: "GET", permission: "fees.report.view" },
+  // attendance (paid module)
+  { factory: "attendance", name: "classes", method: "GET", permission: "attendance.view" },
+  { factory: "attendance", name: "getRegister", method: "GET", permission: "attendance.view", id: "BATCH_SUBJECT", query: { date: TODAY, starts_at: "09:00" } },
+  { factory: "attendance", name: "saveRegister", method: "PUT", permission: "attendance.take", id: "BATCH_SUBJECT", body: { date: TODAY, starts_at: "09:00", marks: [] } },
+  { factory: "attendance", name: "markNotHeld", method: "POST", permission: "attendance.take", id: "BATCH_SUBJECT", body: { date: TODAY, starts_at: "09:00", reason: "Holiday" } },
+  { factory: "attendance", name: "addExtraClass", method: "POST", permission: "attendance.take", id: "BATCH_SUBJECT", body: { date: TODAY, starts_at: "18:00", ends_at: "19:00" } },
 ];
 /** Handlers deliberately outside the matrix, with the reason. */
 const OUTSIDE: Partial<Record<Factory, Record<string, string>>> = { files: { publicLogo: "public by design: the host's logo while its public page is shown (D58)" } };
@@ -158,7 +170,8 @@ let factories: Record<Factory, Handlers>;
 
 const HOST = (sub: string) => `${sub}.localhost:3000`;
 function call(entry: Entry, sub: string, cookie: string | null, id = DUMMY) {
-  const request = new Request(`http://${HOST(sub)}/api/v1/matrix`, {
+  const qs = entry.query ? `?${new URLSearchParams(entry.query)}` : "";
+  const request = new Request(`http://${HOST(sub)}/api/v1/matrix${qs}`, {
     method: entry.method,
     headers: { host: HOST(sub), origin: `http://${HOST(sub)}`, "content-type": "application/json", ...(cookie ? { cookie } : {}) },
     body: entry.method === "GET" || entry.method === "DELETE" ? undefined : JSON.stringify(entry.body ?? {}),
@@ -211,6 +224,7 @@ beforeAll(async () => {
     settings: createSettingsHandlers({ db, auth, host }) as unknown as Handlers,
     files: createFilesHandlers({ db, auth, host, storage }) as unknown as Handlers,
     fees: createFeesHandlers({ db, auth, host }) as unknown as Handlers,
+    attendance: createAttendanceHandlers({ db, auth, host }) as unknown as Handlers,
   };
 
   const institute = async (sub: string) => {
@@ -224,7 +238,7 @@ beforeAll(async () => {
 
   // Institute A: one user per baseline role, and one per guarded permission holding only that permission.
   const inst = await institute("matrix-a");
-  await setModules(db, inst.tenant.id, ["fees"]);
+  await setModules(db, inst.tenant.id, ["fees", "attendance"]);
   a = { id: inst.tenant.id, sub: "matrix-a" };
   const perms = await testDb.select().from(permissionRows);
   for (const role of BASELINE) {
@@ -248,7 +262,7 @@ beforeAll(async () => {
 
   // Institute B: one record of every kind a path id can name.
   const b = await institute("matrix-b");
-  await setModules(db, b.tenant.id, ["fees"]);
+  await setModules(db, b.tenant.id, ["fees", "attendance"]);
   const actor = { tenantId: b.tenant.id, userId: b.owner.id };
   const course = await academic.createCourse(db, actor, { name: "B course", code: "BC", dueDay: 10 });
   const subject = await academic.createSubject(db, actor, course.id, { name: "B subject" });
@@ -298,7 +312,7 @@ describe("access matrix: catalogue", () => {
       }
     };
     await walk(root);
-    const moduleOf: Record<string, Factory> = { academic: "academic", students: "students", instructors: "instructors", institute: "institute", settings: "settings", files: "files", fees: "fees" };
+    const moduleOf: Record<string, Factory> = { academic: "academic", students: "students", instructors: "instructors", institute: "institute", settings: "settings", files: "files", fees: "fees", attendance: "attendance" };
     const seen: string[] = [];
     for (const file of files) {
       const rel = path.relative(root, file).replaceAll("\\", "/");
@@ -346,15 +360,15 @@ describe("access matrix: who passes the guard", () => {
 });
 
 describe("access matrix: paid module switched off", () => {
-  it("refuses every handler of a switched-off module, even to the Owner, and leaves Core alone", async () => {
-    await setModules(db, a.id, ["fees"], false);
+  it.each(["fees", "attendance"] as const)("refuses every %s handler while it's off, even to the Owner, and leaves everything else alone", async (key) => {
+    await setModules(db, a.id, [key], false);
     try {
       for (const entry of HANDLERS) {
         const got = await outcome(await call(entry, a.sub, cookies[INSTITUTE_OWNER_ROLE]));
-        expect(got, `${entry.factory}.${entry.name} with fees off`).toBe(entry.factory === "fees" ? "module-off" : "passed");
+        expect(got, `${entry.factory}.${entry.name} with ${key} off`).toBe(PAID[entry.factory] === key ? "module-off" : "passed");
       }
     } finally {
-      await setModules(db, a.id, ["fees"]);
+      await setModules(db, a.id, [key]);
     }
   });
 });

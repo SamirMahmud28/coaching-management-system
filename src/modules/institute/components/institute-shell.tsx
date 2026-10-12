@@ -1,6 +1,6 @@
 "use client";
 
-import { BookOpen, CircleHelp, GraduationCap, LayoutDashboard, PauseCircle, ScrollText, Settings, ToggleLeft, UserRound, Users } from "lucide-react";
+import { BookOpen, CalendarCheck, CircleHelp, GraduationCap, LayoutDashboard, PauseCircle, ScrollText, Settings, ToggleLeft, UserRound, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { AppShell, type NavItem } from "@/components/shell/app-shell";
 import { Badge } from "@/components/ui/badge";
@@ -15,7 +15,12 @@ const PORTAL_BADGE: Record<PortalKind, string | null> = { admin: null, instructo
  * link appears only when its page would open (unlike the EMS, which listed modules regardless of permission).
  */
 function buildNav(portal: PortalKind, permissions: ReadonlySet<string>): NavItem[] {
-  if (portal === "instructor") return [{ href: "/app/instructor", label: "Dashboard", icon: LayoutDashboard, exact: true }];
+  if (portal === "instructor") {
+    return [
+      { href: "/app/instructor", label: "Dashboard", icon: LayoutDashboard, exact: true },
+      ...(permissions.has("attendance.view") ? [{ href: "/app/instructor/attendance", label: "Attendance", icon: CalendarCheck }] : []),
+    ];
+  }
   if (portal === "student") return [{ href: "/app/student", label: "Dashboard", icon: LayoutDashboard, exact: true }];
   const can = (p: string) => permissions.has(p);
   return [

@@ -506,3 +506,84 @@ export const reportsApi = {
 
 export const reportPrintUrl = (report: FeeReportKind, q: ReportFilters) =>
   `/app/print/fee-report?${new URLSearchParams({ report, ...Object.fromEntries(Object.entries(q).filter(([, v]) => v)) }).toString()}`;
+
+// Attendance (paid module): class registers (D80–D86).
+export type AttendanceStatus = "PRESENT" | "ABSENT" | "LATE" | "EXCUSED";
+export type ClassState = "NOT_TAKEN" | "OPEN" | "TAKEN" | "NOT_HELD";
+
+export interface DayClassRow {
+  batch_subject_id: string;
+  batch_id: string;
+  batch_name: string;
+  course_name: string;
+  subject_name: string;
+  starts_at: string;
+  ends_at: string;
+  source: "SCHEDULED" | "EXTRA";
+  class_id: string | null;
+  state: ClassState;
+  not_held_reason: string | null;
+  counts: { present: number; absent: number; late: number; excused: number } | null;
+}
+
+export interface RegisterSubject {
+  id: string;
+  batch_id: string;
+  batch_name: string;
+  course_name: string;
+  subject_name: string;
+}
+
+export interface DayClasses {
+  date: string;
+  today: string;
+  classes: DayClassRow[];
+  subjects: RegisterSubject[];
+}
+
+export interface RegisterRow {
+  student_id: string;
+  membership_id: string;
+  student_code: string;
+  full_name: string;
+  photo_file_id: string | null;
+  roll_number: string | null;
+  status: AttendanceStatus | null;
+  on_leave: boolean;
+  effective: AttendanceStatus | null;
+}
+
+export interface Register {
+  batch_subject_id: string;
+  batch_name: string;
+  course_name: string;
+  subject_name: string;
+  date: string;
+  starts_at: string;
+  ends_at: string;
+  source: "SCHEDULED" | "EXTRA";
+  class_id: string | null;
+  state: ClassState;
+  not_held_reason: string | null;
+  can_edit: boolean;
+  reason_required: boolean;
+  why_not: string | null;
+  rows: RegisterRow[];
+}
+
+export interface ClassRef {
+  date: string;
+  starts_at: string;
+}
+
+const registerPath = (batchSubjectId: string) => `/api/v1/attendance/batch-subjects/${batchSubjectId}`;
+
+export const attendanceApi = {
+  classes: (date?: string) => apiFetch<DayClasses>("/api/v1/attendance/classes", { query: date ? { date } : {} }),
+  register: (batchSubjectId: string, at: ClassRef) => apiFetch<Register>(`${registerPath(batchSubjectId)}/register`, { query: { ...at } }),
+  save: (batchSubjectId: string, body: ClassRef & { marks: { student_id: string; status: AttendanceStatus }[]; reason?: string | null }) =>
+    apiFetch<Register>(`${registerPath(batchSubjectId)}/register`, { method: "PUT", body }),
+  notHeld: (batchSubjectId: string, body: ClassRef & { reason: string }) => apiFetch<Register>(`${registerPath(batchSubjectId)}/not-held`, { body }),
+  addExtra: (batchSubjectId: string, body: ClassRef & { ends_at: string }) =>
+    apiFetch<{ id: string; date: string; starts_at: string; ends_at: string }>(`${registerPath(batchSubjectId)}/extra-classes`, { body }),
+};

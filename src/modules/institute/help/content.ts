@@ -9,7 +9,7 @@ export interface HelpTopic {
   key: HelpTopicKey;
   title: string;
   /** Shown as the Help centre's section. */
-  area: "Getting started" | "Teaching" | "Students" | "Staff and access" | "Institute" | "Fees";
+  area: "Getting started" | "Teaching" | "Students" | "Staff and access" | "Institute" | "Fees" | "Attendance";
   /** The topic appears in the Help centre only for users holding this (permissions are already limited to active modules). */
   permission: PermissionName | null;
   summary: string;
@@ -32,7 +32,8 @@ export type HelpTopicKey =
   | "fees-setup"
   | "fees-generate"
   | "fees-student"
-  | "fees-reports";
+  | "fees-reports"
+  | "attendance-registers";
 
 export const HELP_TOPICS: readonly HelpTopic[] = [
   {
@@ -326,6 +327,34 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
       "Overdue means due before today.",
     ],
     faqs: [{ q: "Why is a payment shown with a smaller amount when I filter by course?", a: "A payment can cover charges of two courses; the report shows only the part that belongs to the chosen course." }],
+  },
+  {
+    key: "attendance-registers",
+    title: "Taking attendance",
+    area: "Attendance",
+    permission: "attendance.view",
+    summary: "Each class has its own register. Pick the day, open a class, tap anyone who is absent, late or excused, and save — everyone else is Present.",
+    steps: [
+      "Open Attendance. Today's classes are listed from each batch's weekly schedule; use the arrows or the date box to see another day.",
+      "Click a class to open its register. A register not taken yet starts with everyone Present.",
+      "Tap A (Absent), L (Late) or E (Excused) for the exceptions, then click Save register.",
+      "If a scheduled class didn't happen, click No class held and give the reason instead.",
+      "For a make-up class that isn't on the schedule, click Extra class, choose the batch and subject, the date and the times, then take its register.",
+    ],
+    rules: [
+      "Instructors see and take registers only for the subjects they teach. Owner and Admin see every class.",
+      "A register can be taken or changed only on the class day (Bangladesh time). After that, only Owner or Admin can take or correct it, and they must give a reason.",
+      "Every change after the first save is recorded in the audit log with the old and new status.",
+      "Registers list the batch's current students on that day. Students On Hold are left off, and students who joined later don't appear on earlier registers.",
+      "A student on approved leave shows as Excused automatically.",
+      "Attendance percentage is (Present + Late) ÷ (Present + Late + Absent). Excused classes and classes not held count neither way.",
+      "Nothing can be marked for a future class.",
+    ],
+    faqs: [
+      { q: "I forgot to take yesterday's register.", a: "Ask an Owner or Admin. They can open yesterday's class and take it, with a reason such as 'Taken on paper'." },
+      { q: "A student is missing from the register.", a: "They are either On Hold, not in this batch, or joined the batch after this day. Check the student's batches on their profile." },
+      { q: "I marked a class as not held by mistake.", a: "On the same day, open it and take the register — it becomes a normal class again. Later, ask an Admin." },
+    ],
   },
 ];
 
