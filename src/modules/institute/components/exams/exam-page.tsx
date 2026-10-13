@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Lock, Pencil, Trash2 } from "lucide-react";
+import { ArrowLeft, Lock, Pencil, Trash2, Trophy } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -21,7 +21,7 @@ import { EXAM_STATE } from "./exams-tabs";
 
 const m = (v: string | null) => (v === null ? "—" : v.endsWith(".00") ? v.slice(0, -3) : v);
 
-/** One exam: its details, batches and papers, each paper linking to its marks (E3). Results (E4) join this page. */
+/** One exam: its details, batches and papers, each paper linking to its marks, and its results. */
 export function ExamPage({ base, examId, canManage, fullGuide = true }: { base: string; examId: string; canManage: boolean; fullGuide?: boolean }) {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -44,6 +44,11 @@ export function ExamPage({ base, examId, canManage, fullGuide = true }: { base: 
         actions={
           <>
             <StatusBadge status={e.state} label={state.label} tone={state.tone} />
+            <Button asChild>
+              <Link href={`${base}/${e.id}/results`}>
+                <Trophy /> Results
+              </Link>
+            </Button>
             {canManage && (
               <Button variant="outline" asChild>
                 <Link href={`${base}/${e.id}/edit`}>

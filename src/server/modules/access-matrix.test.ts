@@ -190,6 +190,8 @@ const HANDLERS: Entry[] = [
   { factory: "exams", name: "resetGradeScale", method: "DELETE", permission: "exams.manage" },
   { factory: "exams", name: "getRoster", method: "GET", permission: "exams.view", id: "EXAM_PAPER" },
   { factory: "exams", name: "saveMarks", method: "PUT", permission: "exams.marks.enter", id: "EXAM_PAPER", body: { entries: [{ student_id: DUMMY, absent: true }] } },
+  { factory: "exams", name: "getResults", method: "GET", permission: "exams.view", id: "EXAM" },
+  { factory: "exams", name: "publishExam", method: "POST", permission: "exams.publish", id: "EXAM" },
 ];
 /** Handlers deliberately outside the matrix, with the reason. */
 const OUTSIDE: Partial<Record<Factory, Record<string, string>>> = { files: { publicLogo: "public by design: the host's logo while its public page is shown (D58)" } };

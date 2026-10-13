@@ -5,7 +5,7 @@ import type { PermissionName } from "../rbac/catalog";
 // The document engine's contract (ported from the EMS without QR codes, verification or card layouts: D64). Modules
 // declare document types; the engine checks access, loads records, audits the print and lays them out on A4.
 
-export type DocumentTypeKey = "fee-receipt" | "fee-report" | "attendance-register";
+export type DocumentTypeKey = "fee-receipt" | "fee-report" | "attendance-register" | "exam-marksheet" | "exam-merit-list";
 
 export type DocumentFormat =
   /** A4 documents, one or two per page (two for half-page receipts). */

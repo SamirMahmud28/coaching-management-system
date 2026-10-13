@@ -152,6 +152,78 @@ test("E3: the Owner enters Chemistry marks; Physics is now locked in the exam fo
   await expect(page.locator("#paper-full-0")).toBeDisabled();
 });
 
+// By now: Physics — Anika 60 + 25, Bushra Absent, Chaity 20 + 9.5 (below both part pass marks);
+// Chemistry (optional) — Anika 40, Bushra 30, Chaity not taken.
+test("E4: the Owner reviews the combined merit list and publishes the whole exam (D103, D108, D110)", async ({ page }) => {
+  await signInAsOwner(page);
+  await page.goto(url("/app/exams"));
+  await page.getByTestId("exams-list").getByRole("link", { name: /Model test 1/ }).click();
+  await page.getByRole("link", { name: "Results" }).click();
+
+  const results = page.getByTestId("results");
+  await expect(results.getByTestId(`result-${codes[0]}`)).toContainText("Passed");
+  await expect(results.getByTestId(`result-${codes[0]}`)).toContainText("5.00"); // 4th-subject bonus, capped
+  await expect(results.getByTestId(`result-${codes[1]}`)).toContainText("Failed"); // absent from a compulsory paper
+  await expect(results.getByTestId(`result-${codes[2]}`)).toContainText("Failed");
+  await expect(results.getByRole("row").nth(1)).toContainText("Anika Rahman");
+
+  const [merit] = await Promise.all([page.waitForEvent("popup"), page.getByRole("link", { name: "Print merit list" }).click()]);
+  await expect(merit.getByText("DRAFT — not published")).toBeVisible();
+  await merit.close();
+
+  await page.getByRole("button", { name: "Publish results" }).click();
+  await page.getByRole("alertdialog").getByRole("button", { name: "Publish results" }).click();
+  await expect(page.getByText("Results published.")).toBeVisible();
+  await expect(page.getByText("Published", { exact: true })).toBeVisible();
+
+  const [sheet] = await Promise.all([page.waitForEvent("popup"), results.getByTestId(`result-${codes[0]}`).getByRole("link", { name: "Marksheet" }).click()]);
+  await expect(sheet.getByTestId("marksheet-result")).toHaveText("Passed");
+  await expect(sheet.getByText("1 of 3")).toBeVisible();
+});
+
+test("E4: the instructor sees the results of their batch but can't publish or change marks (D24, D107)", async ({ page }) => {
+  await signIn(page, TEACHER.email, TEACHER.password);
+  await expect(page).toHaveURL(url("/app/instructor"));
+  await page.goto(url("/app/instructor/exams"));
+  await page.getByTestId("exams-list").getByRole("link", { name: /Model test 1/ }).click();
+  await page.getByRole("link", { name: "Results" }).click();
+  await expect(page.getByTestId("results").getByText("Anika Rahman")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Publish results" })).toHaveCount(0);
+  await page.getByRole("link", { name: /Model test 1/ }).first().click();
+  await page.getByTestId("exam-papers").getByRole("row", { name: /Physics/ }).getByRole("link", { name: "Marks" }).click();
+  await expect(page.getByText(/Ask an Owner or Admin to correct a mark/)).toBeVisible();
+});
+
+test("E4: the student sees the published result with position and prints the marksheet (D27)", async ({ page }) => {
+  await signIn(page, codes[0], "Student123");
+  await expect(page).toHaveURL(url("/app/student"));
+  await page.getByRole("link", { name: "Results", exact: true }).click();
+  const mine = page.getByTestId("my-results");
+  await expect(mine).toContainText("Model test 1 (SSC)");
+  await expect(mine).toContainText("Position 1 of 3");
+  const [sheet] = await Promise.all([page.waitForEvent("popup"), mine.getByRole("link", { name: "Marksheet" }).click()]);
+  await expect(sheet.getByTestId("marksheet-result")).toHaveText("Passed");
+});
+
+test("E4: the Owner corrects a published mark with a reason; the result and positions update (D107)", async ({ page }) => {
+  await signInAsOwner(page);
+  await page.goto(url("/app/exams"));
+  await page.getByTestId("exams-list").getByRole("link", { name: /Model test 1/ }).click();
+  await page.getByTestId("exam-papers").getByRole("row", { name: /Physics/ }).getByRole("link", { name: "Marks" }).click();
+  await page.getByLabel("Chaity Das Written").fill("25");
+  await page.getByLabel("Chaity Das MCQ").fill("10");
+  await expect(page.getByRole("button", { name: "Save 1 change" })).toBeDisabled(); // a reason is needed
+  await page.getByLabel("Reason for correcting published marks").fill("Re-checked the script");
+  await page.getByRole("button", { name: "Save 1 change" }).click();
+  await expect(page.getByText("1 mark saved.")).toBeVisible();
+
+  await page.getByRole("link", { name: /Model test 1/ }).first().click();
+  await page.getByRole("link", { name: "Results" }).click();
+  const chaity = page.getByTestId(`result-${codes[2]}`);
+  await expect(chaity).toContainText("Passed");
+  await expect(page.getByTestId("results").getByRole("row").nth(2)).toContainText("Chaity Das"); // now second
+});
+
 test("Exams disappear while the module is off (D5)", async ({ page }) => {
   await setInstituteModules(INSTITUTE.subdomain, { exams: false });
   try {

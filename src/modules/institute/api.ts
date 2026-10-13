@@ -848,3 +848,56 @@ export const marksApi = {
   roster: (paperId: string) => apiFetch<Roster>(`/api/v1/exam-papers/${paperId}/marks`),
   save: (paperId: string, body: { entries: MarkEntryWire[]; reason?: string | null }) => apiFetch<Roster & { saved: number }>(`/api/v1/exam-papers/${paperId}/marks`, { method: "PUT", body }),
 };
+
+export interface PaperOutcomeWire {
+  paper_id: string;
+  name: string;
+  optional: boolean;
+  full_marks: number;
+  pass_marks: number;
+  status: "PASSED" | "FAILED" | "ABSENT" | "PENDING" | "NOT_TAKEN";
+  obtained: number | null;
+  grade: string | null;
+  grade_point: number | null;
+  parts: { name: string; full_marks: number; pass_marks: number | null; obtained: number | null; passed: boolean | null }[];
+}
+
+export interface StudentOutcomeWire {
+  papers: PaperOutcomeWire[];
+  status: "COMPLETE" | "PENDING" | "ABSENT";
+  total_obtained: number;
+  total_full: number;
+  passed: boolean | null;
+  failed_papers: number;
+  gpa: number | null;
+  grade: string | null;
+}
+
+export interface ResultRowWire {
+  student_id: string;
+  student_code: string;
+  full_name: string;
+  batch_id: string;
+  batch_name: string;
+  roll_number: string | null;
+  position: number | null;
+  outcome: StudentOutcomeWire;
+}
+
+export interface ExamResults {
+  exam: { id: string; name: string; kind: ExamKind; course_name: string; starts_on: string; ends_on: string; state: ExamState; show_grades: boolean; published_at: string | null };
+  batches: { id: string; name: string }[];
+  papers: { id: string; subject_name: string; full_marks: string; pass_marks: string; optional: boolean }[];
+  summary: { sitting: number; passed: number; failed: number; absent: number; pending: number; highest: number | null; average: number | null };
+  missing: { student_id: string; student_code: string; full_name: string; batch_name: string; papers: string[] }[];
+  rows: ResultRowWire[];
+}
+
+export const resultsApi = {
+  get: (examId: string, batchId?: string) => apiFetch<ExamResults>(`/api/v1/exams/${examId}/results`, { query: batchId ? { batch_id: batchId } : {} }),
+  publish: (examId: string) => apiFetch<{ published_at: string; sitting: number; passed: number; failed: number; absent: number }>(`/api/v1/exams/${examId}/publish`, { method: "POST" }),
+};
+
+const printQuery = (q: Record<string, string | undefined>) => new URLSearchParams(Object.entries(q).filter((e): e is [string, string] => !!e[1])).toString();
+export const marksheetUrl = (q: { exam: string; student?: string; batch?: string }) => `/app/print/exam-marksheet?${printQuery(q)}`;
+export const meritListUrl = (q: { exam: string; batch?: string }) => `/app/print/exam-merit-list?${printQuery(q)}`;

@@ -7,6 +7,7 @@ import type { TenantAuth } from "../auth/tenant-auth";
 import { withAuthorization } from "../authorization/service";
 import * as grading from "./grading";
 import * as markEntry from "./marks";
+import * as results from "./results";
 import * as setup from "./setup";
 
 export interface ExamsHttpDeps {
@@ -40,6 +41,7 @@ const markEntryBody = z.object({
   parts: z.array(z.object({ part_id: z.uuid(), obtained: marks })).max(6).optional(),
 });
 const marksBody = z.object({ entries: z.array(markEntryBody).max(1000), reason: z.string().max(300).nullable().optional() });
+const resultsQuery = z.object({ batch_id: z.uuid().optional() });
 const scaleBody = z.object({ bands: z.array(z.object({ grade: z.string().max(5), min_percent: z.number(), grade_point: z.number() })).max(15) });
 
 const toInput = (b: z.infer<typeof updateBody>) => ({
@@ -137,6 +139,21 @@ export function createExamsHandlers({ db, auth, host }: ExamsHttpDeps) {
             entries: b.entries.map((e) => ({ studentId: e.student_id, clear: e.clear, absent: e.absent, obtained: e.obtained, parts: e.parts?.map((p) => ({ partId: p.part_id, obtained: p.obtained })) })),
           }),
         );
+      }),
+
+    // GET /api/v1/exams/:id/results?batch_id= — the combined merit list, scoped to the viewer (D24, D109)
+    getResults: (request: Request, params: { id: string }) =>
+      handle(async () => {
+        const viewer = await authorize(request, "exams.view");
+        const q = parseQuery(request, resultsQuery);
+        return json(await results.getResults(db, viewer, pathId(params.id, "EXAM"), { batchId: q.batch_id }));
+      }),
+
+    // POST /api/v1/exams/:id/publish — the whole exam, once every mark is in (D110, D113)
+    publishExam: (request: Request, params: { id: string }) =>
+      handle(async () => {
+        const actor = await authorize(request, "exams.publish");
+        return json(await results.publishExam(db, actor, pathId(params.id, "EXAM")));
       }),
 
     // DELETE /api/v1/exams/grade-scale — back to the BD 5.0 default

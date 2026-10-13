@@ -40,7 +40,9 @@ export type HelpTopicKey =
   | "attendance-reports"
   | "exams-setup"
   | "exams-grading"
-  | "exams-marks";
+  | "exams-marks"
+  | "exams-results"
+  | "results-student";
 
 export const HELP_TOPICS: readonly HelpTopic[] = [
   {
@@ -534,6 +536,47 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
       { q: "I entered a mark for the wrong student.", a: "While the exam is a draft, clear the boxes (or untick Absent) and save; then enter it for the right student." },
       { q: "A student isn't on the list.", a: "They are On Hold, joined the batch after the exam's first day, or are in a batch that doesn't sit the exam." },
     ],
+  },
+  {
+    key: "exams-results",
+    title: "Results and publishing",
+    area: "Exams",
+    permission: "exams.view",
+    summary: "Results are worked out from the marks as soon as they are entered. When every mark is in, Owner or Admin publish the exam and students see their results and marksheets.",
+    steps: [
+      "Open the exam and click Results. The merit list ranks every batch together; choose a batch to see just its students (with their overall position).",
+      "While it's a draft, the note at the top lists anyone still missing a mark. Enter the mark or tick Absent.",
+      "Click Publish results. All batches are published together.",
+      "Print the merit list, or marksheets for everyone, a batch, or one student.",
+    ],
+    rules: [
+      "Positions: students who passed come first, then higher total marks, then higher GPA (when grades are shown). Equal students share a position and the next one is skipped (1, 1, 3).",
+      "A student absent from every paper isn't ranked. A student who failed is ranked after everyone who passed.",
+      "The total includes an optional (4th) subject only if the student sat it.",
+      "Results can't be published while anyone is missing a mark in a compulsory paper. An optional paper left empty means the student didn't take it.",
+      "Publishing keeps the current grading scale with the exam, so a later change to the scale doesn't change these grades.",
+      "After publishing, Owner or Admin can correct a mark with a reason; the result and positions update straight away and the change is in the audit log.",
+      "Students only ever see published results. Instructors see the results of their own batches.",
+      "Marksheets print once results are published; the merit list can be printed as a draft for checking.",
+    ],
+    faqs: [
+      { q: "Publishing says marks are missing.", a: "The message names each student and paper. Open that paper's marks, enter the mark or tick Absent, then publish again." },
+      { q: "Why did a student's position change after publishing?", a: "A mark was corrected. Corrections update everyone's positions; the audit log shows who changed what and why." },
+    ],
+  },
+  {
+    key: "results-student",
+    title: "Your results",
+    area: "Exams",
+    permission: "exams.self.view",
+    summary: "Your exam results appear here once the office publishes them, with your marks in each subject, your total, GPA (when shown) and your position.",
+    steps: ["Open Results to see each published exam.", "Click Marksheet to open your marksheet, then print it or save it as a PDF."],
+    rules: [
+      "Your position is among everyone who sat the exam, across all batches.",
+      "An optional (4th) subject only adds the part of its grade point above 2.0 to your GPA, and never fails you.",
+      "If a mark is corrected after publishing, your result here updates.",
+    ],
+    faqs: [{ q: "I think a mark is wrong.", a: "Talk to your instructor or the office. Only Owner or Admin can correct a published mark." }],
   },
 ];
 
