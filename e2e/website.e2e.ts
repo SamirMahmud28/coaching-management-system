@@ -58,14 +58,25 @@ test("before any edit, the website shows the institute's name and its courses (D
   await expect(page.getByTestId("section-about")).toHaveCount(0); // nothing written yet
 });
 
-test("W1: the Owner designs the website and it is public at once (D124, D126, D131, D133)", async ({ page }) => {
+test("W1 + W5: the Owner designs the website and it is public at once (D124, D126, D131, D133, D135, D136)", async ({ page }) => {
   await signInAsOwner(page);
   await page.getByRole("link", { name: "Website", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Website" })).toBeVisible();
 
-  await page.getByRole("radio", { name: /Bold/ }).click();
+  // Look: a theme brings its own fonts and shapes; colours, background and appearance are then set by hand.
+  await page.getByRole("radio", { name: /^Bold/ }).click();
+  await expect(page.getByText("Fonts, shapes and background now follow Bold.")).toBeVisible();
+  await expect(page.getByLabel("Heading font")).toContainText("Montserrat");
   await page.getByLabel("Heading font").click();
   await page.getByRole("option", { name: /Poppins/ }).click();
+  await page.getByRole("radio", { name: "Jamdani" }).click();
+  await page.getByRole("radio", { name: "Ember" }).click();
+  await page.getByRole("radiogroup", { name: "Buttons" }).getByRole("radio", { name: /Gradient/ }).click();
+  await page.getByRole("radiogroup", { name: "Cards" }).getByRole("radio", { name: /Frosted glass/ }).click();
+  await page.getByRole("radiogroup", { name: "Background" }).getByRole("radio", { name: /Nakshi Kantha/ }).click();
+  await page.getByRole("radio", { name: /Always dark/ }).click();
+
+  await page.getByRole("tab", { name: "Banner & About" }).click();
   await page.getByLabel("Heading", { exact: true }).first().fill("Your path to GPA 5");
   await page.getByLabel("Line under the heading").fill("SSC and HSC coaching in Mirpur since 2010");
   await page.locator("#hero_image").setInputFiles(await picture());
@@ -73,6 +84,7 @@ test("W1: the Owner designs the website and it is public at once (D124, D126, D1
   await page.getByLabel("Button", { exact: true }).click();
   await page.getByRole("option", { name: /^Call/ }).click();
   await page.getByLabel("Text", { exact: true }).fill("Small batches, weekly tests and caring teachers.");
+  await page.getByRole("tab", { name: "Sections" }).click();
   await page.getByLabel("Show Courses & batches").click();
   await page.getByRole("button", { name: "Move Contact & map up" }).click();
   await page.getByRole("button", { name: "Save website" }).click();
@@ -81,6 +93,12 @@ test("W1: the Owner designs the website and it is public at once (D124, D126, D1
   await page.goto(url("/"));
   const site = page.getByTestId("website");
   await expect(site).toHaveAttribute("data-site-theme", "bold");
+  await expect(site).toHaveAttribute("data-site-button", "GRADIENT");
+  await expect(site).toHaveAttribute("data-site-card", "GLASS");
+  await expect(site).toHaveClass(/(^| )dark( |$)/);
+  expect(await site.evaluate((el) => getComputedStyle(el).getPropertyValue("--site-primary").trim())).toBe("#1e3a5f");
+  await expect(page.getByTestId("site-background")).toHaveCount(1);
+  await expect(page.getByRole("button", { name: "Change theme" })).toHaveCount(0); // fixed dark: no switch
   await expect(page.getByTestId("hero-heading")).toHaveText("Your path to GPA 5");
   await expect(page.getByRole("region", { name: "Welcome" }).getByRole("link", { name: "Call 01711-222333" })).toHaveAttribute("href", "tel:01711222333");
   const heroLoaded = await page.locator("section[aria-label='Welcome'] img").evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0);

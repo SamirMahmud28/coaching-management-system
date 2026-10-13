@@ -1,0 +1,23 @@
+ALTER TYPE "public"."website_font" ADD VALUE 'MONTSERRAT';--> statement-breakpoint
+ALTER TYPE "public"."website_font" ADD VALUE 'LATO';--> statement-breakpoint
+ALTER TYPE "public"."website_font" ADD VALUE 'NUNITO';--> statement-breakpoint
+ALTER TYPE "public"."website_font" ADD VALUE 'RALEWAY';--> statement-breakpoint
+ALTER TYPE "public"."website_font" ADD VALUE 'OUTFIT';--> statement-breakpoint
+ALTER TYPE "public"."website_font" ADD VALUE 'SPACE_GROTESK';--> statement-breakpoint
+ALTER TYPE "public"."website_font" ADD VALUE 'LORA';--> statement-breakpoint
+ALTER TYPE "public"."website_font" ADD VALUE 'DM_SERIF_DISPLAY';--> statement-breakpoint
+ALTER TYPE "public"."website_font" ADD VALUE 'OSWALD';--> statement-breakpoint
+ALTER TYPE "public"."website_font" ADD VALUE 'NOTO_SERIF_BENGALI';--> statement-breakpoint
+ALTER TYPE "public"."website_font" ADD VALUE 'TIRO_BANGLA';--> statement-breakpoint
+ALTER TYPE "public"."website_font" ADD VALUE 'BALOO_DA_2';--> statement-breakpoint
+ALTER TYPE "public"."website_font" ADD VALUE 'ANEK_BANGLA';--> statement-breakpoint
+ALTER TYPE "public"."website_theme" ADD VALUE 'ELEGANT';--> statement-breakpoint
+ALTER TYPE "public"."website_theme" ADD VALUE 'PLAYFUL';--> statement-breakpoint
+ALTER TYPE "public"."website_theme" ADD VALUE 'MINIMAL';--> statement-breakpoint
+ALTER TYPE "public"."website_theme" ADD VALUE 'VIBRANT';--> statement-breakpoint
+ALTER TYPE "public"."website_theme" ADD VALUE 'MIDNIGHT';--> statement-breakpoint
+ALTER TYPE "public"."website_theme" ADD VALUE 'GLASS';--> statement-breakpoint
+ALTER TYPE "public"."website_theme" ADD VALUE 'BENTO';--> statement-breakpoint
+ALTER TYPE "public"."website_theme" ADD VALUE 'AURORA';--> statement-breakpoint
+ALTER TYPE "public"."website_theme" ADD VALUE 'NEO_BRUTAL';--> statement-breakpoint
+ALTER TABLE "website_settings" ADD COLUMN "design" jsonb DEFAULT '{}'::jsonb NOT NULL;

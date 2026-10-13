@@ -14,6 +14,11 @@ export function createReferenceRegistry<Entity extends string>() {
     register(entity: Entity, type: string, count: ReferenceCounter) {
       const list = counters.get(entity) ?? [];
       if (list.some((c) => c.type === type)) {
+        // The dev server's hot reload re-runs a module's registrations while the registry keeps the old ones: replace.
+        if (process.env.NODE_ENV === "development") {
+          counters.set(entity, [...list.filter((c) => c.type !== type), { type, count }]);
+          return;
+        }
         throw new Error(`Reference counter "${type}" is already registered for "${entity}"`);
       }
       counters.set(entity, [...list, { type, count }]);

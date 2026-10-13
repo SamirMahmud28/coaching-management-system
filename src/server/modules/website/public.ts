@@ -26,6 +26,7 @@ export async function getPublicWebsite(db: DbOrTx, tenantId: string) {
     settings: {
       theme: settings.theme,
       headingFont: settings.headingFont,
+      design: settings.design,
       sections: settings.sections,
       heroHeading: settings.heroHeading,
       heroSubheading: settings.heroSubheading,

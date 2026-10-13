@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 // The website's admission enquiry form (D22, D129). The hidden "website" field and the time the form was opened let the
 // server drop bot submissions; the server answers the same either way.
 
-const field = "w-full rounded-md border bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-[var(--site-brand)]";
+const field = "w-full rounded-md border bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-[var(--site-primary)]";
 
 export function EnquiryForm({ courses, card }: { courses: { id: string; name: string }[]; card: string }) {
   const startedAt = useRef<number | null>(null);
@@ -59,7 +59,7 @@ export function EnquiryForm({ courses, card }: { courses: { id: string; name: st
   if (sent) {
     return (
       <div role="status" data-testid="enquiry-sent" className={cn("flex flex-col items-center gap-3 p-8 text-center", card)}>
-        <CheckCircle2 aria-hidden className="size-10 text-[var(--site-brand)]" />
+        <CheckCircle2 aria-hidden className="size-10 text-[var(--site-primary-ink)]" />
         <p className="text-lg font-semibold">Thank you! Your enquiry has been sent.</p>
         <p className="text-sm text-muted-foreground">We&apos;ll call you on the number you gave us.</p>
       </div>
@@ -124,7 +124,7 @@ export function EnquiryForm({ courses, card }: { courses: { id: string; name: st
           {failure}
         </p>
       )}
-      <button type="submit" disabled={sending} className="inline-flex items-center gap-2 rounded-md bg-[var(--site-brand)] px-5 py-2.5 text-sm font-medium text-[var(--site-on-brand)] hover:opacity-90 disabled:opacity-60">
+      <button type="submit" disabled={sending} className="site-btn disabled:opacity-60">
         {sending && <Loader2 aria-hidden className="size-4 animate-spin" />} Send enquiry
       </button>
     </form>

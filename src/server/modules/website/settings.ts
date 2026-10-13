@@ -5,16 +5,18 @@ import type { DbOrTx } from "../../core/db/types";
 import { assertFileReference } from "../../core/files/service";
 import { ValidationError } from "../../core/errors";
 import { audit } from "../audit/service";
+import {
+  APPEARANCES, BACKGROUNDS, BODY_FONTS, BUTTON_STYLES, CARD_STYLES, DENSITIES, GRADIENT_CHOICES, HEX_COLOUR, PALETTE_CHOICES, RADII, TEXT_SIZES,
+  WEBSITE_FONTS, WEBSITE_THEMES, completeDesign, legacyDesign, type WebsiteDesign, type WebsiteFont, type WebsiteTheme,
+} from "./design";
 
-// The website's look and fixed content (D124, D126, D131): theme, heading font, the sections below the hero (on/off and
-// order), and the hero and about texts and pictures. Every save is public at once (D126).
+// The website's look and fixed content (D124, D126, D131, D135, D136): theme, heading font, the design settings, the
+// sections below the hero (on/off and order), and the hero and about texts and pictures. Every save is public at once
+// (D126).
 
-export const WEBSITE_THEMES = ["CLASSIC", "MODERN", "BOLD"] as const;
-export const WEBSITE_FONTS = ["INTER", "POPPINS", "MERRIWEATHER", "PLAYFAIR", "HIND_SILIGURI"] as const;
+export { WEBSITE_FONTS, WEBSITE_THEMES, type WebsiteFont, type WebsiteTheme };
 export const HERO_BUTTONS = ["ENQUIRE", "CALL", "NONE"] as const;
 
-export type WebsiteTheme = (typeof WEBSITE_THEMES)[number];
-export type WebsiteFont = (typeof WEBSITE_FONTS)[number];
 export type HeroButton = (typeof HERO_BUTTONS)[number];
 
 export interface Actor {
@@ -25,6 +27,7 @@ export interface Actor {
 export interface WebsiteSettings {
   theme: WebsiteTheme;
   headingFont: WebsiteFont;
+  design: WebsiteDesign;
   sections: WebsiteSectionSetting[];
   heroHeading: string | null;
   heroSubheading: string | null;
@@ -45,6 +48,7 @@ export const DEFAULT_SECTIONS: WebsiteSectionSetting[] = WEBSITE_SECTIONS.map((k
 const DEFAULTS: WebsiteSettings = {
   theme: "CLASSIC",
   headingFont: "INTER",
+  design: legacyDesign("CLASSIC"),
   sections: DEFAULT_SECTIONS,
   heroHeading: null,
   heroSubheading: null,
@@ -69,10 +73,11 @@ function completeSections(stored: WebsiteSectionSetting[]): WebsiteSectionSettin
 
 export async function getWebsiteSettings(db: DbOrTx, tenantId: string): Promise<WebsiteSettings> {
   const [row] = await db.select().from(websiteSettings).where(eq(websiteSettings.tenantId, tenantId));
-  if (!row) return { ...DEFAULTS, sections: DEFAULT_SECTIONS.map((s) => ({ ...s })) };
+  if (!row) return { ...DEFAULTS, design: legacyDesign("CLASSIC"), sections: DEFAULT_SECTIONS.map((s) => ({ ...s })) };
   return {
     theme: row.theme,
     headingFont: row.headingFont,
+    design: completeDesign(row.design, legacyDesign(row.theme)),
     sections: completeSections(row.sections),
     heroHeading: row.heroHeading,
     heroSubheading: row.heroSubheading,
@@ -97,6 +102,36 @@ function oneOf<T extends string>(value: string, allowed: readonly T[], field: st
   return value as T;
 }
 
+function hexColour(value: string | null | undefined, field: string): string | null {
+  if (value == null || value === "") return null;
+  const v = value.trim().toLowerCase();
+  if (!HEX_COLOUR.test(v)) throw new ValidationError("VALIDATION_COLOUR", "Use a colour like #1d4ed8.", { field });
+  return v;
+}
+
+/** Every design setting from its allowed list (D135, D136); custom colours are required for the Custom palette. */
+function cleanDesign(d: WebsiteDesign): WebsiteDesign {
+  const choice = "Choose one of the options.";
+  const design: WebsiteDesign = {
+    palette: oneOf(d.palette, PALETTE_CHOICES, "design.palette", "Choose one of the colour palettes."),
+    customPrimary: hexColour(d.customPrimary, "design.customPrimary"),
+    customAccent: hexColour(d.customAccent, "design.customAccent"),
+    gradient: oneOf(d.gradient, GRADIENT_CHOICES, "design.gradient", "Choose one of the gradients."),
+    bodyFont: oneOf(d.bodyFont, BODY_FONTS, "design.bodyFont", "Choose one of the text fonts."),
+    textSize: oneOf(d.textSize, TEXT_SIZES, "design.textSize", choice),
+    radius: oneOf(d.radius, RADII, "design.radius", choice),
+    buttonStyle: oneOf(d.buttonStyle, BUTTON_STYLES, "design.buttonStyle", choice),
+    cardStyle: oneOf(d.cardStyle, CARD_STYLES, "design.cardStyle", choice),
+    density: oneOf(d.density, DENSITIES, "design.density", choice),
+    background: oneOf(d.background, BACKGROUNDS, "design.background", choice),
+    appearance: oneOf(d.appearance, APPEARANCES, "design.appearance", choice),
+  };
+  if (design.palette === "CUSTOM" && !design.customPrimary) {
+    throw new ValidationError("VALIDATION_COLOUR", "Choose your main colour for the custom palette.", { field: "design.customPrimary" });
+  }
+  return design;
+}
+
 /** Every section exactly once, in the order given. */
 function cleanSections(sections: WebsiteSectionSetting[]): WebsiteSectionSetting[] {
   const keys = sections.map((s) => s.key);
@@ -106,7 +141,7 @@ function cleanSections(sections: WebsiteSectionSetting[]): WebsiteSectionSetting
 }
 
 const valuesOf = (s: WebsiteSettings): WebsiteSettingsInput => ({
-  theme: s.theme, headingFont: s.headingFont, sections: s.sections, heroHeading: s.heroHeading, heroSubheading: s.heroSubheading,
+  theme: s.theme, headingFont: s.headingFont, design: s.design, sections: s.sections, heroHeading: s.heroHeading, heroSubheading: s.heroSubheading,
   heroImageFileId: s.heroImageFileId, heroButton: s.heroButton, aboutHeading: s.aboutHeading, aboutText: s.aboutText, aboutImageFileId: s.aboutImageFileId,
 });
 
@@ -115,6 +150,7 @@ export async function saveWebsiteSettings(db: DbOrTx, actor: Actor, input: Websi
   const values = {
     theme: oneOf(input.theme, WEBSITE_THEMES, "theme", "Choose one of the themes."),
     headingFont: oneOf(input.headingFont, WEBSITE_FONTS, "headingFont", "Choose one of the fonts."),
+    design: cleanDesign(input.design),
     sections: cleanSections(input.sections),
     heroHeading: text(input.heroHeading, 120, "heroHeading", "The heading"),
     heroSubheading: text(input.heroSubheading, 250, "heroSubheading", "The subheading"),

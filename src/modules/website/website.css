@@ -1,0 +1,139 @@
+/*
+ * The public website's design tokens in use (D135, D136). `tokens.ts` sets the --site-* variables on the root; the
+ * data attributes on the root pick the button and card styles. Text colours switch between their light and dark
+ * versions with the page's mode, so they always read clearly.
+ */
+
+[data-website] {
+  --site-primary-ink: var(--site-primary-ink-light);
+  --site-accent-ink: var(--site-accent-ink-light);
+  font-family: var(--site-body);
+}
+.dark [data-website]:not(.theme-light),
+[data-website].dark {
+  --site-primary-ink: var(--site-primary-ink-dark);
+  --site-accent-ink: var(--site-accent-ink-dark);
+}
+
+[data-website] .site-heading {
+  font-family: var(--site-heading);
+}
+
+[data-website] .site-section {
+  padding-block: var(--site-space);
+}
+@media (min-width: 640px) {
+  [data-website] .site-section {
+    padding-block: var(--site-space-lg);
+  }
+}
+
+[data-website] .site-tint {
+  background-color: color-mix(in srgb, var(--site-primary) 8%, transparent);
+}
+[data-website] .site-tint-accent {
+  background-color: color-mix(in srgb, var(--site-accent) 10%, transparent);
+}
+[data-website] .site-gradient {
+  background-image: var(--site-gradient);
+  color: var(--site-on-gradient);
+}
+[data-website] .site-gradient-text {
+  background-image: linear-gradient(135deg, var(--site-primary-ink), var(--site-accent-ink));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+[data-website] .site-media {
+  border-radius: var(--site-radius);
+}
+
+/* --- buttons -------------------------------------------------------------------------------------------------- */
+
+[data-website] .site-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  border-radius: var(--site-button-radius);
+  background: var(--site-primary);
+  color: var(--site-on-primary);
+  border: 2px solid transparent;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, color 0.2s ease, opacity 0.2s ease;
+}
+[data-website] .site-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px -10px color-mix(in srgb, var(--site-primary) 70%, transparent);
+}
+[data-website] .site-btn:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--site-primary) 55%, transparent);
+  outline-offset: 2px;
+}
+[data-website][data-site-button="GRADIENT"] .site-btn {
+  background: var(--site-gradient);
+  color: var(--site-on-gradient);
+}
+[data-website][data-site-button="OUTLINE"] .site-btn {
+  background: transparent;
+  color: var(--site-primary-ink);
+  border-color: currentColor;
+}
+[data-website][data-site-button="OUTLINE"] .site-btn:hover {
+  background: var(--site-primary);
+  color: var(--site-on-primary);
+  border-color: var(--site-primary);
+}
+[data-website][data-site-button="SOFT"] .site-btn {
+  background: color-mix(in srgb, var(--site-primary) 15%, transparent);
+  color: var(--site-primary-ink);
+}
+[data-website][data-site-button="BRUTAL"] .site-btn {
+  border-color: var(--foreground);
+  box-shadow: 4px 4px 0 var(--foreground);
+}
+[data-website][data-site-button="BRUTAL"] .site-btn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 var(--foreground);
+}
+/* On a coloured banner the button flips to the banner's text colour so it stands out. */
+[data-website] .site-on-colour .site-btn {
+  background: var(--site-banner-ink, var(--site-on-primary));
+  color: var(--site-banner-bg, var(--site-primary));
+  border-color: transparent;
+}
+
+/* --- cards ---------------------------------------------------------------------------------------------------- */
+
+[data-website] .site-card {
+  border-radius: var(--site-radius);
+  background-color: var(--card);
+  color: var(--card-foreground);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+[data-website][data-site-card="BORDER"] .site-card {
+  border: 1px solid var(--border);
+}
+[data-website][data-site-card="SHADOW"] .site-card {
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.06), 0 12px 32px -12px rgb(15 23 42 / 0.18);
+  outline: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+}
+[data-website][data-site-card="FLAT"] .site-card {
+  background-color: color-mix(in srgb, var(--site-primary) 6%, var(--card));
+}
+[data-website][data-site-card="GLASS"] .site-card {
+  background-color: color-mix(in srgb, var(--card) 55%, transparent);
+  backdrop-filter: blur(14px) saturate(1.4);
+  -webkit-backdrop-filter: blur(14px) saturate(1.4);
+  border: 1px solid rgb(255 255 255 / 0.45);
+  box-shadow: 0 8px 32px -12px rgb(15 23 42 / 0.25);
+}
+.dark [data-website][data-site-card="GLASS"]:not(.theme-light) .site-card,
+[data-website].dark[data-site-card="GLASS"] .site-card {
+  border-color: rgb(255 255 255 / 0.1);
+}
+[data-website][data-site-card="BRUTAL"] .site-card {
+  border: 2px solid var(--foreground);
+  box-shadow: 5px 5px 0 var(--foreground);
+}

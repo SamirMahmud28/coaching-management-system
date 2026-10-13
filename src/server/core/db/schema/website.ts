@@ -3,13 +3,14 @@ import { sql } from "drizzle-orm";
 import { courses } from "./academic";
 import { files, tenants, users } from "./core";
 import { students } from "./students";
+import { WEBSITE_FONTS, WEBSITE_THEMES } from "../../../modules/website/design";
 
 // Website (paid module `website`): D13, D19–D23, D124–D133. The themed public site at `<sub>.<domain>/`, its notices,
-// gallery and testimonials, and the admission enquiry inbox. Every save is public at once (D126). Image files are
+// gallery and testimonials, and the admission enquiry inbox. Website Pro (D135–D141) adds the `design` settings. Every save is public at once (D126). Image files are
 // never deleted, so their composite FKs need no ON DELETE action.
 
-export const websiteThemeEnum = pgEnum("website_theme", ["CLASSIC", "MODERN", "BOLD"]);
-export const websiteFontEnum = pgEnum("website_font", ["INTER", "POPPINS", "MERRIWEATHER", "PLAYFAIR", "HIND_SILIGURI"]);
+export const websiteThemeEnum = pgEnum("website_theme", WEBSITE_THEMES);
+export const websiteFontEnum = pgEnum("website_font", WEBSITE_FONTS);
 export const heroButtonEnum = pgEnum("website_hero_button", ["ENQUIRE", "CALL", "NONE"]);
 export const enquiryStatusEnum = pgEnum("enquiry_status", ["NEW", "CONTACTED", "CONVERTED", "CLOSED"]);
 
@@ -31,6 +32,8 @@ export const websiteSettings = pgTable("website_settings", {
   aboutHeading: varchar("about_heading", { length: 120 }),
   aboutText: text("about_text"),
   aboutImageFileId: uuid("about_image_file_id"),
+  /** The look beyond theme and heading font (D135, D136), validated and completed in `website/design.ts`. */
+  design: jsonb("design").$type<object>().notNull().default({}),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   updatedBy: uuid("updated_by"),
 }, (t) => [

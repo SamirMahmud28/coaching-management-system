@@ -1,3 +1,6 @@
+import type {
+  Appearance, Background, BodyFont, ButtonStyle, CardStyle, Density, GradientChoice, PaletteChoice, Radius, TextSize, WebsiteFont, WebsiteTheme,
+} from "@/server/modules/website/design";
 import { apiFetch } from "@/lib/api-client";
 import type { AuditLogRow } from "@/components/shared/audit-log-table";
 import type { ModuleKey } from "@/server/core/modules/registry";
@@ -1033,9 +1036,26 @@ export const lessonsApi = {
 
 export type WebsiteSectionKey = "ABOUT" | "COURSES" | "NOTICES" | "GALLERY" | "TESTIMONIALS" | "ENQUIRY" | "CONTACT";
 
+/** The design settings on the wire (D135, D136); values are those of `src/server/modules/website/design.ts`. */
+export interface WebsiteDesignWire {
+  palette: PaletteChoice;
+  custom_primary: string | null;
+  custom_accent: string | null;
+  gradient: GradientChoice;
+  body_font: BodyFont;
+  text_size: TextSize;
+  radius: Radius;
+  button_style: ButtonStyle;
+  card_style: CardStyle;
+  density: Density;
+  background: Background;
+  appearance: Appearance;
+}
+
 export interface WebsiteSettingsBody {
-  theme: "CLASSIC" | "MODERN" | "BOLD";
-  heading_font: "INTER" | "POPPINS" | "MERRIWEATHER" | "PLAYFAIR" | "HIND_SILIGURI";
+  theme: WebsiteTheme;
+  heading_font: WebsiteFont;
+  design: WebsiteDesignWire;
   sections: { key: WebsiteSectionKey; enabled: boolean }[];
   hero_heading: string | null;
   hero_subheading: string | null;

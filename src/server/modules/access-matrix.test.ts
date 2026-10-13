@@ -217,7 +217,10 @@ const HANDLERS: Entry[] = [
   { factory: "routine", name: "deleteTopic", method: "DELETE", permission: "lessons.manage", id: "LESSON_TOPIC" },
   // website (paid module)
   { factory: "website", name: "getSettings", method: "GET", permission: "website.manage" },
-  { factory: "website", name: "saveSettings", method: "PUT", permission: "website.manage", body: { theme: "BOLD", heading_font: "INTER", sections: [], hero_button: "NONE" } },
+  { factory: "website", name: "saveSettings", method: "PUT", permission: "website.manage", body: {
+      theme: "BOLD", heading_font: "INTER", sections: [], hero_button: "NONE",
+      design: { palette: "BRAND", gradient: "AUTO", body_font: "INTER", text_size: "MEDIUM", radius: "MEDIUM", button_style: "SOLID", card_style: "BORDER", density: "COMFORTABLE", background: "PLAIN", appearance: "VISITOR" },
+    } },
   { factory: "website", name: "listNotices", method: "GET", permission: "website.manage" },
   { factory: "website", name: "createNotice", method: "POST", permission: "website.manage", body: { title: "Matrix notice", body: "Text" } },
   { factory: "website", name: "updateNotice", method: "PATCH", permission: "website.manage", id: "NOTICE", body: { title: "Matrix notice", body: "Text" } },

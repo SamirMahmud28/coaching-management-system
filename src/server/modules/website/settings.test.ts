@@ -14,6 +14,7 @@ import { LocalDiskStorage } from "../../core/files/storage";
 import { createTenantAuth } from "../auth/tenant-auth";
 import { createWebsiteHandlers } from "./http";
 import { getPublicWebsite, isPublicWebsiteImage } from "./public";
+import { DEFAULT_DESIGN } from "./design";
 import { DEFAULT_SECTIONS, getWebsiteSettings, saveWebsiteSettings, type WebsiteSettingsInput } from "./settings";
 
 const { db: testDb, reset, close } = createTestDb();
@@ -44,7 +45,7 @@ async function institute(status: "ACTIVE" | "SUSPENDED" | "DEACTIVATED" = "ACTIV
 
 const input = (o: Partial<WebsiteSettingsInput> = {}): WebsiteSettingsInput => ({
   theme: "MODERN", headingFont: "POPPINS", sections: DEFAULT_SECTIONS, heroHeading: "Best coaching in town", heroSubheading: null,
-  heroImageFileId: null, heroButton: "CALL", aboutHeading: null, aboutText: null, aboutImageFileId: null, ...o,
+  heroImageFileId: null, heroButton: "CALL", aboutHeading: null, aboutText: null, aboutImageFileId: null, design: DEFAULT_DESIGN, ...o,
 });
 
 describe("website settings (D124, D126, D131)", () => {
@@ -98,6 +99,54 @@ describe("website settings (D124, D126, D131)", () => {
     const row = await s.upload();
     const meta = await sharp((await storage.get(row.objectKey))!).metadata();
     expect([meta.width, meta.height, meta.format]).toEqual([1600, 800, "jpeg"]);
+  });
+});
+
+describe("website design (D135, D136)", () => {
+  const pro = { ...DEFAULT_DESIGN, palette: "JAMDANI", gradient: "AURORA", bodyFont: "ANEK_BANGLA", textSize: "LARGE", radius: "FULL", buttonStyle: "GRADIENT", cardStyle: "GLASS", density: "SPACIOUS", background: "NAKSHI", appearance: "DARK" } as const;
+
+  it("saves every design setting with the new themes and fonts, and audits it", async () => {
+    const s = await institute();
+    const saved = await saveWebsiteSettings(db, s.actor, input({ theme: "AURORA", headingFont: "TIRO_BANGLA", design: pro }));
+    expect(saved).toMatchObject({ theme: "AURORA", headingFont: "TIRO_BANGLA", design: pro });
+    expect(await getWebsiteSettings(db, s.tenant.id)).toMatchObject({ theme: "AURORA", headingFont: "TIRO_BANGLA", design: pro });
+    const [log] = await testDb.select().from(auditLogs).where(eq(auditLogs.action, "WEBSITE_UPDATED"));
+    expect(log.newValue).toMatchObject({ design: pro });
+  });
+
+  it("keeps custom colours, lower-cased, and requires the main one for the Custom palette", async () => {
+    const s = await institute();
+    const saved = await saveWebsiteSettings(db, s.actor, input({ design: { ...DEFAULT_DESIGN, palette: "CUSTOM", customPrimary: "#AB12CD", customAccent: null } }));
+    expect(saved.design).toMatchObject({ palette: "CUSTOM", customPrimary: "#ab12cd", customAccent: null });
+    await expect(saveWebsiteSettings(db, s.actor, input({ design: { ...DEFAULT_DESIGN, palette: "CUSTOM" } }))).rejects.toMatchObject({ code: "VALIDATION_COLOUR", details: { field: "design.customPrimary" } });
+  });
+
+  it.each([
+    [{ palette: "RAINBOW" }, "VALIDATION_CHOICE"],
+    [{ bodyFont: "OSWALD" }, "VALIDATION_CHOICE"],
+    [{ background: "STARS" }, "VALIDATION_CHOICE"],
+    [{ appearance: "SEPIA" }, "VALIDATION_CHOICE"],
+    [{ customAccent: "blue" }, "VALIDATION_COLOUR"],
+    [{ customPrimary: "#12345" }, "VALIDATION_COLOUR"],
+  ])("refuses the design %o", async (o, code) => {
+    const s = await institute();
+    await expect(saveWebsiteSettings(db, s.actor, input({ design: { ...DEFAULT_DESIGN, ...o } as never }))).rejects.toMatchObject({ code });
+  });
+
+  it("gives a row saved before Website Pro its old look, and fills settings added later with defaults", async () => {
+    const s = await institute();
+    await saveWebsiteSettings(db, s.actor, input({ theme: "MODERN" }));
+    await testDb.update(websiteSettings).set({ design: {} }).where(eq(websiteSettings.tenantId, s.tenant.id));
+    expect((await getWebsiteSettings(db, s.tenant.id)).design).toEqual({ ...DEFAULT_DESIGN, radius: "LARGE", cardStyle: "SHADOW" });
+    await testDb.update(websiteSettings).set({ design: { palette: "OCEAN", unknown: true } }).where(eq(websiteSettings.tenantId, s.tenant.id));
+    expect((await getWebsiteSettings(db, s.tenant.id)).design).toEqual({ ...DEFAULT_DESIGN, radius: "LARGE", cardStyle: "SHADOW", palette: "OCEAN" });
+  });
+
+  it("is part of the public website", async () => {
+    const s = await institute();
+    await setModules(db, s.tenant.id, ["website"]);
+    await saveWebsiteSettings(db, s.actor, input({ theme: "NEO_BRUTAL", design: pro }));
+    expect((await getPublicWebsite(db, s.tenant.id))?.settings).toMatchObject({ theme: "NEO_BRUTAL", design: pro });
   });
 });
 

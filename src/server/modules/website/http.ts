@@ -16,6 +16,7 @@ import { isModuleActive } from "../entitlements/service";
 import * as content from "./content";
 import * as enquiries from "./enquiries";
 import { isPublicWebsiteImage } from "./public";
+import { APPEARANCES, BACKGROUNDS, BODY_FONTS, BUTTON_STYLES, CARD_STYLES, DENSITIES, GRADIENT_CHOICES, PALETTE_CHOICES, RADII, TEXT_SIZES } from "./design";
 import { HERO_BUTTONS, WEBSITE_FONTS, WEBSITE_THEMES, getWebsiteSettings, saveWebsiteSettings } from "./settings";
 
 export interface WebsiteHttpDeps {
@@ -26,9 +27,25 @@ export interface WebsiteHttpDeps {
 }
 
 const optionalText = (max: number) => z.string().max(max).nullable().optional();
+const colour = z.string().max(20).nullable().optional();
+const designBody = z.object({
+  palette: z.enum(PALETTE_CHOICES),
+  custom_primary: colour,
+  custom_accent: colour,
+  gradient: z.enum(GRADIENT_CHOICES),
+  body_font: z.enum(BODY_FONTS),
+  text_size: z.enum(TEXT_SIZES),
+  radius: z.enum(RADII),
+  button_style: z.enum(BUTTON_STYLES),
+  card_style: z.enum(CARD_STYLES),
+  density: z.enum(DENSITIES),
+  background: z.enum(BACKGROUNDS),
+  appearance: z.enum(APPEARANCES),
+});
 const settingsBody = z.object({
   theme: z.enum(WEBSITE_THEMES),
   heading_font: z.enum(WEBSITE_FONTS),
+  design: designBody,
   sections: z.array(z.object({ key: z.enum(WEBSITE_SECTIONS), enabled: z.boolean() })).max(WEBSITE_SECTIONS.length),
   hero_heading: optionalText(200),
   hero_subheading: optionalText(400),
@@ -98,6 +115,11 @@ export function createWebsiteHandlers({ db, auth, host, storage }: WebsiteHttpDe
           theme: b.theme, headingFont: b.heading_font, sections: b.sections, heroHeading: b.hero_heading ?? null, heroSubheading: b.hero_subheading ?? null,
           heroImageFileId: b.hero_image_file_id ?? null, heroButton: b.hero_button, aboutHeading: b.about_heading ?? null, aboutText: b.about_text ?? null,
           aboutImageFileId: b.about_image_file_id ?? null,
+          design: {
+            palette: b.design.palette, customPrimary: b.design.custom_primary ?? null, customAccent: b.design.custom_accent ?? null, gradient: b.design.gradient,
+            bodyFont: b.design.body_font, textSize: b.design.text_size, radius: b.design.radius, buttonStyle: b.design.button_style, cardStyle: b.design.card_style,
+            density: b.design.density, background: b.design.background, appearance: b.design.appearance,
+          },
         });
         return json(await withBrand(actor.tenantId, saved));
       }),
