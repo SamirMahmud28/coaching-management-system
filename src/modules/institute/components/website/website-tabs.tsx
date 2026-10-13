@@ -9,6 +9,7 @@ const TABS = [
   { href: "/app/website/notices", label: "Notices" },
   { href: "/app/website/gallery", label: "Gallery" },
   { href: "/app/website/testimonials", label: "Testimonials" },
+  { href: "/app/website/enquiries", label: "Enquiries" },
 ];
 
 /** The Website module's sections. */

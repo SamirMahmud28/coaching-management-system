@@ -8,5 +8,6 @@ import "../fees/references";
 import "../attendance/references";
 import "../exams/references";
 import "../routine/references";
+import "../website/references";
 
 export const academicHandlers = createAcademicHandlers({ db, auth: tenantAuth, host: hostConfigFromEnv() });

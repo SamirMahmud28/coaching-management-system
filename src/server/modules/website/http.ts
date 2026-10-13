@@ -4,7 +4,7 @@ import type { Db } from "../../core/db/types";
 import { NotFoundError } from "../../core/errors";
 import { getFileInTenant, readFileBytes } from "../../core/files/service";
 import type { StorageProvider } from "../../core/files/storage";
-import { handle, json, parseBody, pathId } from "../../core/http/respond";
+import { handle, json, parseBody, parseQuery, pathId } from "../../core/http/respond";
 import type { PermissionName } from "../../core/rbac/catalog";
 import type { HostConfig } from "../../core/tenancy/host";
 import { resolveHost } from "../../core/tenancy/resolve";
@@ -14,6 +14,7 @@ import { publicPageVisible } from "../portal/service";
 import { getInstitutionProfile } from "../settings/service";
 import { isModuleActive } from "../entitlements/service";
 import * as content from "./content";
+import * as enquiries from "./enquiries";
 import { isPublicWebsiteImage } from "./public";
 import { HERO_BUTTONS, WEBSITE_FONTS, WEBSITE_THEMES, getWebsiteSettings, saveWebsiteSettings } from "./settings";
 
@@ -50,6 +51,21 @@ const photoBody = z.object({ file_id: z.uuid(), caption: optionalText(400) });
 const captionBody = z.object({ caption: optionalText(400) });
 const testimonialBody = z.object({ quote: z.string().max(1200), name: z.string().max(200), line: optionalText(240), photo_file_id: z.uuid().nullable().optional() });
 const orderBody = z.object({ ids: z.array(z.uuid()).max(200) });
+const enquiryStatus = z.enum(["NEW", "CONTACTED", "CONVERTED", "CLOSED"]);
+const enquiriesQuery = z.object({ status: enquiryStatus.optional() });
+const enquiryUpdateBody = z.object({ status: enquiryStatus.optional(), note: optionalText(1000) });
+const convertBody = z.object({ student_id: z.uuid() });
+const submissionBody = z.object({
+  name: z.string().max(300),
+  mobile: z.string().max(40),
+  course_id: z.uuid().nullable().optional(),
+  message: optionalText(3000),
+  website: z.string().max(300).nullable().optional(),
+  started_at: z.number().int().nullable().optional(),
+});
+
+/** The visitor's address as the reverse proxy reports it (first X-Forwarded-For entry), for the per-IP limit only. */
+const clientIp = (request: Request) => request.headers.get("x-forwarded-for")?.split(",")[0]?.trim().slice(0, 45) || request.headers.get("x-real-ip")?.trim().slice(0, 45) || null;
 
 export function createWebsiteHandlers({ db, auth, host, storage }: WebsiteHttpDeps) {
   const authorize = async (request: Request, permission: PermissionName) => {
@@ -205,6 +221,55 @@ export function createWebsiteHandlers({ db, auth, host, storage }: WebsiteHttpDe
         const actor = await authorize(request, "website.manage");
         await content.reorderTestimonials(db, actor, (await parseBody(request, orderBody)).ids);
         return noContent();
+      }),
+
+    // --- enquiries (D22, D129) ---------------------------------------------------------------------------------
+
+    // GET /api/v1/website/enquiries?status=
+    listEnquiries: (request: Request) =>
+      handle(async () => {
+        const actor = await authorize(request, "website.manage");
+        return json(await enquiries.listEnquiries(db, actor.tenantId, parseQuery(request, enquiriesQuery)));
+      }),
+
+    // GET /api/v1/website/enquiries/:id — also what admission pre-fills from (D129)
+    getEnquiry: (request: Request, params: { id: string }) =>
+      handle(async () => {
+        const actor = await authorize(request, "website.manage");
+        return json(await enquiries.getEnquiry(db, actor.tenantId, pathId(params.id, "ENQUIRY")));
+      }),
+
+    // PATCH /api/v1/website/enquiries/:id — status and note
+    updateEnquiry: (request: Request, params: { id: string }) =>
+      handle(async () => {
+        const actor = await authorize(request, "website.manage");
+        const b = await parseBody(request, enquiryUpdateBody);
+        return json(await enquiries.updateEnquiry(db, actor, pathId(params.id, "ENQUIRY"), { status: b.status, note: b.note }));
+      }),
+
+    // POST /api/v1/website/enquiries/:id/convert — links the student admission just created
+    convertEnquiry: (request: Request, params: { id: string }) =>
+      handle(async () => {
+        const actor = await authorize(request, "website.manage");
+        const b = await parseBody(request, convertBody);
+        return json(await enquiries.convertEnquiry(db, actor, pathId(params.id, "ENQUIRY"), b.student_id));
+      }),
+
+    // POST /api/public/enquiries — the website's admission enquiry form (no sign-in; spam-checked and rate-limited)
+    submitEnquiry: (request: Request) =>
+      handle(async () => {
+        const resolved = await resolveHost(db, request.headers.get("host"), host);
+        if (resolved.kind !== "tenant" || !publicPageVisible(resolved.tenant.status)) throw new NotFoundError("resource");
+        if (!(await isModuleActive(db, resolved.tenant.id, "website"))) throw new NotFoundError("resource");
+        const b = await parseBody(request, submissionBody);
+        await enquiries.submitEnquiry(
+          db,
+          resolved.tenant.id,
+          { name: b.name, mobile: b.mobile, courseId: b.course_id, message: b.message, website: b.website, startedAt: b.started_at },
+          { ipAddress: clientIp(request) },
+        );
+        // The same answer whether stored or dropped as spam, so bots learn nothing.
+        return json({ ok: true }, 201);
       }),
 
     // GET /api/public/website-images/:id — a picture the website uses, for this host's institute, while the website is shown

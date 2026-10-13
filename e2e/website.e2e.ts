@@ -82,7 +82,7 @@ test("W1: the Owner designs the website and it is public at once (D124, D126, D1
   const site = page.getByTestId("website");
   await expect(site).toHaveAttribute("data-site-theme", "bold");
   await expect(page.getByTestId("hero-heading")).toHaveText("Your path to GPA 5");
-  await expect(page.getByRole("link", { name: "Call 01711-222333" })).toHaveAttribute("href", "tel:01711222333");
+  await expect(page.getByRole("region", { name: "Welcome" }).getByRole("link", { name: "Call 01711-222333" })).toHaveAttribute("href", "tel:01711222333");
   const heroLoaded = await page.locator("section[aria-label='Welcome'] img").evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0);
   expect(heroLoaded).toBe(true);
   await expect(page.getByTestId("section-about")).toContainText("Small batches, weekly tests");
@@ -130,6 +130,51 @@ test("W2: the Owner posts a notice, fills the gallery and adds a testimonial (D1
   await expect(page.getByRole("img", { name: "Prize-giving 2026" })).toBeVisible();
   await expect(page.getByTestId("public-testimonial")).toContainText("SSC 2026, GPA 5");
   await expect(page.getByRole("navigation", { name: "Sections" }).getByRole("link", { name: "Gallery" })).toBeVisible();
+});
+
+test("W3: a visitor sends an enquiry; the Owner calls back and converts it into an admission (D22, D129)", async ({ page }) => {
+  await page.goto(url("/"));
+  await page.getByRole("link", { name: "Admission", exact: true }).click();
+  const form = page.getByRole("form", { name: "Admission enquiry" });
+  await form.getByLabel("Student's name").fill("Tanvir Alam");
+  await form.getByLabel("Mobile number").fill("12345");
+  await form.getByLabel("Course").selectOption({ label: "SSC Science" });
+  await form.getByLabel("Message").fill("Is there an evening batch?");
+  await page.waitForTimeout(3_200); // a person takes a few seconds; quicker submissions are dropped as spam
+  await form.getByRole("button", { name: "Send enquiry" }).click();
+  await expect(form.getByText("Enter a valid Bangladeshi mobile number")).toBeVisible();
+  await form.getByLabel("Mobile number").fill("01819-445566");
+  await form.getByRole("button", { name: "Send enquiry" }).click();
+  await expect(page.getByTestId("enquiry-sent")).toContainText("Thank you");
+
+  await signInAsOwner(page);
+  await page.goto(url("/app/website/enquiries"));
+  const row = page.getByTestId("enquiry-Tanvir Alam");
+  await expect(row).toContainText("01819445566");
+  await expect(row).toContainText("Course: SSC Science");
+  await row.getByRole("button", { name: "Actions for Tanvir Alam" }).click();
+  await page.getByRole("menuitem", { name: "Mark as contacted" }).click();
+  await expect(page.getByText("Marked as contacted.")).toBeVisible();
+  await page.getByRole("tab", { name: /Contacted/ }).click();
+  await page.getByTestId("enquiry-Tanvir Alam").getByRole("link", { name: "Convert" }).click();
+
+  await expect(page.getByTestId("from-enquiry")).toContainText("Tanvir Alam, 01819445566");
+  await expect(page.getByLabel("Full name")).toHaveValue("Tanvir Alam");
+  await expect(page.getByLabel("Guardian's mobile")).toHaveValue("01819445566");
+  await page.getByLabel("Gender", { exact: true }).click();
+  await page.getByRole("option", { name: "Male", exact: true }).click();
+  await page.getByLabel("Guardian's name").fill("Shahid Alam");
+  await page.getByLabel("Relation", { exact: true }).click();
+  await page.getByRole("option", { name: "Father", exact: true }).click();
+  await page.getByRole("button", { name: "Generate" }).click();
+  await page.getByRole("button", { name: "Admit student" }).click();
+  const code = (await page.getByTestId("sign-in-id").textContent()) ?? "";
+  await page.getByRole("button", { name: "Done" }).click();
+  await expect(page.getByRole("heading", { name: /Tanvir Alam/, level: 1 })).toBeVisible();
+
+  await page.goto(url("/app/website/enquiries"));
+  await page.getByRole("tab", { name: /Converted/ }).click();
+  await expect(page.getByTestId("enquiry-Tanvir Alam")).toContainText(`Admitted as ${code}`);
 });
 
 test("Website disappears while the module is off and the basic page returns, with the design kept (D5, D21)", async ({ page }) => {

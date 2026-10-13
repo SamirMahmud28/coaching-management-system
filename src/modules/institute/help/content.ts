@@ -48,7 +48,8 @@ export type HelpTopicKey =
   | "website"
   | "website-notices"
   | "website-gallery"
-  | "website-testimonials";
+  | "website-testimonials"
+  | "website-enquiries";
 
 export const HELP_TOPICS: readonly HelpTopic[] = [
   {
@@ -640,13 +641,14 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
       "Open Website. Under Look, pick one of the three themes and a heading font. The brand colour, logo, address and phone come from Institute Settings.",
       "Under Welcome banner, write the heading and a line under it, add a background picture, and choose the button: Enquire, Call, or none.",
       "Under About, write a few lines about your institute and add a picture.",
-      "Under Sections, switch each section on or off and use the arrows to set their order. The welcome banner is always at the top.",
+      "Under Sections, switch each section on or off and use the arrows to set their order. The welcome banner is always at the top. Notices, Gallery, Testimonials and Enquiries have their own tabs.",
       "Click Save. The website changes straight away; click View website to see it.",
     ],
     rules: [
       "Every save is public at once. There is no draft.",
       "Pictures can be JPG, PNG or WebP up to 5 MB; they are resized and compressed when uploaded.",
-      "A section with nothing to show stays hidden, with its menu link: About without text or a picture, Courses with no active course, Contact without any contact details.",
+      "A section with nothing to show stays hidden, with its menu link: About without text or a picture, Courses with no active course, Notices, Gallery or Testimonials while empty, Contact without any contact details.",
+      "The banner's Enquire button shows only while the Admission enquiry form section is on.",
       "Courses & batches lists your active courses with their subjects and class times; instructor names are never shown.",
       "Contact & map shows a map of the address set in Institute Settings, with an Open in Maps link.",
       "Only Owner and Admin can change the website.",
@@ -722,6 +724,33 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
       "Changes are public at once. Removing a testimonial takes it off the website straight away.",
     ],
     faqs: [{ q: "Someone asked to be removed.", a: "Open their testimonial's actions and click Remove." }],
+  },
+  {
+    key: "website-enquiries",
+    title: "Admission enquiries",
+    area: "Website",
+    permission: "website.manage",
+    summary: "Visitors to your website send an admission enquiry with the student's name, a mobile number, the course they're interested in and a message. They arrive here for the office to call back.",
+    steps: [
+      "Make sure the Admission enquiry form section is switched on under Website → Design.",
+      "Open Website → Enquiries. New enquiries show first; use the filters to see the others.",
+      "Call the number, then open the enquiry's actions to mark it Contacted and add a note of what was agreed.",
+      "When the student joins, click Convert: admission opens with the name, mobile number and course filled in. Admit the student and the enquiry becomes Converted, linked to the new student.",
+      "If they don't join, Close the enquiry. A closed enquiry can be reopened.",
+    ],
+    rules: [
+      "Statuses: New → Contacted → Converted or Closed. Contacted can go back to New; Closed can be reopened; Converted is final.",
+      "Every status change is recorded in the audit log.",
+      "The mobile number must be a valid Bangladeshi mobile; the form tidies it to 01XXXXXXXXX.",
+      "Spam protection: a hidden field that only robots fill, a minimum time to fill the form, and at most 5 enquiries an hour from one internet address.",
+      "No SMS or email is sent for a new enquiry; check this inbox regularly.",
+      "Only Owner and Admin see enquiries. Convert also needs permission to admit students.",
+      "A course that has enquiries can't be deleted; archive it instead.",
+    ],
+    faqs: [
+      { q: "The mobile number was the guardian's, not the student's.", a: "At admission it is filled in as the guardian's mobile; move it if it's the student's own." },
+      { q: "A visitor says the form told them to try later.", a: "They sent 5 enquiries within an hour from one connection. Ask them to call, or wait an hour." },
+    ],
   },
 ];
 

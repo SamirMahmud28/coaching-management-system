@@ -1,5 +1,5 @@
-import { and, eq, or } from "drizzle-orm";
-import { files, galleryPhotos, testimonials, websiteSettings } from "../../core/db/schema";
+import { and, asc, eq, or } from "drizzle-orm";
+import { courses, files, galleryPhotos, testimonials, websiteSettings } from "../../core/db/schema";
 import type { DbOrTx } from "../../core/db/types";
 import { isModuleActive } from "../entitlements/service";
 import { getPublicCatalog } from "../portal/service";
@@ -14,12 +14,13 @@ export type PublicWebsite = NonNullable<Awaited<ReturnType<typeof getPublicWebsi
 /** The institute's themed website, or null while the Website module is off (the Core page is shown instead, D21). */
 export async function getPublicWebsite(db: DbOrTx, tenantId: string) {
   if (!(await isModuleActive(db, tenantId, "website"))) return null;
-  const [settings, catalog, notices, gallery, testimonialRows] = await Promise.all([
+  const [settings, catalog, notices, gallery, testimonialRows, courseOptions] = await Promise.all([
     getWebsiteSettings(db, tenantId),
     getPublicCatalog(db, tenantId),
     publicNotices(db, tenantId),
     listGallery(db, tenantId),
     listTestimonials(db, tenantId),
+    db.select({ id: courses.id, name: courses.name }).from(courses).where(and(eq(courses.tenantId, tenantId), eq(courses.status, "ACTIVE"))).orderBy(asc(courses.name)),
   ]);
   return {
     settings: {
@@ -38,6 +39,8 @@ export async function getPublicWebsite(db: DbOrTx, tenantId: string) {
     courses: catalog.courses,
     notices,
     gallery: gallery.map((p) => ({ id: p.id, fileId: p.fileId, caption: p.caption })),
+    /** The enquiry form's course choices (D129). */
+    courseOptions,
     testimonials: testimonialRows.map((t) => ({ id: t.id, quote: t.quote, name: t.name, line: t.line, photoFileId: t.photoFileId })),
   };
 }

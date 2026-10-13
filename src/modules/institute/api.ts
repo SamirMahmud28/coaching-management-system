@@ -1116,3 +1116,27 @@ export const websiteContentApi = {
   removeTestimonial: (id: string) => apiFetch<void>(`/api/v1/website/testimonials/${id}`, { method: "DELETE" }),
   reorderTestimonials: (ids: string[]) => apiFetch<void>("/api/v1/website/testimonials/order", { method: "PUT", body: { ids } }),
 };
+
+export type EnquiryStatus = "NEW" | "CONTACTED" | "CONVERTED" | "CLOSED";
+
+export interface EnquiryRow {
+  id: string;
+  name: string;
+  mobile: string;
+  course_id: string | null;
+  course_name: string | null;
+  message: string | null;
+  status: EnquiryStatus;
+  note: string | null;
+  student_id: string | null;
+  student_code: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export const enquiriesApi = {
+  list: (status?: EnquiryStatus) => apiFetch<{ items: EnquiryRow[]; counts: Record<EnquiryStatus, number> }>("/api/v1/website/enquiries", { query: status ? { status } : {} }),
+  get: (id: string) => apiFetch<EnquiryRow>(`/api/v1/website/enquiries/${id}`),
+  update: (id: string, body: { status?: EnquiryStatus; note?: string | null }) => apiFetch<EnquiryRow>(`/api/v1/website/enquiries/${id}`, { method: "PATCH", body }),
+  convert: (id: string, studentId: string) => apiFetch<EnquiryRow>(`/api/v1/website/enquiries/${id}/convert`, { body: { student_id: studentId } }),
+};

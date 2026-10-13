@@ -7,6 +7,7 @@ import { DAY_NAME } from "@/modules/institute/components/portal/week-schedule";
 import type { WebsiteSectionKey } from "@/server/core/db/schema/website";
 import type { PublicWebsite } from "@/server/modules/website/public";
 import { HEADING_FONT_FAMILY } from "../fonts";
+import { EnquiryForm } from "./enquiry-form";
 import { SECTION_LABELS, type WebsiteTheme } from "../options";
 
 // The institute's themed public website (Website module, D20, D124–D133). Server-rendered; every section is filled
@@ -127,9 +128,8 @@ export function InstituteWebsite({ site }: { site: Site }) {
         return s.gallery.length ? <Gallery site={s} t={t} /> : null;
       case "TESTIMONIALS":
         return s.testimonials.length ? <Testimonials site={s} t={t} /> : null;
-      default:
-        // The enquiry form arrives with W3.
-        return null;
+      case "ENQUIRY":
+        return <Enquiry site={s} t={t} />;
     }
   }
 }
@@ -280,6 +280,30 @@ function Courses({ site, t }: { site: Site; t: ThemeStyle }) {
 
 const LONG_NOTICE = 280;
 const noticeDate = (iso: string) => new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+
+/** The admission enquiry form (D22, D129), with the phone number for those who'd rather call. */
+function Enquiry({ site, t }: { site: Site; t: ThemeStyle }) {
+  const phone = site.profile.phone;
+  return (
+    <div className="grid gap-10 md:grid-cols-[2fr_3fr]">
+      <div>
+        <SectionHeading id="ENQUIRY" t={{ ...t, heading: "text-left" }}>
+          Admission enquiry
+        </SectionHeading>
+        <p className="leading-relaxed text-muted-foreground">Tell us who the student is and how to reach you. We&apos;ll call you back about courses, batches and admission.</p>
+        {phone && (
+          <p className="mt-4">
+            Rather talk now?{" "}
+            <a href={`tel:${phone.replace(/[^d+]/g, "")}`} className="font-medium text-[var(--site-brand)] hover:underline">
+              Call {phone}
+            </a>
+          </p>
+        )}
+      </div>
+      <EnquiryForm courses={site.courseOptions} card={t.card} />
+    </div>
+  );
+}
 
 /** Public notices (D128): pinned first, then the newest; a long notice opens with "Read more" (no script needed). */
 function Notices({ site, t }: { site: Site; t: ThemeStyle }) {

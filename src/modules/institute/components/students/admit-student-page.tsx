@@ -17,8 +17,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { todayInDhaka } from "@/lib/dates";
-import { runAction } from "@/lib/feedback";
-import { academicApi, settingsApi, studentsApi } from "../../api";
+import { describeError, notifyError, runAction } from "@/lib/feedback";
+import { academicApi, enquiriesApi, settingsApi, studentsApi } from "../../api";
 import { instituteKeys } from "../../keys";
 import { StudentFieldsForm, emptyStudentForm, studentFieldsFrom, studentFormMissing, type StudentFormValues } from "./student-fields";
 import { HowThisWorks } from "@/modules/institute/help/how-this-works";
@@ -27,9 +27,11 @@ const NO_COURSE = "none"; // Radix Select values can't be empty strings.
 
 /**
  * Admission (D12, D15, D54–D57): profile, guardian, then the course (required when the ID pattern includes its code) and
- * any batches. The student ID is generated from the pattern unless an Admin types one (D8).
+ * any batches. The student ID is generated from the pattern unless an Admin types one (D8). Opened from a website
+ * enquiry ("Convert", D129), it starts with the enquiry's name, mobile number and course, and marks the enquiry
+ * Converted once the student is admitted.
  */
-export function AdmitStudentPage({ canJoinBatches }: { canJoinBatches: boolean }) {
+export function AdmitStudentPage({ canJoinBatches, enquiryId = null }: { canJoinBatches: boolean; enquiryId?: string | null }) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [values, setValues] = useState<StudentFormValues>(emptyStudentForm);
@@ -41,6 +43,16 @@ export function AdmitStudentPage({ canJoinBatches }: { canJoinBatches: boolean }
   const [password, setPassword] = useState("");
   const [saving, setSaving] = useState(false);
   const [admitted, setAdmitted] = useState<{ id: string; name: string; password: string; signInWith: string } | null>(null);
+
+  const enquiry = useQuery({ queryKey: instituteKeys.website("enquiry", enquiryId), queryFn: () => enquiriesApi.get(enquiryId!), enabled: !!enquiryId });
+  // Pre-fill once from the enquiry (adjusting state while rendering, rather than in an effect).
+  const [prefilledFrom, setPrefilledFrom] = useState<string | null>(null);
+  if (enquiry.data && prefilledFrom !== enquiry.data.id) {
+    const e = enquiry.data;
+    setPrefilledFrom(e.id);
+    setValues((v) => ({ ...v, full_name: e.name, guardian_phone: e.mobile }));
+    if (e.course_id) setCourseId(e.course_id);
+  }
 
   const pattern = useQuery({ queryKey: instituteKeys.studentIdPattern(), queryFn: settingsApi.studentIdPattern });
   const courses = useQuery({ queryKey: instituteKeys.courses({ status: "ACTIVE" }), queryFn: () => academicApi.courses({ status: "ACTIVE" }) });
@@ -64,6 +76,15 @@ export function AdmitStudentPage({ canJoinBatches }: { canJoinBatches: boolean }
         temporary_password: password,
       });
       await queryClient.invalidateQueries({ queryKey: ["institute-students"] });
+      if (enquiryId) {
+        // The student exists either way; a failure here only leaves the enquiry to be closed by hand.
+        try {
+          await enquiriesApi.convert(enquiryId, result.student.id);
+          await queryClient.invalidateQueries({ queryKey: instituteKeys.website("enquiries") });
+        } catch (err) {
+          notifyError(null, `Admitted, but the enquiry couldn't be marked as converted: ${describeError(err)}`);
+        }
+      }
       setAdmitted({ id: result.student.id, name: result.student.full_name, password: result.temporary_password, signInWith: result.student.student_code });
     });
     setSaving(false);
@@ -76,6 +97,20 @@ export function AdmitStudentPage({ canJoinBatches }: { canJoinBatches: boolean }
       </Link>
       <PageHeader title="Admit a student" description="Required: name, gender and the guardian's name, relation and mobile number. The rest can be filled in later." />
       <HowThisWorks topic="admission" />
+      {enquiry.data && (
+        <div role="note" data-testid="from-enquiry" className="rounded-lg border border-info/40 bg-info/10 px-4 py-3 text-sm">
+          <p className="font-medium">From a website enquiry: {enquiry.data.name}, {enquiry.data.mobile}</p>
+          <p className="text-muted-foreground">
+            The mobile number is filled in as the guardian&apos;s. If it&apos;s the student&apos;s own, move it to the student&apos;s mobile. The enquiry is marked Converted when you admit.
+          </p>
+          {enquiry.data.message && <p className="mt-1 text-muted-foreground">Their message: “{enquiry.data.message}”</p>}
+        </div>
+      )}
+      {enquiry.data?.status === "CONVERTED" && (
+        <p role="alert" className="text-sm text-destructive">
+          This enquiry is already converted to student {enquiry.data.student_code}.
+        </p>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-[3fr_2fr]">
         <Card>
