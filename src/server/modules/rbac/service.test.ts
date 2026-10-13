@@ -66,7 +66,7 @@ describe("getEffectivePermissions (real database)", () => {
     const { tenant, roleIds } = await seedTenant("Institute A", "inst-a");
     const instructor = await addUserWithRole(tenant.id, "Instructor", roleIds, "Instructor A");
     const perms = await getEffectivePermissions(db, tenant.id, instructor.id);
-    expect([...perms].sort()).toEqual(["attendance.report.view", "attendance.take", "attendance.view", "batches.own.view", "exams.marks.enter", "exams.view"]); // D24, D81
+    expect([...perms].sort()).toEqual(["attendance.report.view", "attendance.take", "attendance.view", "batches.own.view", "exams.marks.enter", "exams.view", "lessons.manage", "routine.view"]); // D24, D81
   });
 
   it("is empty for a user with no roles", async () => {

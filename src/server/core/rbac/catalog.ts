@@ -30,9 +30,15 @@ export const PERMISSION_CATALOG = [
   // Core: portals. An instructor's own batches and their students (D24); a student's own records (D27).
   { name: "batches.own.view", module: "core" },
   { name: "student.self.view", module: "core" },
-  // Paid modules (placeholders until each module is built; Attendance, Fees and Exams are below)
-  { name: "routine.view", module: "routine" },
+  // Paid modules (a placeholder until Website is built; the others are below)
   { name: "website.manage", module: "website" },
+  // Routine & Lesson Plans (D114–D122). Instructors' grants reach only their own batches and subjects (D24).
+  { name: "routine.view", module: "routine" },
+  // Schedule changes and holidays: Owner/Admin only (D115).
+  { name: "routine.manage", module: "routine" },
+  { name: "lessons.manage", module: "routine" },
+  // A student's own week with changes and lesson progress (D27, D117).
+  { name: "routine.self.view", module: "routine" },
   // Exams & Results (D101–D110). Instructors' grants reach only their own batches and subjects (checked per request, D24).
   { name: "exams.view", module: "exams" },
   { name: "exams.manage", module: "exams" },
@@ -96,8 +102,8 @@ export const ROLE_TEMPLATES: readonly RoleTemplate[] = [
     grantsAll: false,
     permissions: ["academic.view", "students.view", "students.contact.view", "fees.view", "fees.configure", "fees.generate", "fees.collect", "fees.adjust", "fees.report.view"],
   },
-  { name: "Instructor", grantsAll: false, permissions: ["batches.own.view", "attendance.view", "attendance.take", "attendance.report.view", "exams.view", "exams.marks.enter"] },
-  { name: "Student", grantsAll: false, permissions: ["student.self.view", "fees.self.view", "attendance.self.view", "leave.self.apply", "exams.self.view"] },
+  { name: "Instructor", grantsAll: false, permissions: ["batches.own.view", "attendance.view", "attendance.take", "attendance.report.view", "exams.view", "exams.marks.enter", "routine.view", "lessons.manage"] },
+  { name: "Student", grantsAll: false, permissions: ["student.self.view", "fees.self.view", "attendance.self.view", "leave.self.apply", "exams.self.view", "routine.self.view"] },
 ];
 
 export function resolveTemplatePermissions(template: RoleTemplate): PermissionName[] {

@@ -51,6 +51,6 @@ describe("role templates", () => {
   });
 
   it("limits students to their own records (D27)", () => {
-    expect(of("Student")).toEqual(["student.self.view", "fees.self.view", "attendance.self.view", "leave.self.apply", "exams.self.view"]);
+    expect(of("Student")).toEqual(["student.self.view", "fees.self.view", "attendance.self.view", "leave.self.apply", "exams.self.view", "routine.self.view"]);
   });
 });

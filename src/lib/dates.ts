@@ -9,3 +9,11 @@ const dhakaDate = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Dhaka", yea
 
 /** Today's date in Bangladesh as YYYY-MM-DD; dates such as admission and batch joining are Bangladesh calendar days. */
 export const todayInDhaka = (now: Date = new Date()) => dhakaDate.format(now);
+
+/** The calendar date `days` after (or before, when negative) a YYYY-MM-DD date. */
+export const addDays = (date: string, days: number) => new Date(Date.parse(`${date}T00:00:00Z`) + days * 86_400_000).toISOString().slice(0, 10);
+
+/** The weekday of a calendar date, in the schedule's names (the Bangladesh week starts on Saturday). */
+export function weekdayOf(date: string): "SAT" | "SUN" | "MON" | "TUE" | "WED" | "THU" | "FRI" {
+  return (["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"] as const)[new Date(`${date}T00:00:00Z`).getUTCDay()];
+}

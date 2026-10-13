@@ -10,3 +10,4 @@ export * from "./students";
 export * from "./fees";
 export * from "./attendance";
 export * from "./exams";
+export * from "./routine";
