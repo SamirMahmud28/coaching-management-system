@@ -35,5 +35,6 @@ export const instituteKeys = {
   gradeScale: () => ["institute-grade-scale"],
   roster: (paperId: string) => ["institute-exam-roster", paperId],
   results: (examId: string, batchId?: string) => ["institute-exam-results", examId, batchId ?? "all"],
+  routine: (...parts: unknown[]) => ["institute-routine", ...parts],
   register: (batchSubjectId: string, date: string, startsAt: string) => ["institute-register", batchSubjectId, date, startsAt],
 };

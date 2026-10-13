@@ -9,7 +9,7 @@ export interface HelpTopic {
   key: HelpTopicKey;
   title: string;
   /** Shown as the Help centre's section. */
-  area: "Getting started" | "Teaching" | "Students" | "Staff and access" | "Institute" | "Fees" | "Attendance" | "Exams";
+  area: "Getting started" | "Teaching" | "Students" | "Staff and access" | "Institute" | "Fees" | "Attendance" | "Exams" | "Routine";
   /** The topic appears in the Help centre only for users holding this (permissions are already limited to active modules). */
   permission: PermissionName | null;
   summary: string;
@@ -42,7 +42,8 @@ export type HelpTopicKey =
   | "exams-grading"
   | "exams-marks"
   | "exams-results"
-  | "results-student";
+  | "results-student"
+  | "routine";
 
 export const HELP_TOPICS: readonly HelpTopic[] = [
   {
@@ -577,6 +578,32 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
       "If a mark is corrected after publishing, your result here updates.",
     ],
     faqs: [{ q: "I think a mark is wrong.", a: "Talk to your instructor or the office. Only Owner or Admin can correct a published mark." }],
+  },
+  {
+    key: "routine",
+    title: "The routine and its changes",
+    area: "Routine",
+    permission: "routine.view",
+    summary: "The routine shows every class with what changed: cancelled, moved to another time, taken by a substitute, or closed for a holiday. The weekly times themselves are set on each batch's page.",
+    steps: [
+      "Open Routine. Day shows every class today; Batch week and Instructor week show seven days from the date you choose.",
+      "To change one class, find it and click Change: cancel it (with a reason), move it to another date and time, or choose a substitute instructor.",
+      "To close the institute, open Changes & holidays and click Add holiday with the first and last day. Every class on those days is cancelled.",
+      "Made a mistake? Click Undo change (or Withdraw for a holiday): the class goes back to its regular time and instructor.",
+    ],
+    rules: [
+      "Only Owner and Admin change the routine; instructors ask the office.",
+      "A change affects one class on one date. To change a batch's regular weekly times, edit the batch.",
+      "A moved class or a substitute can't clash with the instructor's other classes that day, counting other changes. A class can't be moved onto a holiday.",
+      "Each class can have one change at a time. To make a different change, undo the first one.",
+      "Changing a class whose date has passed needs a reason. A cancellation always needs a reason.",
+      "Undoing a change or a holiday keeps it on record as withdrawn; every change is in the audit log.",
+      "Instructors see the routine of the batches they teach; students see their own week with the changes.",
+    ],
+    faqs: [
+      { q: "The instructor is ill all week.", a: "Choose a substitute for each class, or cancel them. For the whole institute, add a holiday instead." },
+      { q: "Why can't I choose a certain substitute?", a: "They already teach the class, are inactive, or teach another class at that time." },
+    ],
   },
 ];
 

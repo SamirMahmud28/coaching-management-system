@@ -901,3 +901,81 @@ export const resultsApi = {
 const printQuery = (q: Record<string, string | undefined>) => new URLSearchParams(Object.entries(q).filter((e): e is [string, string] => !!e[1])).toString();
 export const marksheetUrl = (q: { exam: string; student?: string; batch?: string }) => `/app/print/exam-marksheet?${printQuery(q)}`;
 export const meritListUrl = (q: { exam: string; batch?: string }) => `/app/print/exam-merit-list?${printQuery(q)}`;
+
+// Routine & Lesson Plans (D114–D122).
+export type RoutineClassStatus = "SCHEDULED" | "CANCELLED" | "HOLIDAY" | "MOVED_AWAY" | "MOVED_IN";
+
+export interface RoutineClassRow {
+  batch_subject_id: string;
+  batch_id: string;
+  batch_name: string;
+  course_name: string;
+  subject_name: string;
+  date: string;
+  starts_at: string;
+  ends_at: string;
+  status: RoutineClassStatus;
+  reason: string | null;
+  substitute_instructor_id: string | null;
+  substitute_name: string | null;
+  change_id: string | null;
+  holiday_id: string | null;
+  moved_to: { date: string; starts_at: string; ends_at: string } | null;
+  moved_from: { date: string; starts_at: string } | null;
+  instructors: { id: string; name: string }[];
+  regular_instructors: { id: string; name: string }[];
+}
+
+export interface RoutineOptions {
+  batches: { id: string; name: string; course_name: string }[];
+  instructors: { id: string; name: string; status: string }[];
+  today: string;
+}
+
+export interface RoutineChangeRow {
+  id: string;
+  kind: "CANCEL" | "RESCHEDULE" | "SUBSTITUTE";
+  batch_subject_id: string;
+  batch_name: string;
+  course_name: string;
+  subject_name: string;
+  class_date: string;
+  starts_at: string;
+  reason: string | null;
+  new_date: string | null;
+  new_starts_at: string | null;
+  new_ends_at: string | null;
+  substitute_name: string | null;
+  created_at: string;
+}
+
+export interface HolidayRow {
+  id: string;
+  name: string;
+  from_date: string;
+  to_date: string;
+}
+
+export interface RoutineChangeBody {
+  batch_subject_id: string;
+  class_date: string;
+  starts_at: string;
+  kind: "CANCEL" | "RESCHEDULE" | "SUBSTITUTE";
+  reason?: string | null;
+  new_date?: string | null;
+  new_starts_at?: string | null;
+  new_ends_at?: string | null;
+  substitute_instructor_id?: string | null;
+}
+
+export const routineApi = {
+  options: () => apiFetch<RoutineOptions>("/api/v1/routine/options"),
+  batchWeek: (batchId: string, from: string, days = 7) => apiFetch<{ from: string; to: string; classes: RoutineClassRow[] }>(`/api/v1/routine/batches/${batchId}`, { query: { from, days } }),
+  instructorWeek: (instructorId: string, from: string, days = 7) => apiFetch<{ from: string; to: string; classes: RoutineClassRow[] }>(`/api/v1/routine/instructors/${instructorId}`, { query: { from, days } }),
+  day: (date: string) => apiFetch<{ date: string; classes: RoutineClassRow[] }>("/api/v1/routine/day", { query: { date } }),
+  changes: (from?: string) => apiFetch<{ from: string; changes: RoutineChangeRow[]; holidays: HolidayRow[] }>("/api/v1/routine/changes", { query: from ? { from } : {} }),
+  createChange: (body: RoutineChangeBody) => apiFetch<{ id: string }>("/api/v1/routine/changes", { body }),
+  withdrawChange: (id: string) => apiFetch<void>(`/api/v1/routine/changes/${id}/withdraw`, { method: "POST" }),
+  createHoliday: (body: { name: string; from_date: string; to_date?: string | null }) => apiFetch<HolidayRow>("/api/v1/routine/holidays", { body }),
+  withdrawHoliday: (id: string) => apiFetch<void>(`/api/v1/routine/holidays/${id}/withdraw`, { method: "POST" }),
+};

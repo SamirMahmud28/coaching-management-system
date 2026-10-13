@@ -90,6 +90,8 @@ export async function seedTeaching(input: {
   instructor: { fullName: string; email: string; password: string };
   subjects: [string, string];
   students: string[];
+  /** More instructors who teach nothing yet (e.g. a substitute). */
+  extraInstructors?: { fullName: string; email: string; password: string }[];
 }) {
   const { config: loadEnv } = await import("dotenv");
   loadEnv({ path: ".env.test", override: true, quiet: true });
@@ -108,6 +110,10 @@ export async function seedTeaching(input: {
     const batch = await academic.createBatch(d, actor, course.id, { name: "Evening" });
     const { instructor } = await createInstructor(d, actor, { fullName: input.instructor.fullName, email: input.instructor.email, temporaryPassword: input.instructor.password });
     await db.execute(sql`update users set must_change_password = false where tenant_id = ${t.id} and email = ${input.instructor.email}`);
+    for (const extra of input.extraInstructors ?? []) {
+      await createInstructor(d, actor, { fullName: extra.fullName, email: extra.email, temporaryPassword: extra.password });
+      await db.execute(sql`update users set must_change_password = false where tenant_id = ${t.id} and email = ${extra.email}`);
+    }
     const batchSubjects = [];
     for (const [i, name] of input.subjects.entries()) {
       const subject = await academic.createSubject(d, actor, course.id, { name });
