@@ -108,7 +108,7 @@ describe("files API", () => {
     expect(await status(admin.cookie, await form("PASSPORT"))).toEqual({ status: 422, code: "VALIDATION_FILE_CATEGORY" });
     expect(await status(admin.cookie, await form("STUDENT_PHOTO", Buffer.from("definitely not a jpeg")))).toEqual({ status: 422, code: "VALIDATION_FILE_TYPE" });
 
-    const tooBig = await h.upload(req("inst-a", "POST", "/api/v1/files", { cookie: admin.cookie, body: await form("STUDENT_PHOTO"), headers: { "content-length": String(5 * 1024 * 1024) } }));
+    const tooBig = await h.upload(req("inst-a", "POST", "/api/v1/files", { cookie: admin.cookie, body: await form("STUDENT_PHOTO"), headers: { "content-length": String(6 * 1024 * 1024) } }));
     expect(tooBig.status).toBe(422);
   });
 

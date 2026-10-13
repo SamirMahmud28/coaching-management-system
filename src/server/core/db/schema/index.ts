@@ -11,3 +11,4 @@ export * from "./fees";
 export * from "./attendance";
 export * from "./exams";
 export * from "./routine";
+export * from "./website";

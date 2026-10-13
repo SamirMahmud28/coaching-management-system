@@ -138,3 +138,22 @@ export async function seedTeaching(input: {
     await close();
   }
 }
+
+/** Saves the institute's profile through the real settings service (what the Owner does in Institute Settings). */
+export async function setInstituteProfile(subdomain: string, profile: { address?: string; phone?: string; email?: string; primaryColor?: string }) {
+  const { config: loadEnv } = await import("dotenv");
+  loadEnv({ path: ".env.test", override: true, quiet: true });
+  const { createTestDb } = await import("../src/server/core/testing/db");
+  const { sql } = await import("drizzle-orm");
+  const { saveInstitutionProfile } = await import("../src/server/modules/settings/service");
+  const { db, close } = createTestDb();
+  try {
+    const [t] = await db.execute<{ id: string; owner: string; name: string }>(sql`select id, owner_user_id as owner, name from tenants where subdomain = ${subdomain}`);
+    await saveInstitutionProfile(db as never, { tenantId: t.id, userId: t.owner }, {
+      displayName: t.name, shortName: null, address: profile.address ?? null, phone: profile.phone ?? null, email: profile.email ?? null, website: null,
+      institutionCode: null, logoFileId: null, primaryColor: profile.primaryColor ?? null, secondaryColor: null,
+    });
+  } finally {
+    await close();
+  }
+}

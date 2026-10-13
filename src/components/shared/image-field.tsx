@@ -6,9 +6,9 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ACCEPT_ATTRIBUTE, limitMb, useImageUpload } from "./use-image-upload";
 
-const FRAMES = { LOGO: "size-24", SIGNATURE: "h-16 w-48", STUDENT_PHOTO: "h-28 w-24", INSTRUCTOR_PHOTO: "h-28 w-24" } as const;
+const FRAMES = { LOGO: "size-24", SIGNATURE: "h-16 w-48", STUDENT_PHOTO: "h-28 w-24", INSTRUCTOR_PHOTO: "h-28 w-24", WEBSITE_IMAGE: "h-24 w-40" } as const;
 
-/** Upload-and-preview for an institute logo, a signature image (transparent PNG works best) or a person's photo. */
+/** Upload-and-preview for an institute logo, a signature image (transparent PNG works best), a person's photo or a website picture. */
 export function ImageField({
   id,
   value,
@@ -37,7 +37,7 @@ export function ImageField({
       <div className={cn("flex shrink-0 items-center justify-center rounded-md border bg-[repeating-conic-gradient(var(--muted)_0_25%,transparent_0_50%)] bg-[length:12px_12px]", FRAMES[category])}>
         {value ? (
           // eslint-disable-next-line @next/next/no-img-element -- authenticated, tenant-scoped bytes
-          <img src={`/api/v1/files/${value}`} alt={label} className={cn("max-h-full max-w-full", category.endsWith("PHOTO") ? "size-full rounded-md object-cover" : "object-contain")} />
+          <img src={`/api/v1/files/${value}`} alt={label} className={cn("max-h-full max-w-full", category.endsWith("PHOTO") || category === "WEBSITE_IMAGE" ? "size-full rounded-md object-cover" : "object-contain")} />
         ) : (
           <ImageIcon aria-hidden className="size-6 text-muted-foreground" />
         )}

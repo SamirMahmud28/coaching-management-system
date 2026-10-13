@@ -38,4 +38,5 @@ export const instituteKeys = {
   routine: (...parts: unknown[]) => ["institute-routine", ...parts],
   lessons: (...parts: unknown[]) => ["institute-lessons", ...parts],
   register: (batchSubjectId: string, date: string, startsAt: string) => ["institute-register", batchSubjectId, date, startsAt],
+  website: (...parts: unknown[]) => ["institute-website", ...parts],
 };

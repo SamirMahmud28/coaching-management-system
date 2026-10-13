@@ -18,6 +18,7 @@ import { createTenantAuth } from "./auth/tenant-auth";
 import { createAttendanceHandlers } from "./attendance/http";
 import { createExamsHandlers } from "./exams/http";
 import { createRoutineHandlers } from "./routine/http";
+import { createWebsiteHandlers } from "./website/http";
 import * as routineService from "./routine/service";
 import * as lessonService from "./routine/lessons";
 import * as examSetup from "./exams/setup";
@@ -50,9 +51,9 @@ let storage: LocalDiskStorage;
 
 const DUMMY = "00000000-0000-4000-8000-000000000000";
 type Entity = "COURSE" | "SUBJECT" | "BATCH" | "BATCH_SUBJECT" | "SCHEDULE_SLOT" | "STUDENT" | "MEMBERSHIP" | "INSTRUCTOR" | "USER" | "SIGNATURE" | "FILE" | "FEE_ITEM" | "STUDENT_FEE_AMOUNT" | "FEE_RUN" | "FEE_CHARGE" | "FEE_PAYMENT" | "LEAVE" | "EXAM" | "EXAM_PAPER" | "ROUTINE_CHANGE" | "HOLIDAY" | "LESSON_TOPIC";
-type Factory = "academic" | "students" | "instructors" | "institute" | "settings" | "files" | "fees" | "attendance" | "exams" | "routine";
+type Factory = "academic" | "students" | "instructors" | "institute" | "settings" | "files" | "fees" | "attendance" | "exams" | "routine" | "website";
 /** Paid modules: each handler of these factories is refused while its module is off. */
-const PAID: Partial<Record<Factory, "fees" | "attendance" | "exams" | "routine">> = { fees: "fees", attendance: "attendance", exams: "exams", routine: "routine" };
+const PAID: Partial<Record<Factory, "fees" | "attendance" | "exams" | "routine" | "website">> = { fees: "fees", attendance: "attendance", exams: "exams", routine: "routine", website: "website" };
 const TODAY = todayInDhaka();
 
 interface Entry {
@@ -212,9 +213,15 @@ const HANDLERS: Entry[] = [
   { factory: "routine", name: "copyPlan", method: "POST", permission: "routine.manage", id: "BATCH_SUBJECT", body: { from_batch_subject_id: DUMMY } },
   { factory: "routine", name: "updateTopic", method: "PATCH", permission: "lessons.manage", id: "LESSON_TOPIC", body: { status: "ONGOING" } },
   { factory: "routine", name: "deleteTopic", method: "DELETE", permission: "lessons.manage", id: "LESSON_TOPIC" },
+  // website (paid module)
+  { factory: "website", name: "getSettings", method: "GET", permission: "website.manage" },
+  { factory: "website", name: "saveSettings", method: "PUT", permission: "website.manage", body: { theme: "BOLD", heading_font: "INTER", sections: [], hero_button: "NONE" } },
 ];
 /** Handlers deliberately outside the matrix, with the reason. */
-const OUTSIDE: Partial<Record<Factory, Record<string, string>>> = { files: { publicLogo: "public by design: the host's logo while its public page is shown (D58)" } };
+const OUTSIDE: Partial<Record<Factory, Record<string, string>>> = {
+  files: { publicLogo: "public by design: the host's logo while its public page is shown (D58)" },
+  website: { publicImage: "public by design: a picture the website uses, while the module is on and the page is shown (website/settings.test.ts)" },
+};
 
 type Handlers = Record<string, (request: Request, params?: { id: string }) => Promise<Response>>;
 let factories: Record<Factory, Handlers>;
@@ -278,6 +285,7 @@ beforeAll(async () => {
     attendance: createAttendanceHandlers({ db, auth, host }) as unknown as Handlers,
     exams: createExamsHandlers({ db, auth, host }) as unknown as Handlers,
     routine: createRoutineHandlers({ db, auth, host }) as unknown as Handlers,
+    website: createWebsiteHandlers({ db, auth, host, storage }) as unknown as Handlers,
   };
 
   const institute = async (sub: string) => {
@@ -291,7 +299,7 @@ beforeAll(async () => {
 
   // Institute A: one user per baseline role, and one per guarded permission holding only that permission.
   const inst = await institute("matrix-a");
-  await setModules(db, inst.tenant.id, ["fees", "attendance", "exams", "routine"]);
+  await setModules(db, inst.tenant.id, ["fees", "attendance", "exams", "routine", "website"]);
   a = { id: inst.tenant.id, sub: "matrix-a" };
   const perms = await testDb.select().from(permissionRows);
   for (const role of BASELINE) {
@@ -315,7 +323,7 @@ beforeAll(async () => {
 
   // Institute B: one record of every kind a path id can name.
   const b = await institute("matrix-b");
-  await setModules(db, b.tenant.id, ["fees", "attendance", "exams", "routine"]);
+  await setModules(db, b.tenant.id, ["fees", "attendance", "exams", "routine", "website"]);
   const actor = { tenantId: b.tenant.id, userId: b.owner.id };
   const course = await academic.createCourse(db, actor, { name: "B course", code: "BC", dueDay: 10 });
   const subject = await academic.createSubject(db, actor, course.id, { name: "B subject" });
@@ -376,7 +384,7 @@ describe("access matrix: catalogue", () => {
       }
     };
     await walk(root);
-    const moduleOf: Record<string, Factory> = { academic: "academic", students: "students", instructors: "instructors", institute: "institute", settings: "settings", files: "files", fees: "fees", attendance: "attendance", exams: "exams", routine: "routine" };
+    const moduleOf: Record<string, Factory> = { academic: "academic", students: "students", instructors: "instructors", institute: "institute", settings: "settings", files: "files", fees: "fees", attendance: "attendance", exams: "exams", routine: "routine", website: "website" };
     const seen: string[] = [];
     for (const file of files) {
       const rel = path.relative(root, file).replaceAll("\\", "/");
@@ -424,7 +432,7 @@ describe("access matrix: who passes the guard", () => {
 });
 
 describe("access matrix: paid module switched off", () => {
-  it.each(["fees", "attendance", "exams", "routine"] as const)("refuses every %s handler while it's off, even to the Owner, and leaves everything else alone", async (key) => {
+  it.each(["fees", "attendance", "exams", "routine", "website"] as const)("refuses every %s handler while it's off, even to the Owner, and leaves everything else alone", async (key) => {
     await setModules(db, a.id, [key], false);
     try {
       for (const entry of HANDLERS) {

@@ -1,0 +1,134 @@
+import { boolean, check, date, foreignKey, index, integer, jsonb, pgEnum, pgTable, text, timestamp, unique, uuid, varchar } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import { courses } from "./academic";
+import { files, tenants, users } from "./core";
+import { students } from "./students";
+
+// Website (paid module `website`): D13, D19–D23, D124–D133. The themed public site at `<sub>.<domain>/`, its notices,
+// gallery and testimonials, and the admission enquiry inbox. Every save is public at once (D126). Image files are
+// never deleted, so their composite FKs need no ON DELETE action.
+
+export const websiteThemeEnum = pgEnum("website_theme", ["CLASSIC", "MODERN", "BOLD"]);
+export const websiteFontEnum = pgEnum("website_font", ["INTER", "POPPINS", "MERRIWEATHER", "PLAYFAIR", "HIND_SILIGURI"]);
+export const heroButtonEnum = pgEnum("website_hero_button", ["ENQUIRE", "CALL", "NONE"]);
+export const enquiryStatusEnum = pgEnum("enquiry_status", ["NEW", "CONTACTED", "CONVERTED", "CLOSED"]);
+
+/** The sections below the hero, in the order shown; each can be turned off (D20). */
+export const WEBSITE_SECTIONS = ["ABOUT", "COURSES", "NOTICES", "GALLERY", "TESTIMONIALS", "ENQUIRY", "CONTACT"] as const;
+export type WebsiteSectionKey = (typeof WEBSITE_SECTIONS)[number];
+export type WebsiteSectionSetting = { key: WebsiteSectionKey; enabled: boolean };
+
+/** One row per institute, created on first save; until then the defaults in `website/settings.ts` apply. */
+export const websiteSettings = pgTable("website_settings", {
+  tenantId: uuid("tenant_id").primaryKey().references(() => tenants.id),
+  theme: websiteThemeEnum("theme").notNull().default("CLASSIC"),
+  headingFont: websiteFontEnum("heading_font").notNull().default("INTER"),
+  sections: jsonb("sections").$type<WebsiteSectionSetting[]>().notNull(),
+  heroHeading: varchar("hero_heading", { length: 120 }),
+  heroSubheading: varchar("hero_subheading", { length: 250 }),
+  heroImageFileId: uuid("hero_image_file_id"),
+  heroButton: heroButtonEnum("hero_button").notNull().default("ENQUIRE"),
+  aboutHeading: varchar("about_heading", { length: 120 }),
+  aboutText: text("about_text"),
+  aboutImageFileId: uuid("about_image_file_id"),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedBy: uuid("updated_by"),
+}, (t) => [
+  foreignKey({ name: "website_settings_hero_image_fk", columns: [t.tenantId, t.heroImageFileId], foreignColumns: [files.tenantId, files.id] }),
+  foreignKey({ name: "website_settings_about_image_fk", columns: [t.tenantId, t.aboutImageFileId], foreignColumns: [files.tenantId, files.id] }),
+  foreignKey({ name: "website_settings_updated_by_fk", columns: [t.tenantId, t.updatedBy], foreignColumns: [users.tenantId, users.id] }),
+  check("website_settings_about_text", sql`${t.aboutText} IS NULL OR length(${t.aboutText}) <= 3000`),
+]);
+
+/** A public notice (D23, D128): shown from its date until "show until"; hidden rather than deleted. */
+export const websiteNotices = pgTable("website_notices", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  tenantId: uuid("tenant_id").notNull(),
+  title: varchar("title", { length: 150 }).notNull(),
+  body: text("body").notNull(),
+  noticeDate: date("notice_date").notNull(),
+  pinned: boolean("pinned").notNull().default(false),
+  showUntil: date("show_until"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  createdBy: uuid("created_by").notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedBy: uuid("updated_by").notNull(),
+  hiddenAt: timestamp("hidden_at", { withTimezone: true }),
+  hiddenBy: uuid("hidden_by"),
+}, (t) => [
+  unique("website_notices_tenant_id_unique").on(t.tenantId, t.id),
+  index("website_notices_date_idx").on(t.tenantId, t.noticeDate),
+  foreignKey({ name: "website_notices_tenant_fk", columns: [t.tenantId], foreignColumns: [tenants.id] }),
+  foreignKey({ name: "website_notices_created_by_fk", columns: [t.tenantId, t.createdBy], foreignColumns: [users.tenantId, users.id] }),
+  foreignKey({ name: "website_notices_updated_by_fk", columns: [t.tenantId, t.updatedBy], foreignColumns: [users.tenantId, users.id] }),
+  foreignKey({ name: "website_notices_hidden_by_fk", columns: [t.tenantId, t.hiddenBy], foreignColumns: [users.tenantId, users.id] }),
+  check("website_notices_dates", sql`${t.showUntil} IS NULL OR ${t.showUntil} >= ${t.noticeDate}`),
+  check("website_notices_body", sql`length(${t.body}) <= 5000`),
+  check("website_notices_hidden", sql`(${t.hiddenAt} IS NULL) = (${t.hiddenBy} IS NULL)`),
+]);
+
+/** A gallery photo (D125): at most 60 per institute, shown in `sort_order`. Removing one deletes the row. */
+export const galleryPhotos = pgTable("gallery_photos", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  tenantId: uuid("tenant_id").notNull(),
+  fileId: uuid("file_id").notNull(),
+  caption: varchar("caption", { length: 200 }),
+  sortOrder: integer("sort_order").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  createdBy: uuid("created_by").notNull(),
+}, (t) => [
+  unique("gallery_photos_tenant_id_unique").on(t.tenantId, t.id),
+  index("gallery_photos_order_idx").on(t.tenantId, t.sortOrder),
+  foreignKey({ name: "gallery_photos_tenant_fk", columns: [t.tenantId], foreignColumns: [tenants.id] }),
+  foreignKey({ name: "gallery_photos_file_fk", columns: [t.tenantId, t.fileId], foreignColumns: [files.tenantId, files.id] }),
+  foreignKey({ name: "gallery_photos_created_by_fk", columns: [t.tenantId, t.createdBy], foreignColumns: [users.tenantId, users.id] }),
+]);
+
+/** A testimonial entered by the office (D130), shown in `sort_order`. Removing one deletes the row. */
+export const testimonials = pgTable("testimonials", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  tenantId: uuid("tenant_id").notNull(),
+  quote: varchar("quote", { length: 600 }).notNull(),
+  name: varchar("name", { length: 100 }).notNull(),
+  line: varchar("line", { length: 120 }),
+  photoFileId: uuid("photo_file_id"),
+  sortOrder: integer("sort_order").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedBy: uuid("updated_by").notNull(),
+}, (t) => [
+  unique("testimonials_tenant_id_unique").on(t.tenantId, t.id),
+  index("testimonials_order_idx").on(t.tenantId, t.sortOrder),
+  foreignKey({ name: "testimonials_tenant_fk", columns: [t.tenantId], foreignColumns: [tenants.id] }),
+  foreignKey({ name: "testimonials_photo_fk", columns: [t.tenantId, t.photoFileId], foreignColumns: [files.tenantId, files.id] }),
+  foreignKey({ name: "testimonials_updated_by_fk", columns: [t.tenantId, t.updatedBy], foreignColumns: [users.tenantId, users.id] }),
+]);
+
+/**
+ * An admission enquiry from the public form (D22, D129). The sender's IP is kept only for the per-IP limit. "Convert"
+ * links the student that admission created.
+ */
+export const enquiries = pgTable("enquiries", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  tenantId: uuid("tenant_id").notNull(),
+  name: varchar("name", { length: 100 }).notNull(),
+  mobile: varchar("mobile", { length: 20 }).notNull(),
+  courseId: uuid("course_id"),
+  message: varchar("message", { length: 1000 }),
+  status: enquiryStatusEnum("status").notNull().default("NEW"),
+  note: varchar("note", { length: 500 }),
+  studentId: uuid("student_id"),
+  ipAddress: varchar("ip_address", { length: 45 }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedBy: uuid("updated_by"),
+}, (t) => [
+  unique("enquiries_tenant_id_unique").on(t.tenantId, t.id),
+  index("enquiries_status_idx").on(t.tenantId, t.status, t.createdAt),
+  index("enquiries_ip_idx").on(t.tenantId, t.ipAddress, t.createdAt),
+  foreignKey({ name: "enquiries_tenant_fk", columns: [t.tenantId], foreignColumns: [tenants.id] }),
+  foreignKey({ name: "enquiries_course_fk", columns: [t.tenantId, t.courseId], foreignColumns: [courses.tenantId, courses.id] }),
+  foreignKey({ name: "enquiries_student_fk", columns: [t.tenantId, t.studentId], foreignColumns: [students.tenantId, students.id] }),
+  foreignKey({ name: "enquiries_updated_by_fk", columns: [t.tenantId, t.updatedBy], foreignColumns: [users.tenantId, users.id] }),
+  check("enquiries_converted", sql`(${t.status} = 'CONVERTED') = (${t.studentId} IS NOT NULL)`),
+]);

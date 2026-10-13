@@ -30,7 +30,7 @@ export function createFilesHandlers({ db, auth, host, storage }: FilesHttpDeps) 
       handle(async () => {
         const ctx = await authenticateTenantRequest({ db, auth, headers: request.headers, host, method: request.method, module: "core" });
         const declared = Number(request.headers.get("content-length") ?? "0");
-        if (declared > MAX_REQUEST_BYTES) throw new ValidationError("VALIDATION_FILE_TOO_LARGE", "The file is too large. The limit is 2 MB.", { field: "file" });
+        if (declared > MAX_REQUEST_BYTES) throw new ValidationError("VALIDATION_FILE_TOO_LARGE", `The file is too large. The limit is ${Math.floor(MAX_REQUEST_BYTES / (1024 * 1024))} MB.`, { field: "file" });
 
         let form: FormData;
         try {

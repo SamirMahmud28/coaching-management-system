@@ -9,7 +9,7 @@ export interface HelpTopic {
   key: HelpTopicKey;
   title: string;
   /** Shown as the Help centre's section. */
-  area: "Getting started" | "Teaching" | "Students" | "Staff and access" | "Institute" | "Fees" | "Attendance" | "Exams" | "Routine";
+  area: "Getting started" | "Teaching" | "Students" | "Staff and access" | "Institute" | "Fees" | "Attendance" | "Exams" | "Routine" | "Website";
   /** The topic appears in the Help centre only for users holding this (permissions are already limited to active modules). */
   permission: PermissionName | null;
   summary: string;
@@ -44,7 +44,8 @@ export type HelpTopicKey =
   | "exams-results"
   | "results-student"
   | "routine"
-  | "lesson-plans";
+  | "lesson-plans"
+  | "website";
 
 export const HELP_TOPICS: readonly HelpTopic[] = [
   {
@@ -625,6 +626,34 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
       "Students see their batches' plans and progress in their portal.",
     ],
     faqs: [{ q: "A topic is finished early.", a: "Set it to Completed; the date is recorded and it no longer counts as Overdue." }],
+  },
+  {
+    key: "website",
+    title: "Your website",
+    area: "Website",
+    permission: "website.manage",
+    summary: "Your institute's public website at its own address: pick a theme and a heading font, write the welcome banner and the About text, and choose which sections appear and in what order.",
+    steps: [
+      "Open Website. Under Look, pick one of the three themes and a heading font. The brand colour, logo, address and phone come from Institute Settings.",
+      "Under Welcome banner, write the heading and a line under it, add a background picture, and choose the button: Enquire, Call, or none.",
+      "Under About, write a few lines about your institute and add a picture.",
+      "Under Sections, switch each section on or off and use the arrows to set their order. The welcome banner is always at the top.",
+      "Click Save. The website changes straight away; click View website to see it.",
+    ],
+    rules: [
+      "Every save is public at once. There is no draft.",
+      "Pictures can be JPG, PNG or WebP up to 5 MB; they are resized and compressed when uploaded.",
+      "A section with nothing to show stays hidden, with its menu link: About without text or a picture, Courses with no active course, Contact without any contact details.",
+      "Courses & batches lists your active courses with their subjects and class times; instructor names are never shown.",
+      "Contact & map shows a map of the address set in Institute Settings, with an Open in Maps link.",
+      "Only Owner and Admin can change the website.",
+      "If the Website module is switched off, your address shows the basic institute page again; the website's settings are kept for when it's switched back on.",
+    ],
+    faqs: [
+      { q: "How do I change the colours?", a: "Set the primary colour in Institute Settings; the website uses it for buttons, accents and the Bold theme's banner." },
+      { q: "The map shows the wrong place.", a: "Write the address in Institute Settings as Google Maps would find it, e.g. with the area and city." },
+      { q: "Can I add my own page or HTML?", a: "Not in this version: the website is built from its sections only." },
+    ],
   },
 ];
 

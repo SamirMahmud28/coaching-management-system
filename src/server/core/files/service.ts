@@ -29,6 +29,8 @@ export const FILE_RULES: Record<FileCategory, CategoryRule> = {
   INSTRUCTOR_PHOTO: { maxBytes: 2 * MB, maxWidth: 600, maxHeight: 750, output: "jpg", uploadPermissions: ["instructors.manage"] },
   LOGO: { maxBytes: 2 * MB, maxWidth: 800, maxHeight: 800, output: "png", uploadPermissions: ["settings.manage"] },
   SIGNATURE: { maxBytes: 1 * MB, maxWidth: 800, maxHeight: 300, output: "png", uploadPermissions: ["settings.manage"] },
+  // Hero, about, gallery and testimonial pictures on the public website (D125).
+  WEBSITE_IMAGE: { maxBytes: 5 * MB, maxWidth: 1600, maxHeight: 1600, output: "jpg", uploadPermissions: ["website.manage"] },
 };
 
 const ACCEPTED_FORMATS = new Set(["jpeg", "png", "webp"]);
@@ -120,12 +122,13 @@ export async function readFileBytes(storage: StorageProvider, row: FileRow): Pro
 
 /**
  * Who may view a file. Photos: whoever may view that kind of person, the person themself, and instructors for students
- * currently in a batch they teach (D24). Logos and signatures print on documents anyone in the institute can open.
+ * currently in a batch they teach (D24). Logos and signatures print on documents anyone in the institute can open; website pictures are public.
  */
 export async function canViewFile(db: DbOrTx, viewer: { tenantId: string; userId: string; permissions: ReadonlySet<string> }, file: FileRow): Promise<boolean> {
   switch (file.category) {
     case "LOGO":
     case "SIGNATURE":
+    case "WEBSITE_IMAGE": // public on the website anyway
       return true;
     case "STUDENT_PHOTO": {
       if (viewer.permissions.has("students.view")) return true;

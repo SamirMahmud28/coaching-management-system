@@ -1028,3 +1028,32 @@ export const lessonsApi = {
   reorder: (batchSubjectId: string, topicIds: string[]) => apiFetch<void>(`/api/v1/lessons/${batchSubjectId}/order`, { method: "PUT", body: { topic_ids: topicIds } }),
   copy: (batchSubjectId: string, fromBatchSubjectId: string) => apiFetch<{ copied: number }>(`/api/v1/lessons/${batchSubjectId}/copy`, { body: { from_batch_subject_id: fromBatchSubjectId } }),
 };
+
+// --- Website (paid module `website`) -----------------------------------------------------------------------------
+
+export type WebsiteSectionKey = "ABOUT" | "COURSES" | "NOTICES" | "GALLERY" | "TESTIMONIALS" | "ENQUIRY" | "CONTACT";
+
+export interface WebsiteSettingsBody {
+  theme: "CLASSIC" | "MODERN" | "BOLD";
+  heading_font: "INTER" | "POPPINS" | "MERRIWEATHER" | "PLAYFAIR" | "HIND_SILIGURI";
+  sections: { key: WebsiteSectionKey; enabled: boolean }[];
+  hero_heading: string | null;
+  hero_subheading: string | null;
+  hero_image_file_id: string | null;
+  hero_button: "ENQUIRE" | "CALL" | "NONE";
+  about_heading: string | null;
+  about_text: string | null;
+  about_image_file_id: string | null;
+}
+
+export interface WebsiteSettingsRow extends WebsiteSettingsBody {
+  is_default: boolean;
+  updated_at: string | null;
+  /** From Institute Settings. */
+  brand: { primary_color: string | null; phone: string | null; address: string | null };
+}
+
+export const websiteApi = {
+  settings: () => apiFetch<WebsiteSettingsRow>("/api/v1/website/settings"),
+  saveSettings: (body: WebsiteSettingsBody) => apiFetch<WebsiteSettingsRow>("/api/v1/website/settings", { method: "PUT", body }),
+};

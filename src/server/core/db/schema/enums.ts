@@ -11,4 +11,4 @@ export const moduleRequestStatusEnum = pgEnum("module_request_status", ["PENDING
 export const actorTypeEnum = pgEnum("actor_type", ["TENANT_USER", "PLATFORM_USER"]);
 
 // What an uploaded file is for: limits, processing and viewing rules follow it.
-export const fileCategoryEnum = pgEnum("file_category", ["STUDENT_PHOTO", "INSTRUCTOR_PHOTO", "LOGO", "SIGNATURE"]);
+export const fileCategoryEnum = pgEnum("file_category", ["STUDENT_PHOTO", "INSTRUCTOR_PHOTO", "LOGO", "SIGNATURE", "WEBSITE_IMAGE"]);

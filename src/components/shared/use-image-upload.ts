@@ -4,10 +4,10 @@ import { useState } from "react";
 import { apiFetch } from "@/lib/api-client";
 import { describeError } from "@/lib/feedback";
 
-export type UploadCategory = "STUDENT_PHOTO" | "INSTRUCTOR_PHOTO" | "LOGO" | "SIGNATURE";
+export type UploadCategory = "STUDENT_PHOTO" | "INSTRUCTOR_PHOTO" | "LOGO" | "SIGNATURE" | "WEBSITE_IMAGE";
 
 const ACCEPTED = ["image/jpeg", "image/png", "image/webp"];
-const LIMITS: Record<UploadCategory, number> = { STUDENT_PHOTO: 2, INSTRUCTOR_PHOTO: 2, LOGO: 2, SIGNATURE: 1 };
+const LIMITS: Record<UploadCategory, number> = { STUDENT_PHOTO: 2, INSTRUCTOR_PHOTO: 2, LOGO: 2, SIGNATURE: 1, WEBSITE_IMAGE: 5 };
 export const ACCEPT_ATTRIBUTE = ACCEPTED.join(",");
 export const limitMb = (category: UploadCategory) => LIMITS[category];
 

@@ -6,15 +6,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { DAY_NAME } from "@/modules/institute/components/portal/week-schedule";
 import { db } from "@/server/core/db/client";
 import { getCurrentInstitute } from "@/server/modules/institute/current-user";
+import { InstituteWebsite } from "@/modules/website/components/institute-website";
 import { getPublicCatalog, publicPageVisible } from "@/server/modules/portal/service";
+import { getPublicWebsite } from "@/server/modules/website/public";
 
 export async function generateMetadata(): Promise<Metadata> {
   const institute = await getCurrentInstitute();
   return { title: publicPageVisible(institute.status) ? institute.name : "Not available" };
 }
 
-// The institute's basic public page (Core, D21): default theme, profile and contact details, and active courses with
-// their subjects and batches' class times (D59). The Website module replaces it with themes and sections later.
+// The institute's public page. With the Website module on, its themed website (D20, D124–D133); otherwise the basic
+// Core page (D21): default theme, profile and contact details, and active courses with their batches' class times (D59).
 export default async function InstitutePublicPage() {
   const institute = await getCurrentInstitute();
   if (!publicPageVisible(institute.status)) {
@@ -25,6 +27,9 @@ export default async function InstitutePublicPage() {
       </main>
     );
   }
+  const site = await getPublicWebsite(db, institute.id);
+  if (site) return <InstituteWebsite site={site} />;
+
   const { profile, courses } = await getPublicCatalog(db, institute.id);
   const contacts = [
     profile.address && { icon: MapPin, text: profile.address },
