@@ -38,11 +38,12 @@ async function openDay(page: Page, date: string) {
   await expect(page.getByTestId("routine-classes")).toBeVisible();
 }
 
+let codes: string[] = [];
 const cls = (page: Page, subject: string, date: string, time: string) => page.getByTestId(`class-${subject}-${date}-${time}`);
 
 test.beforeAll(async () => {
   await seedInstitute(INSTITUTE);
-  await seedTeaching({ subdomain: INSTITUTE.subdomain, instructor: TEACHER, extraInstructors: [SUBSTITUTE], subjects: ["Physics", "Chemistry"], students: ["Anika Rahman", "Bushra Khan"] });
+  ({ codes } = await seedTeaching({ subdomain: INSTITUTE.subdomain, instructor: TEACHER, extraInstructors: [SUBSTITUTE], subjects: ["Physics", "Chemistry"], students: ["Anika Rahman", "Bushra Khan"] }));
 });
 
 test("the Owner signs in for the first time", async ({ page }) => {
@@ -145,6 +146,48 @@ test("R3: the Owner builds a lesson plan; a late topic shows Overdue and complet
 
   await page.getByRole("button", { name: "Move Ch 2: Motion up" }).click();
   await expect(page.getByTestId("lesson-topics").getByRole("listitem").first()).toContainText("Ch 2: Motion");
+});
+
+// By now: in two days Physics has a substitute (Nasrin) and Chemistry is moved to 19:00; in three days is Victory Day.
+test("R4: the instructor sees changes on the home page and updates their lesson plan (D117, D120)", async ({ page }) => {
+  await signIn(page, TEACHER.email, TEACHER.password);
+  await expect(page).toHaveURL(url("/app/instructor"));
+  const changes = page.getByTestId("upcoming-changes");
+  await expect(changes).toContainText("Substitute: Nasrin Sultana");
+  await expect(changes).toContainText("Victory Day");
+  await page.getByRole("link", { name: "Routine", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Change", exact: true })).toHaveCount(0); // only the office changes the routine
+  await page.getByRole("link", { name: "Lesson plans" }).click();
+  await page.getByTestId("lesson-overview").getByRole("link", { name: /Physics/ }).click();
+  await page.getByLabel("Ch 2: Motion status").click();
+  await page.getByRole("option", { name: "Ongoing" }).click();
+  await expect(page.getByText(/1 ongoing/)).toBeVisible();
+});
+
+test("R4: the student sees schedule changes and lesson progress (D27, D117)", async ({ page }) => {
+  await signIn(page, codes[0], "Student123");
+  await expect(page).toHaveURL(url("/app/student"));
+  await expect(page.getByTestId("upcoming-changes")).toContainText("Victory Day");
+  await expect(page.getByTestId("upcoming-changes")).toContainText("Moved to");
+  await expect(page.getByTestId("lesson-progress")).toContainText("1 of 2 topics completed");
+});
+
+test("R4: with Attendance on, the substitute sees the class they cover and holidays show as not held (D116, D121)", async ({ page }) => {
+  await setInstituteModules(INSTITUTE.subdomain, { attendance: true });
+  await signIn(page, SUBSTITUTE.email, SUBSTITUTE.password);
+  await expect(page).toHaveURL(url("/app/instructor"));
+  await page.goto(url(`/app/instructor/attendance?date=${day(2)}`));
+  const classes = page.getByTestId("day-classes");
+  await expect(classes).toContainText("Physics");
+  await expect(classes).toContainText("Substitute: Nasrin Sultana");
+  await expect(classes).not.toContainText("Chemistry"); // not theirs
+
+  await page.context().clearCookies(); // sign the substitute out
+  await signIn(page, TEACHER.email, TEACHER.password);
+  await expect(page).toHaveURL(url("/app/instructor"));
+  await page.goto(url(`/app/instructor/attendance?date=${day(3)}`));
+  await expect(page.getByTestId("day-classes")).toContainText("Holiday: Victory Day");
+  await expect(page.getByTestId("day-classes")).toContainText("No class held");
 });
 
 test("Routine disappears while the module is off (D5)", async ({ page }) => {

@@ -536,6 +536,8 @@ export interface DayClassRow {
   state: ClassState;
   not_held_reason: string | null;
   counts: { present: number; absent: number; late: number; excused: number } | null;
+  /** Set when the Routine module is on: moved here, or a substitute (D116, D121). */
+  routine_note?: string | null;
 }
 
 export interface RegisterSubject {

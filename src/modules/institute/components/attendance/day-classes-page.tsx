@@ -125,6 +125,7 @@ export function DayClassesPage({
                       {c.source === "EXTRA" && " · Extra class"}
                       {c.counts && ` · ${c.counts.present + c.counts.late} present, ${c.counts.absent} absent`}
                       {c.not_held_reason && ` · ${c.not_held_reason}`}
+                      {c.routine_note && ` · ${c.routine_note}`}
                     </p>
                   </div>
                   <StatusBadge status={c.state} label={state.label} tone={state.tone} />

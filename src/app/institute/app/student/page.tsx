@@ -12,6 +12,8 @@ import { getStudentHome } from "@/server/modules/portal/service";
 import { myFees } from "@/server/modules/fees/ledger";
 import { MyFeesCard } from "@/modules/institute/components/portal/my-fees-card";
 import { MyAttendanceCard } from "@/modules/institute/components/portal/my-attendance-card";
+import { LessonProgressCard, UpcomingChangesCard } from "@/modules/institute/components/portal/routine-cards";
+import { myLessonProgress, upcomingChangesForStudent } from "@/server/modules/routine/portal";
 import { myAttendance } from "@/server/modules/attendance/reports";
 import { toSnakeCaseKeys } from "@/server/core/http/case";
 import type { AttendanceHistory } from "@/modules/institute/api";
@@ -25,6 +27,9 @@ export default async function Page() {
   // Permissions are limited to active modules, so My fees appears only while Fees is on (D27).
   const fees = permissions.has("fees.self.view") ? await myFees(db, session.tenant.id, session.userId) : null;
   // My attendance appears only while Attendance is on (D27, D87); sent in the API's wire shape for the shared summary.
+  // The routine's changes and lesson progress appear only while Routine is on (D27, D117).
+  const routineOn = permissions.has("routine.self.view");
+  const [changes, lessons] = routineOn ? await Promise.all([upcomingChangesForStudent(db, session.tenant.id, session.userId), myLessonProgress(db, session.tenant.id, session.userId)]) : [null, null];
   const attendance = permissions.has("attendance.self.view") ? (toSnakeCaseKeys(await myAttendance(db, session.tenant.id, session.userId)) as AttendanceHistory) : null;
 
   const details: [string, string][] = [
@@ -110,6 +115,8 @@ export default async function Page() {
               <WeekSchedule classes={week} />
             </CardContent>
           </Card>
+          {changes && <UpcomingChangesCard changes={changes} />}
+          {lessons && <LessonProgressCard plans={lessons} />}
           {attendance && <MyAttendanceCard data={attendance} />}
           {fees && <MyFeesCard fees={fees} />}
         </div>

@@ -8,6 +8,8 @@ import { WeekSchedule } from "@/modules/institute/components/portal/week-schedul
 import { db } from "@/server/core/db/client";
 import { requireModulePage } from "@/server/modules/institute/current-user";
 import { getInstructorHome } from "@/server/modules/portal/service";
+import { UpcomingChangesCard } from "@/modules/institute/components/portal/routine-cards";
+import { upcomingChangesForInstructor } from "@/server/modules/routine/portal";
 
 export const metadata: Metadata = { title: "Instructor portal" };
 
@@ -15,6 +17,7 @@ export const metadata: Metadata = { title: "Instructor portal" };
 export default async function Page() {
   const { session, permissions } = await requireModulePage("batches.own.view", "instructor");
   const home = await getInstructorHome(db, session.tenant.id, session.userId);
+  const changes = permissions.has("routine.view") ? await upcomingChangesForInstructor(db, session.tenant.id, session.userId) : null;
 
   return (
     <>
@@ -68,6 +71,7 @@ export default async function Page() {
             <WeekSchedule classes={home.week} />
           </CardContent>
         </Card>
+        {changes && <UpcomingChangesCard changes={changes} />}
       </div>
     </>
   );

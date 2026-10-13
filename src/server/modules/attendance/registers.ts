@@ -20,6 +20,7 @@ import { isCalendarDate, todayInDhaka } from "@/lib/dates";
 import { cleanTime, type Weekday } from "../academic/service";
 import { audit } from "../audit/service";
 import { editRule, effectiveStatus, tally, type AttendanceStatus } from "./rules";
+import { routineClassesOn, routineOffReason, substitutionsOn } from "../routine/service";
 import "./references";
 
 // Class registers (D80–D86, D91): which classes are on a day, a class's register, taking and correcting it.
@@ -50,8 +51,8 @@ function cleanDate(value: string | undefined, field = "date"): string {
  * Admin, or a custom role with academic.view), otherwise only the ones they teach (D24, D81). Registers use active
  * batches only; reports (`includeArchived`) also reach archived ones, so their history stays readable.
  */
-export async function scopedBatchSubjects(db: DbOrTx, viewer: Viewer, onlyIds?: string[], opts: { includeArchived?: boolean } = {}) {
-  const all = viewer.permissions.has("attendance.manage") || viewer.permissions.has("academic.view");
+export async function scopedBatchSubjects(db: DbOrTx, viewer: Viewer, onlyIds?: string[], opts: { includeArchived?: boolean; unscoped?: boolean } = {}) {
+  const all = opts.unscoped || viewer.permissions.has("attendance.manage") || viewer.permissions.has("academic.view");
   const rows = await db
     .select({
       id: batchSubjects.id,
@@ -80,11 +81,18 @@ export async function scopedBatchSubjects(db: DbOrTx, viewer: Viewer, onlyIds?: 
   return rows;
 }
 
-/** One batch subject the viewer may use, or a 404 — like another institute's (D24). */
-async function scopedBatchSubject(db: DbOrTx, viewer: Viewer, batchSubjectId: string) {
+/**
+ * The batch subject of one class the viewer may use: one they teach (or any, for the office), or one they substitute
+ * in on that date when the Routine module is on (D121). Otherwise a 404 — like another institute's (D24).
+ */
+async function scopedBatchSubject(db: DbOrTx, viewer: Viewer, batchSubjectId: string, at?: { date: string; startsAt: string }) {
   const [row] = await scopedBatchSubjects(db, viewer, [batchSubjectId]);
-  if (!row) throw new NotFoundError("BATCH_SUBJECT");
-  return row;
+  if (row) return row;
+  if (at && (await substitutionsOn(db, viewer.tenantId, viewer.userId, at.date)).some((s) => s.batchSubjectId === batchSubjectId && s.startsAt === hhmm(at.startsAt))) {
+    const [sub] = await scopedBatchSubjects(db, viewer, [batchSubjectId], { unscoped: true });
+    if (sub) return sub;
+  }
+  throw new NotFoundError("BATCH_SUBJECT");
 }
 
 export interface DayClass {
@@ -100,16 +108,26 @@ export interface DayClass {
   /** NOT_TAKEN: on the schedule but no register yet. */
   state: "NOT_TAKEN" | "OPEN" | "TAKEN" | "NOT_HELD";
   notHeldReason: string | null;
+  /** What the routine changed about it, when the Routine module is on (D116, D121): moved here, or a substitute. */
+  routineNote: string | null;
   counts: { present: number; absent: number; late: number; excused: number } | null;
 }
 
 /** The viewer's classes on a date: the weekly schedule's plus extra classes and any recorded ones, by time. */
 export async function classesOn(db: DbOrTx, viewer: Viewer, dateInput: string): Promise<DayClass[]> {
   const date = cleanDate(dateInput);
-  const scope = await scopedBatchSubjects(db, viewer);
+  const own = await scopedBatchSubjects(db, viewer);
+  // Classes the viewer substitutes in that day (D121): only those classes of those batch subjects.
+  const subs = await substitutionsOn(db, viewer.tenantId, viewer.userId, date);
+  const extraIds = [...new Set(subs.map((s) => s.batchSubjectId))].filter((id) => !own.some((o) => o.id === id));
+  const scope = [...own, ...(extraIds.length ? await scopedBatchSubjects(db, viewer, extraIds, { unscoped: true }) : [])];
   if (!scope.length) return [];
   const ids = scope.map((s) => s.id);
   const byId = new Map(scope.map((s) => [s.id, s]));
+  const onlySubstituted = (bsId: string, startsAt: string) => !extraIds.includes(bsId) || subs.some((s) => s.batchSubjectId === bsId && s.startsAt === hhmm(startsAt));
+  // The routine's view of the day (D116), when the module is on.
+  const routine = await routineClassesOn(db, viewer.tenantId, date, ids);
+  const routineAt = new Map((routine ?? []).map((c) => [`${c.batchSubjectId}|${c.startsAt}`, c]));
   const [slots, recorded] = await Promise.all([
     db
       .select({ batchSubjectId: scheduleSlots.batchSubjectId, startsAt: scheduleSlots.startsAt, endsAt: scheduleSlots.endsAt })
@@ -132,38 +150,56 @@ export async function classesOn(db: DbOrTx, viewer: Viewer, dateInput: string): 
   const seen = new Set<string>();
   const push = (bsId: string, startsAt: string, endsAt: string, source: "SCHEDULED" | "EXTRA") => {
     const k = key(bsId, startsAt);
-    if (seen.has(k)) return;
+    if (seen.has(k) || !onlySubstituted(bsId, startsAt)) return;
     seen.add(k);
     const bs = byId.get(bsId)!;
     const cls = recordedByKey.get(k);
+    const r = routineAt.get(k);
+    const off = r ? routineOffReason(r) : null;
+    // A register already taken stands; otherwise a class moved away isn't on this day, and a cancelled or holiday class
+    // shows as not held with the routine's reason (D116).
+    if (!cls && r?.status === "MOVED_AWAY") return;
+    const routineNote = r?.status === "MOVED_IN" && r.movedFrom ? `Moved from ${r.movedFrom.date}, ${r.movedFrom.startsAt}` : r?.substituteName ? `Substitute: ${r.substituteName}` : null;
     const statuses = cls ? markCounts.filter((m) => m.classId === cls.id).map(effectiveStatus) : [];
     const t = tally(statuses);
     out.push({
       batchSubjectId: bsId, batchId: bs.batchId, batchName: bs.batchName, courseName: bs.courseName, subjectName: bs.subjectName,
       startsAt: hhmm(cls?.startsAt ?? startsAt), endsAt: hhmm(cls?.endsAt ?? endsAt), source: cls?.source ?? source,
-      classId: cls?.id ?? null, state: cls ? cls.state : "NOT_TAKEN", notHeldReason: cls?.notHeldReason ?? null,
+      classId: cls?.id ?? null, state: cls ? cls.state : off ? "NOT_HELD" : "NOT_TAKEN", notHeldReason: cls ? cls.notHeldReason : off,
       counts: cls?.state === "TAKEN" ? { present: t.present, absent: t.absent, late: t.late, excused: t.excused } : null,
+      routineNote,
     });
   };
   for (const s of slots) push(s.batchSubjectId, s.startsAt, s.endsAt, "SCHEDULED");
+  for (const r of routine ?? []) if (r.status === "MOVED_IN") push(r.batchSubjectId, r.startsAt, r.endsAt, "SCHEDULED");
   for (const c of recorded) push(c.batchSubjectId, c.startsAt, c.endsAt, c.source);
   return out.sort((a, b) => a.startsAt.localeCompare(b.startsAt) || a.batchName.localeCompare(b.batchName) || a.subjectName.localeCompare(b.subjectName));
 }
 
-/** The class on a date at a start time: a recorded one, or one from the weekly schedule, else not found. */
+/**
+ * The class on a date at a start time: a recorded one, one the routine moved here, or one from the weekly schedule,
+ * else not found. `routineOff` says why a class the routine cancelled, closed or moved away can't be taken (D116).
+ */
 async function findClass(db: DbOrTx, tenantId: string, batchSubjectId: string, date: string, startsAt: string) {
   const [recorded] = await db
     .select()
     .from(attendanceClasses)
     .where(and(eq(attendanceClasses.tenantId, tenantId), eq(attendanceClasses.batchSubjectId, batchSubjectId), eq(attendanceClasses.classDate, date), eq(attendanceClasses.startsAt, startsAt)));
-  if (recorded) return { recorded, endsAt: recorded.endsAt, source: recorded.source };
+  if (recorded) return { recorded, endsAt: recorded.endsAt, source: recorded.source, routineOff: null };
+  const routine = await routineClassesOn(db, tenantId, date, [batchSubjectId]);
+  const r = routine?.find((c) => c.startsAt === hhmm(startsAt));
+  if (r?.status === "MOVED_IN") return { recorded: null, endsAt: r.endsAt, source: "SCHEDULED" as const, routineOff: null };
   const [slot] = await db
     .select({ endsAt: scheduleSlots.endsAt })
     .from(scheduleSlots)
     .where(and(eq(scheduleSlots.tenantId, tenantId), eq(scheduleSlots.batchSubjectId, batchSubjectId), eq(scheduleSlots.weekday, weekdayOf(date)), eq(scheduleSlots.startsAt, startsAt)));
   if (!slot) throw new NotFoundError("ATTENDANCE_CLASS", "There's no class of this subject at that time on that day.");
-  return { recorded: null, endsAt: slot.endsAt, source: "SCHEDULED" as const };
+  return { recorded: null, endsAt: slot.endsAt, source: "SCHEDULED" as const, routineOff: r ? routineOffReason(r) : null };
 }
+
+const assertNotRoutineOff = (cls: { routineOff: string | null }) => {
+  if (cls.routineOff) throw new ConflictError("CONFLICT_ROUTINE_CHANGED", `${cls.routineOff}. Its register can't be taken; undo the routine change first if the class did happen.`);
+};
 
 /**
  * Members of the batch on the date: joined by then and either still active (and the student Active, so On Hold is
@@ -226,7 +262,7 @@ export interface RegisterRow {
 export async function getRegister(db: DbOrTx, viewer: Viewer, input: { batchSubjectId: string; date: string; startsAt: string }) {
   const date = cleanDate(input.date);
   const startsAt = cleanTime(input.startsAt, "startsAt");
-  const bs = await scopedBatchSubject(db, viewer, input.batchSubjectId);
+  const bs = await scopedBatchSubject(db, viewer, input.batchSubjectId, { date, startsAt });
   const cls = await findClass(db, viewer.tenantId, bs.id, date, startsAt);
   const members = await eligibleMembers(db, viewer.tenantId, bs.batchId, date);
   const marks = cls.recorded
@@ -266,8 +302,12 @@ export async function getRegister(db: DbOrTx, viewer: Viewer, input: { batchSubj
   return {
     batchSubjectId: bs.id, batchName: bs.batchName, courseName: bs.courseName, subjectName: bs.subjectName,
     date, startsAt: hhmm(startsAt), endsAt: hhmm(cls.endsAt), source: cls.source,
-    classId: cls.recorded?.id ?? null, state: cls.recorded?.state ?? ("NOT_TAKEN" as const), notHeldReason: cls.recorded?.notHeldReason ?? null,
-    canEdit: rule.allowed && viewer.permissions.has("attendance.take"), reasonRequired: rule.reasonRequired, whyNot: rule.allowed ? null : rule.why,
+    classId: cls.recorded?.id ?? null,
+    state: cls.recorded?.state ?? (cls.routineOff ? ("NOT_HELD" as const) : ("NOT_TAKEN" as const)),
+    notHeldReason: cls.recorded?.notHeldReason ?? cls.routineOff,
+    canEdit: !cls.routineOff && rule.allowed && viewer.permissions.has("attendance.take"),
+    reasonRequired: rule.reasonRequired,
+    whyNot: cls.routineOff ? `${cls.routineOff}. Undo the routine change if the class did happen.` : rule.allowed ? null : rule.why,
     rows,
   };
 }
@@ -317,8 +357,9 @@ export async function saveRegister(
   for (const m of input.marks) if (!STATUSES.includes(m.status)) throw new ValidationError("VALIDATION_STATUS", "Choose Present, Absent, Late or Excused.", { field: "marks" });
 
   return inTransaction(db, async (tx) => {
-    const bs = await scopedBatchSubject(tx, viewer, input.batchSubjectId);
+    const bs = await scopedBatchSubject(tx, viewer, input.batchSubjectId, { date, startsAt });
     const cls = await findClass(tx, viewer.tenantId, bs.id, date, startsAt);
+    assertNotRoutineOff(cls);
     const classId = await upsertClass(tx, viewer, bs.id, date, startsAt, cls.endsAt, cls.source, cls.recorded?.id ?? null);
     await tx.execute(sql`select id from attendance_classes where tenant_id = ${viewer.tenantId} and id = ${classId} for update`);
 
@@ -389,8 +430,9 @@ export async function markNotHeld(db: DbOrTx, viewer: Viewer, input: { batchSubj
   if (!reason) throw new ValidationError("VALIDATION_REASON_REQUIRED", "Give a reason, e.g. 'Instructor ill' or 'Holiday'.", { field: "reason" });
   if (reason.length > 300) throw new ValidationError("VALIDATION_TEXT", "The reason can be at most 300 characters.", { field: "reason" });
   return inTransaction(db, async (tx) => {
-    const bs = await scopedBatchSubject(tx, viewer, input.batchSubjectId);
+    const bs = await scopedBatchSubject(tx, viewer, input.batchSubjectId, { date, startsAt });
     const cls = await findClass(tx, viewer.tenantId, bs.id, date, startsAt);
+    assertNotRoutineOff(cls);
     const classId = await upsertClass(tx, viewer, bs.id, date, startsAt, cls.endsAt, cls.source, cls.recorded?.id ?? null);
     await tx
       .update(attendanceClasses)

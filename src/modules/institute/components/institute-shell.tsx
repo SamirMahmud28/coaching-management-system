@@ -1,6 +1,6 @@
 "use client";
 
-import { BookOpen, CalendarCheck, CalendarOff, CircleHelp, ClipboardList, GraduationCap, LayoutDashboard, PauseCircle, ScrollText, Settings, ToggleLeft, Trophy, UserRound, Users } from "lucide-react";
+import { BookOpen, CalendarCheck, CalendarClock, CalendarOff, CircleHelp, ClipboardList, GraduationCap, LayoutDashboard, PauseCircle, ScrollText, Settings, ToggleLeft, Trophy, UserRound, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { AppShell, type NavItem } from "@/components/shell/app-shell";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +20,7 @@ function buildNav(portal: PortalKind, permissions: ReadonlySet<string>): NavItem
       { href: "/app/instructor", label: "Dashboard", icon: LayoutDashboard, exact: true },
       ...(permissions.has("attendance.view") ? [{ href: "/app/instructor/attendance", label: "Attendance", icon: CalendarCheck }] : []),
       ...(permissions.has("exams.view") ? [{ href: "/app/instructor/exams", label: "Exams", icon: ClipboardList }] : []),
+      ...(permissions.has("routine.view") ? [{ href: "/app/instructor/routine", label: "Routine", icon: CalendarClock }] : []),
     ];
   }
   if (portal === "student") {

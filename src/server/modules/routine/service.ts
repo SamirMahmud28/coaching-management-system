@@ -15,6 +15,7 @@ import type { DbOrTx } from "../../core/db/types";
 import { ConflictError, NotFoundError, ValidationError } from "../../core/errors";
 import { addDays, isCalendarDate, todayInDhaka, weekdayOf } from "@/lib/dates";
 import { audit } from "../audit/service";
+import { isModuleActive } from "../entitlements/service";
 import { expandTimetable, hhmm, overlaps, takesPlace, type Change, type DatedClass, type Holiday, type Slot } from "./timetable";
 import "./references";
 
@@ -374,4 +375,31 @@ export async function withdrawHoliday(db: DbOrTx, actor: Viewer, id: string) {
     await tx.update(holidays).set({ withdrawnAt: new Date(), withdrawnBy: actor.userId }).where(and(eq(holidays.tenantId, actor.tenantId), eq(holidays.id, id)));
     await audit.record(tx, { tenantId: actor.tenantId, actorType: "TENANT_USER", userId: actor.userId, action: "HOLIDAY_WITHDRAWN", resourceType: "HOLIDAY", resourceId: id, oldValue: { name: row.name, fromDate: row.fromDate, toDate: row.toDate } });
   });
+}
+
+// --- for other modules (D116, D121, D117): only while Routine is on for the institute -------------------------
+
+/** The routine's classes of these batch subjects on a date, or null when the Routine module is off. */
+export async function routineClassesOn(db: DbOrTx, tenantId: string, date: string, batchSubjectIds: string[]): Promise<RoutineClass[] | null> {
+  if (!batchSubjectIds.length || !(await isModuleActive(db, tenantId, "routine"))) return null;
+  return timetable(db, tenantId, date, date, { batchSubjectIds });
+}
+
+/** The classes a user substitutes in on a date (D121); none while the Routine module is off. */
+export async function substitutionsOn(db: DbOrTx, tenantId: string, userId: string, date: string): Promise<{ batchSubjectId: string; startsAt: string }[]> {
+  if (!(await isModuleActive(db, tenantId, "routine"))) return [];
+  const rows = await db
+    .select({ batchSubjectId: routineChanges.batchSubjectId, startsAt: routineChanges.startsAt })
+    .from(routineChanges)
+    .innerJoin(instructors, and(eq(instructors.tenantId, routineChanges.tenantId), eq(instructors.id, routineChanges.substituteInstructorId)))
+    .where(and(eq(routineChanges.tenantId, tenantId), eq(routineChanges.kind, "SUBSTITUTE"), eq(routineChanges.classDate, date), isNull(routineChanges.withdrawnAt), eq(instructors.userId, userId)));
+  return rows.map((r) => ({ batchSubjectId: r.batchSubjectId, startsAt: hhmm(r.startsAt) }));
+}
+
+/** Why a class doesn't take place, in words, or null when it does. */
+export function routineOffReason(c: Pick<RoutineClass, "status" | "reason" | "movedTo">): string | null {
+  if (c.status === "CANCELLED") return `Cancelled in the routine${c.reason ? `: ${c.reason}` : ""}`;
+  if (c.status === "HOLIDAY") return `Holiday${c.reason ? `: ${c.reason}` : ""}`;
+  if (c.status === "MOVED_AWAY" && c.movedTo) return `Moved in the routine to ${c.movedTo.date}, ${c.movedTo.startsAt}`;
+  return null;
 }

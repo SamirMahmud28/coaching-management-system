@@ -71,6 +71,13 @@ async function topicsOf(db: DbOrTx, tenantId: string, batchSubjectIds: string[])
     .orderBy(asc(lessonTopics.position), asc(lessonTopics.createdAt));
 }
 
+/** The subjects of these batches (for a student's own batches, D27), unscoped. */
+export async function lessonOverviewFor(db: DbOrTx, tenantId: string, batchIds: string[]) {
+  // An office-wide view (no user teaches anything as the nil id).
+  const office = { tenantId, userId: "00000000-0000-0000-0000-000000000000", permissions: new Set(["academic.view"]) };
+  return (await scope(db, office)).filter((s) => batchIds.includes(s.batchId));
+}
+
 /** Every batch subject the viewer can see, with its plan's progress (D27). */
 export async function lessonOverview(db: DbOrTx, viewer: Viewer) {
   const subjectsInScope = await scope(db, viewer);
