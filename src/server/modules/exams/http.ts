@@ -6,6 +6,7 @@ import type { HostConfig } from "../../core/tenancy/host";
 import type { TenantAuth } from "../auth/tenant-auth";
 import { withAuthorization } from "../authorization/service";
 import * as grading from "./grading";
+import * as markEntry from "./marks";
 import * as setup from "./setup";
 
 export interface ExamsHttpDeps {
@@ -31,6 +32,14 @@ const examFields = {
 const createBody = z.object({ course_id: z.uuid(), ...examFields });
 const updateBody = z.object(examFields);
 const listQuery = z.object({ course_id: z.uuid().optional(), state: z.enum(["DRAFT", "PUBLISHED"]).optional() });
+const markEntryBody = z.object({
+  student_id: z.uuid(),
+  clear: z.boolean().optional(),
+  absent: z.boolean().optional(),
+  obtained: marks.nullable().optional(),
+  parts: z.array(z.object({ part_id: z.uuid(), obtained: marks })).max(6).optional(),
+});
+const marksBody = z.object({ entries: z.array(markEntryBody).max(1000), reason: z.string().max(300).nullable().optional() });
 const scaleBody = z.object({ bands: z.array(z.object({ grade: z.string().max(5), min_percent: z.number(), grade_point: z.number() })).max(15) });
 
 const toInput = (b: z.infer<typeof updateBody>) => ({
@@ -108,6 +117,26 @@ export function createExamsHandlers({ db, auth, host }: ExamsHttpDeps) {
         const actor = await authorize(request, "exams.manage");
         const b = await parseBody(request, scaleBody);
         return json(await grading.saveGradeScale(db, actor, b.bands.map((x) => ({ grade: x.grade, minPercent: x.min_percent, gradePoint: x.grade_point }))));
+      }),
+
+    // GET /api/v1/exam-papers/:id/marks — the roster with each student's mark (D24 scope)
+    getRoster: (request: Request, params: { id: string }) =>
+      handle(async () => {
+        const viewer = await authorize(request, "exams.view");
+        return json(await markEntry.getRoster(db, viewer, pathId(params.id, "EXAM_PAPER")));
+      }),
+
+    // PUT /api/v1/exam-papers/:id/marks — after publishing, Owner/Admin only, with a reason (D107)
+    saveMarks: (request: Request, params: { id: string }) =>
+      handle(async () => {
+        const viewer = await authorize(request, "exams.marks.enter");
+        const b = await parseBody(request, marksBody);
+        return json(
+          await markEntry.saveMarks(db, viewer, pathId(params.id, "EXAM_PAPER"), {
+            reason: b.reason,
+            entries: b.entries.map((e) => ({ studentId: e.student_id, clear: e.clear, absent: e.absent, obtained: e.obtained, parts: e.parts?.map((p) => ({ partId: p.part_id, obtained: p.obtained })) })),
+          }),
+        );
       }),
 
     // DELETE /api/v1/exams/grade-scale — back to the BD 5.0 default

@@ -754,6 +754,7 @@ export interface ExamPaper {
   optional: boolean;
   mark_count: number;
   locked: boolean;
+  can_open_marks: boolean;
   parts: ExamPaperPart[];
 }
 
@@ -809,4 +810,41 @@ export const examsApi = {
   gradeScale: () => apiFetch<{ bands: GradeBandWire[]; is_default: boolean }>("/api/v1/exams/grade-scale"),
   saveGradeScale: (bands: GradeBandWire[]) => apiFetch<{ bands: GradeBandWire[]; is_default: boolean }>("/api/v1/exams/grade-scale", { method: "PUT", body: { bands } }),
   resetGradeScale: () => apiFetch<{ bands: GradeBandWire[]; is_default: boolean }>("/api/v1/exams/grade-scale", { method: "DELETE" }),
+};
+
+export interface MarkWire {
+  absent: boolean;
+  obtained: string | null;
+  parts: Record<string, string>;
+}
+
+export interface Roster {
+  paper: {
+    id: string;
+    exam_id: string;
+    exam_name: string;
+    exam_state: ExamState;
+    subject_name: string;
+    full_marks: string;
+    pass_marks: string;
+    optional: boolean;
+    parts: { id: string; name: string; full_marks: string; pass_marks: string | null }[];
+  };
+  can_edit: boolean;
+  reason_required: boolean;
+  why_not: string | null;
+  rows: { student_id: string; student_code: string; full_name: string; roll_number: string | null; batch_id: string; batch_name: string; mark: MarkWire | null }[];
+}
+
+export interface MarkEntryWire {
+  student_id: string;
+  clear?: boolean;
+  absent?: boolean;
+  obtained?: string | null;
+  parts?: { part_id: string; obtained: string }[];
+}
+
+export const marksApi = {
+  roster: (paperId: string) => apiFetch<Roster>(`/api/v1/exam-papers/${paperId}/marks`),
+  save: (paperId: string, body: { entries: MarkEntryWire[]; reason?: string | null }) => apiFetch<Roster & { saved: number }>(`/api/v1/exam-papers/${paperId}/marks`, { method: "PUT", body }),
 };

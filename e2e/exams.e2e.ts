@@ -112,6 +112,46 @@ test("E2: the grading scale can be changed and set back to Bangladesh 5.0 (D102,
   await expect(page.getByLabel("From percent 1")).toHaveValue("80");
 });
 
+test("E3: the instructor enters Physics marks in their batch — parts, decimals and Absent (D24, D104, D106)", async ({ page }) => {
+  await signIn(page, TEACHER.email, TEACHER.password);
+  await expect(page).toHaveURL(url("/app/instructor"));
+  await page.getByRole("link", { name: "Exams", exact: true }).click();
+  await page.getByTestId("exams-list").getByRole("link", { name: /Model test 1/ }).click();
+  const papers = page.getByTestId("exam-papers");
+  await expect(papers.getByRole("row", { name: /Chemistry/ }).getByRole("link")).toHaveCount(0); // not their subject
+  await papers.getByRole("row", { name: /Physics/ }).getByRole("link", { name: "Enter marks" }).click();
+
+  await expect(page.getByTestId("marks-progress")).toHaveText("0 of 3 entered");
+  await page.getByLabel("Anika Rahman Written").fill("60");
+  await page.getByLabel("Anika Rahman MCQ").fill("25");
+  await page.getByLabel("Bushra Khan absent").check();
+  await page.getByLabel("Chaity Das Written").fill("20");
+  await page.getByLabel("Chaity Das MCQ").fill("9.5");
+  await page.getByRole("button", { name: "Save 3 changes" }).click();
+  await expect(page.getByText("3 marks saved.")).toBeVisible();
+  await expect(page.getByTestId("marks-progress")).toHaveText("3 of 3 entered");
+
+  await page.getByLabel("Anika Rahman MCQ").fill("31");
+  await page.getByRole("button", { name: "Save 1 change" }).click();
+  await expect(page.getByText("Anika Rahman's MCQ mark can't be more than 30.")).toBeVisible();
+});
+
+test("E3: the Owner enters Chemistry marks; Physics is now locked in the exam form (D101)", async ({ page }) => {
+  await signInAsOwner(page);
+  await page.goto(url("/app/exams"));
+  await page.getByTestId("exams-list").getByRole("link", { name: /Model test 1/ }).click();
+  await page.getByTestId("exam-papers").getByRole("row", { name: /Chemistry/ }).getByRole("link", { name: "Enter marks" }).click();
+  await page.getByLabel("Anika Rahman Marks").fill("40");
+  await page.getByLabel("Bushra Khan Marks").fill("30");
+  await page.getByRole("button", { name: "Save 2 changes" }).click();
+  await expect(page.getByText("2 marks saved.")).toBeVisible();
+
+  await page.getByRole("link", { name: /Model test 1/ }).click();
+  await page.getByRole("link", { name: "Edit" }).click();
+  await expect(page.getByTestId("paper-Physics").getByText("Has marks")).toBeVisible();
+  await expect(page.locator("#paper-full-0")).toBeDisabled();
+});
+
 test("Exams disappear while the module is off (D5)", async ({ page }) => {
   await setInstituteModules(INSTITUTE.subdomain, { exams: false });
   try {

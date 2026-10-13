@@ -246,9 +246,19 @@ export async function getExam(db: DbOrTx, viewer: Viewer, id: string) {
     .innerJoin(batches, and(eq(batches.tenantId, examBatches.tenantId), eq(batches.id, examBatches.batchId)))
     .where(and(eq(examBatches.tenantId, viewer.tenantId), eq(examBatches.examId, id)))
     .orderBy(asc(batches.name));
+  // The subjects whose marks the viewer can open: all for the office; for an instructor, those they teach in one of
+  // the exam's batches (D24).
+  let taughtSubjects: Set<string> | null = null;
   if (!seesAllExams(viewer)) {
     const taught = new Set(await taughtBatchIds(db, viewer.tenantId, viewer.userId));
     if (!batchRows.some((b) => taught.has(b.id))) throw new NotFoundError("EXAM");
+    const rows = await db
+      .selectDistinct({ subjectId: batchSubjects.subjectId })
+      .from(batchSubjects)
+      .innerJoin(batchSubjectInstructors, and(eq(batchSubjectInstructors.tenantId, batchSubjects.tenantId), eq(batchSubjectInstructors.batchSubjectId, batchSubjects.id)))
+      .innerJoin(instructors, and(eq(instructors.tenantId, batchSubjectInstructors.tenantId), eq(instructors.id, batchSubjectInstructors.instructorId)))
+      .where(and(eq(batchSubjects.tenantId, viewer.tenantId), inArray(batchSubjects.batchId, batchRows.map((b) => b.id)), eq(instructors.userId, viewer.userId)));
+    taughtSubjects = new Set(rows.map((r) => r.subjectId));
   }
   const paperRows = await db
     .select({
@@ -270,7 +280,7 @@ export async function getExam(db: DbOrTx, viewer: Viewer, id: string) {
   return {
     ...exam,
     batches: batchRows,
-    papers: paperRows.map((p) => ({ ...p, locked: p.markCount > 0, parts: partRows.filter((x) => x.paperId === p.id) })),
+    papers: paperRows.map((p) => ({ ...p, locked: p.markCount > 0, canOpenMarks: !taughtSubjects || taughtSubjects.has(p.subjectId), parts: partRows.filter((x) => x.paperId === p.id) })),
     hasMarks: paperRows.some((p) => p.markCount > 0),
   };
 }

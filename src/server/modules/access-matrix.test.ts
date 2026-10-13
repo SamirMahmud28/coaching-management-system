@@ -46,7 +46,7 @@ const auth = createTenantAuth(db, { secret: "test-secret-".padEnd(40, "x"), host
 let storage: LocalDiskStorage;
 
 const DUMMY = "00000000-0000-4000-8000-000000000000";
-type Entity = "COURSE" | "SUBJECT" | "BATCH" | "BATCH_SUBJECT" | "SCHEDULE_SLOT" | "STUDENT" | "MEMBERSHIP" | "INSTRUCTOR" | "USER" | "SIGNATURE" | "FILE" | "FEE_ITEM" | "STUDENT_FEE_AMOUNT" | "FEE_RUN" | "FEE_CHARGE" | "FEE_PAYMENT" | "LEAVE" | "EXAM";
+type Entity = "COURSE" | "SUBJECT" | "BATCH" | "BATCH_SUBJECT" | "SCHEDULE_SLOT" | "STUDENT" | "MEMBERSHIP" | "INSTRUCTOR" | "USER" | "SIGNATURE" | "FILE" | "FEE_ITEM" | "STUDENT_FEE_AMOUNT" | "FEE_RUN" | "FEE_CHARGE" | "FEE_PAYMENT" | "LEAVE" | "EXAM" | "EXAM_PAPER";
 type Factory = "academic" | "students" | "instructors" | "institute" | "settings" | "files" | "fees" | "attendance" | "exams";
 /** Paid modules: each handler of these factories is refused while its module is off. */
 const PAID: Partial<Record<Factory, "fees" | "attendance" | "exams">> = { fees: "fees", attendance: "attendance", exams: "exams" };
@@ -188,6 +188,8 @@ const HANDLERS: Entry[] = [
   { factory: "exams", name: "getGradeScale", method: "GET", permission: "exams.view" },
   { factory: "exams", name: "saveGradeScale", method: "PUT", permission: "exams.manage", body: { bands: [{ grade: "P", min_percent: 40, grade_point: 1 }, { grade: "F", min_percent: 0, grade_point: 0 }] } },
   { factory: "exams", name: "resetGradeScale", method: "DELETE", permission: "exams.manage" },
+  { factory: "exams", name: "getRoster", method: "GET", permission: "exams.view", id: "EXAM_PAPER" },
+  { factory: "exams", name: "saveMarks", method: "PUT", permission: "exams.marks.enter", id: "EXAM_PAPER", body: { entries: [{ student_id: DUMMY, absent: true }] } },
 ];
 /** Handlers deliberately outside the matrix, with the reason. */
 const OUTSIDE: Partial<Record<Factory, Record<string, string>>> = { files: { publicLogo: "public by design: the host's logo while its public page is shown (D58)" } };
@@ -317,7 +319,7 @@ beforeAll(async () => {
   });
   Object.assign(foreign, {
     COURSE: course.id, SUBJECT: subject.id, BATCH: batch.id, BATCH_SUBJECT: batchSubject.id, SCHEDULE_SLOT: slot.id, STUDENT: s.id, MEMBERSHIP: membership.id,
-    INSTRUCTOR: teacher.id, USER: teacherLogin.id, SIGNATURE: signature.id, FILE: file.id, FEE_ITEM: feeItem.id, STUDENT_FEE_AMOUNT: studentAmount.id, FEE_RUN: run.id, FEE_CHARGE: charge.id, FEE_PAYMENT: payment.id, LEAVE: leaveRow.id, EXAM: exam.id,
+    INSTRUCTOR: teacher.id, USER: teacherLogin.id, SIGNATURE: signature.id, FILE: file.id, FEE_ITEM: feeItem.id, STUDENT_FEE_AMOUNT: studentAmount.id, FEE_RUN: run.id, FEE_CHARGE: charge.id, FEE_PAYMENT: payment.id, LEAVE: leaveRow.id, EXAM: exam.id, EXAM_PAPER: exam.papers[0].id,
   });
 }, 120_000);
 

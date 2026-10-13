@@ -39,7 +39,8 @@ export type HelpTopicKey =
   | "leave-student"
   | "attendance-reports"
   | "exams-setup"
-  | "exams-grading";
+  | "exams-grading"
+  | "exams-marks";
 
 export const HELP_TOPICS: readonly HelpTopic[] = [
   {
@@ -507,6 +508,32 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
       "Exams already published keep the scale they were published with. Draft exams, and exams published later, use the new scale.",
     ],
     faqs: [{ q: "Will changing the scale change results students have seen?", a: "No. A published exam keeps its scale; only draft and future exams use the new one." }],
+  },
+  {
+    key: "exams-marks",
+    title: "Entering marks",
+    area: "Exams",
+    permission: "exams.view",
+    summary: "Each paper has its own marks page: one row per student who sits it, with a box for each part (or one for the whole paper) and an Absent tick.",
+    steps: [
+      "Open the exam and click Enter marks next to the paper.",
+      "Type each student's mark — after any negative marking — with up to two decimals (e.g. 21.25). For a paper with parts, fill every part.",
+      "Tick Absent for a student who missed the paper. Leave a row empty if you don't have the mark yet.",
+      "Click Save. You can come back and change marks while the exam is a draft.",
+    ],
+    rules: [
+      "The list shows the students in the exam's batches on its first day. Students On Hold, and students who joined later, aren't on it. A student who leaves later keeps their marks.",
+      "Instructors see and enter marks only for the subjects they teach, in their own batches.",
+      "A mark can't be more than the paper's (or part's) full marks. The system doesn't calculate negative marking: enter the final mark.",
+      "Absent fails the paper. A zero is a real mark, not an absence.",
+      "A student with a part still empty has no result yet; their result appears once every part is entered.",
+      "After results are published, only Owner or Admin can correct a mark, with a reason. The change is recorded in the audit log and students see the corrected result.",
+      "Once a paper has marks, its full marks, pass marks and parts can't change.",
+    ],
+    faqs: [
+      { q: "I entered a mark for the wrong student.", a: "While the exam is a draft, clear the boxes (or untick Absent) and save; then enter it for the right student." },
+      { q: "A student isn't on the list.", a: "They are On Hold, joined the batch after the exam's first day, or are in a batch that doesn't sit the exam." },
+    ],
   },
 ];
 

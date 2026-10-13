@@ -21,7 +21,7 @@ import { EXAM_STATE } from "./exams-tabs";
 
 const m = (v: string | null) => (v === null ? "—" : v.endsWith(".00") ? v.slice(0, -3) : v);
 
-/** One exam: its details, batches and papers. Marks entry (E3) and results (E4) join this page. */
+/** One exam: its details, batches and papers, each paper linking to its marks (E3). Results (E4) join this page. */
 export function ExamPage({ base, examId, canManage, fullGuide = true }: { base: string; examId: string; canManage: boolean; fullGuide?: boolean }) {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -94,6 +94,7 @@ export function ExamPage({ base, examId, canManage, fullGuide = true }: { base: 
                   <TableHead className="text-right">Pass</TableHead>
                   <TableHead>Parts</TableHead>
                   <TableHead className="text-right">Marks entered</TableHead>
+                  <TableHead />
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -110,6 +111,13 @@ export function ExamPage({ base, examId, canManage, fullGuide = true }: { base: 
                       {p.parts.length ? p.parts.map((x) => `${x.name} ${m(x.full_marks)}${x.pass_marks ? ` (pass ${m(x.pass_marks)})` : ""}`).join(" · ") : "—"}
                     </TableCell>
                     <TableCell className="text-right tabular-nums">{p.mark_count}</TableCell>
+                    <TableCell className="text-right">
+                      {p.can_open_marks && (
+                        <Button variant="outline" size="sm" asChild>
+                          <Link href={`${base}/${e.id}/papers/${p.id}`}>{e.state === "DRAFT" ? "Enter marks" : "Marks"}</Link>
+                        </Button>
+                      )}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
