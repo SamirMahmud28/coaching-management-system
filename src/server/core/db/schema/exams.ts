@@ -34,6 +34,8 @@ export const exams = pgTable("exams", {
   state: examStateEnum("state").notNull().default("DRAFT"),
   publishedAt: timestamp("published_at", { withTimezone: true }),
   publishedBy: uuid("published_by"),
+  // The grading scale at publishing (D112): a published exam is graded with it, whatever the institute's scale becomes.
+  publishedScale: jsonb("published_scale"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   createdBy: uuid("created_by"),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
@@ -47,6 +49,7 @@ export const exams = pgTable("exams", {
   foreignKey({ name: "exams_published_by_fk", columns: [t.tenantId, t.publishedBy], foreignColumns: [users.tenantId, users.id] }),
   check("exams_dates", sql`${t.startsOn} <= ${t.endsOn}`),
   check("exams_published", sql`(${t.state} = 'PUBLISHED') = (${t.publishedAt} IS NOT NULL)`),
+  check("exams_published_scale", sql`(${t.state} = 'PUBLISHED') = (${t.publishedScale} IS NOT NULL)`),
 ]);
 
 /** The batches that sit an exam; the foreign keys make sure they are batches of the exam's course. */

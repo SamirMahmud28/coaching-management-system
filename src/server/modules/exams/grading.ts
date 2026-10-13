@@ -6,8 +6,8 @@ import { ValidationError } from "../../core/errors";
 import { audit } from "../audit/service";
 import { DEFAULT_GRADE_SCALE, sortScale, validateGradeScale, type GradeBand } from "./result-engine";
 
-// The institute's grading scale (D102): the BD 5.0 scale until it saves its own. A change applies to every exam's
-// results from then on, since results are calculated from the marks each time.
+// The institute's grading scale (D102): the BD 5.0 scale until it saves its own. A change applies to draft exams and
+// exams published later; a published exam keeps the scale it was published with (D112, `exams.published_scale`).
 
 export interface Actor {
   tenantId: string;

@@ -6,7 +6,7 @@ import { requirePortal } from "@/server/modules/institute/current-user";
 
 export const metadata: Metadata = { title: "Help" };
 
-const AREAS: HelpTopic["area"][] = ["Getting started", "Teaching", "Students", "Staff and access", "Institute", "Fees", "Attendance"];
+const AREAS: HelpTopic["area"][] = ["Getting started", "Teaching", "Students", "Staff and access", "Institute", "Fees", "Attendance", "Exams"];
 
 /**
  * The Help centre (D96): a guide for every feature this user can use (permissions are already limited to the

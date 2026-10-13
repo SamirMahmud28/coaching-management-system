@@ -717,3 +717,96 @@ export const paymentListApi = {
   list: (q: { from: string; to: string; status?: "VALID" | "VOID" }) =>
     apiFetch<{ range: { from: string; to: string }; total: string; count: number; payments: PaymentListRow[] }>("/api/v1/fees/payments", { query: q }),
 };
+
+// Exams & Results (D101–D110).
+export type ExamKind = "WEEKLY" | "MONTHLY" | "MODEL" | "CUSTOM";
+export type ExamState = "DRAFT" | "PUBLISHED";
+export const EXAM_KIND_LABEL: Record<ExamKind, string> = { WEEKLY: "Weekly", MONTHLY: "Monthly", MODEL: "Model test", CUSTOM: "Custom" };
+
+export interface ExamRow {
+  id: string;
+  name: string;
+  kind: ExamKind;
+  course_id: string;
+  course_name: string;
+  starts_on: string;
+  ends_on: string;
+  state: ExamState;
+  show_grades: boolean;
+  published_at: string | null;
+  paper_count: number;
+  batches: { id: string; name: string }[];
+}
+
+export interface ExamPaperPart {
+  id: string;
+  name: string;
+  full_marks: string;
+  pass_marks: string | null;
+}
+
+export interface ExamPaper {
+  id: string;
+  subject_id: string;
+  subject_name: string;
+  full_marks: string;
+  pass_marks: string;
+  optional: boolean;
+  mark_count: number;
+  locked: boolean;
+  parts: ExamPaperPart[];
+}
+
+export interface ExamDetail {
+  id: string;
+  name: string;
+  kind: ExamKind;
+  course_id: string;
+  course_name: string;
+  starts_on: string;
+  ends_on: string;
+  syllabus: string | null;
+  show_grades: boolean;
+  state: ExamState;
+  published_at: string | null;
+  batches: { id: string; name: string; status: AcademicStatus }[];
+  papers: ExamPaper[];
+  has_marks: boolean;
+}
+
+export interface ExamSetupCourse {
+  id: string;
+  name: string;
+  code: string;
+  subjects: { id: string; name: string }[];
+  batches: { id: string; name: string }[];
+}
+
+export interface ExamFormBody {
+  name: string;
+  kind: ExamKind;
+  starts_on: string;
+  ends_on: string;
+  syllabus: string | null;
+  show_grades: boolean;
+  batch_ids: string[];
+  papers: { subject_id: string; full_marks: string; pass_marks: string; optional: boolean; parts: { name: string; full_marks: string; pass_marks: string | null }[] }[];
+}
+
+export interface GradeBandWire {
+  grade: string;
+  min_percent: number;
+  grade_point: number;
+}
+
+export const examsApi = {
+  options: () => apiFetch<ExamSetupCourse[]>("/api/v1/exams/options"),
+  list: (q: { course_id?: string; state?: ExamState } = {}) => apiFetch<ExamRow[]>("/api/v1/exams", { query: q }),
+  get: (id: string) => apiFetch<ExamDetail>(`/api/v1/exams/${id}`),
+  create: (body: ExamFormBody & { course_id: string }) => apiFetch<ExamDetail>("/api/v1/exams", { body }),
+  update: (id: string, body: ExamFormBody) => apiFetch<ExamDetail>(`/api/v1/exams/${id}`, { method: "PUT", body }),
+  remove: (id: string) => apiFetch<void>(`/api/v1/exams/${id}`, { method: "DELETE" }),
+  gradeScale: () => apiFetch<{ bands: GradeBandWire[]; is_default: boolean }>("/api/v1/exams/grade-scale"),
+  saveGradeScale: (bands: GradeBandWire[]) => apiFetch<{ bands: GradeBandWire[]; is_default: boolean }>("/api/v1/exams/grade-scale", { method: "PUT", body: { bands } }),
+  resetGradeScale: () => apiFetch<{ bands: GradeBandWire[]; is_default: boolean }>("/api/v1/exams/grade-scale", { method: "DELETE" }),
+};

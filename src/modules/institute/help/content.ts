@@ -9,7 +9,7 @@ export interface HelpTopic {
   key: HelpTopicKey;
   title: string;
   /** Shown as the Help centre's section. */
-  area: "Getting started" | "Teaching" | "Students" | "Staff and access" | "Institute" | "Fees" | "Attendance";
+  area: "Getting started" | "Teaching" | "Students" | "Staff and access" | "Institute" | "Fees" | "Attendance" | "Exams";
   /** The topic appears in the Help centre only for users holding this (permissions are already limited to active modules). */
   permission: PermissionName | null;
   summary: string;
@@ -37,7 +37,9 @@ export type HelpTopicKey =
   | "attendance-registers"
   | "attendance-leave"
   | "leave-student"
-  | "attendance-reports";
+  | "attendance-reports"
+  | "exams-setup"
+  | "exams-grading";
 
 export const HELP_TOPICS: readonly HelpTopic[] = [
   {
@@ -459,6 +461,52 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
       { q: "A student shows no percentage.", a: "All their counted classes were Excused, or no register with them was taken in those dates." },
       { q: "Why is a day missing from the monthly register?", a: "Either no register was taken that day, or the class was marked not held (the report says how many weren't held)." },
     ],
+  },
+  {
+    key: "exams-setup",
+    title: "Setting up exams",
+    area: "Exams",
+    permission: "exams.view",
+    summary: "An exam belongs to one course and is sat by one or more of its batches. It has one paper per subject, each with full and pass marks, and a paper can be split into parts such as Written and MCQ.",
+    steps: [
+      "Open Exams and click New exam. Choose the course, give the exam a name and kind (weekly, monthly, model or custom — just a label), and its first and last day.",
+      "Tick the batches that sit it. Their students are ranked together in one merit list.",
+      "Add a paper for each subject, with its full and pass marks. Click Split into parts if the paper has a written and an MCQ part with their own pass marks; the parts must add up to the paper's full marks.",
+      "Tick Optional (4th subject) for an optional subject: only its grade points above 2.0 add to the GPA, and failing it never fails the student.",
+      "Turn off Show grades and GPA for a quick test where only marks, pass/fail and position matter. Then click Create exam.",
+    ],
+    rules: [
+      "Students in the exam's batches on its first day sit it. Students On Hold are left off.",
+      "A student fails the exam if any compulsory paper is below its pass mark, or any part is below its own pass mark. With grades shown, an F grade is also a fail.",
+      "Once a paper has marks, its full marks, pass marks, parts and optional setting are locked, and it can't be removed. A batch whose students have marks can't be removed either.",
+      "A published exam keeps its batches and papers; only its name, kind, dates and syllabus can change.",
+      "An exam can be deleted only while it has no marks.",
+      "Instructors see the exams of batches they teach. Only Owner and Admin create exams and publish results.",
+    ],
+    faqs: [
+      { q: "I set the wrong full marks and marks are already entered.", a: "The paper is locked to protect the marks. Ask whoever entered them to clear them, or create the exam again." },
+      { q: "Can one exam cover two courses?", a: "No. An exam belongs to one course; create one exam per course." },
+    ],
+  },
+  {
+    key: "exams-grading",
+    title: "The grading scale",
+    area: "Exams",
+    permission: "exams.manage",
+    summary: "Grades come from the percentage a student gets in a paper. The Bangladesh 5.0 scale is used until you change it here.",
+    steps: [
+      "Open Exams → Grading scale.",
+      "Change a grade's name, the percentage it starts from, or its grade point; add or remove grades.",
+      "Click Save scale. To undo your changes later, click Use the Bangladesh 5.0 scale.",
+    ],
+    rules: [
+      "A mark gets the highest grade whose starting percentage it reaches: 79.99% is an A, not an A+.",
+      "The lowest grade must start at 0% and be worth 0 points — it is the fail grade. No other grade can be worth 0.",
+      "A higher grade can't be worth fewer points than a lower one.",
+      "GPA is the average of the compulsory papers' grade points, to two decimals, plus the optional subject's points above 2.0, capped at the top grade point.",
+      "Exams already published keep the scale they were published with. Draft exams, and exams published later, use the new scale.",
+    ],
+    faqs: [{ q: "Will changing the scale change results students have seen?", a: "No. A published exam keeps its scale; only draft and future exams use the new one." }],
   },
 ];
 

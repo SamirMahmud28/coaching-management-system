@@ -16,6 +16,8 @@ import { createAcademicHandlers } from "./academic/http";
 import { createLogin } from "./auth/credentials";
 import { createTenantAuth } from "./auth/tenant-auth";
 import { createAttendanceHandlers } from "./attendance/http";
+import { createExamsHandlers } from "./exams/http";
+import * as examSetup from "./exams/setup";
 import { createFeesHandlers } from "./fees/http";
 import { createFilesHandlers } from "./files/http";
 import { setModules } from "../core/testing/modules";
@@ -44,10 +46,10 @@ const auth = createTenantAuth(db, { secret: "test-secret-".padEnd(40, "x"), host
 let storage: LocalDiskStorage;
 
 const DUMMY = "00000000-0000-4000-8000-000000000000";
-type Entity = "COURSE" | "SUBJECT" | "BATCH" | "BATCH_SUBJECT" | "SCHEDULE_SLOT" | "STUDENT" | "MEMBERSHIP" | "INSTRUCTOR" | "USER" | "SIGNATURE" | "FILE" | "FEE_ITEM" | "STUDENT_FEE_AMOUNT" | "FEE_RUN" | "FEE_CHARGE" | "FEE_PAYMENT" | "LEAVE";
-type Factory = "academic" | "students" | "instructors" | "institute" | "settings" | "files" | "fees" | "attendance";
+type Entity = "COURSE" | "SUBJECT" | "BATCH" | "BATCH_SUBJECT" | "SCHEDULE_SLOT" | "STUDENT" | "MEMBERSHIP" | "INSTRUCTOR" | "USER" | "SIGNATURE" | "FILE" | "FEE_ITEM" | "STUDENT_FEE_AMOUNT" | "FEE_RUN" | "FEE_CHARGE" | "FEE_PAYMENT" | "LEAVE" | "EXAM";
+type Factory = "academic" | "students" | "instructors" | "institute" | "settings" | "files" | "fees" | "attendance" | "exams";
 /** Paid modules: each handler of these factories is refused while its module is off. */
-const PAID: Partial<Record<Factory, "fees" | "attendance">> = { fees: "fees", attendance: "attendance" };
+const PAID: Partial<Record<Factory, "fees" | "attendance" | "exams">> = { fees: "fees", attendance: "attendance", exams: "exams" };
 const TODAY = todayInDhaka();
 
 interface Entry {
@@ -176,6 +178,16 @@ const HANDLERS: Entry[] = [
   { factory: "attendance", name: "lowAttendance", method: "GET", permission: "attendance.report.view", query: { from: TODAY, to: TODAY, below: "75" } },
   { factory: "attendance", name: "dailyAbsentees", method: "GET", permission: "attendance.report.view" },
   { factory: "attendance", name: "studentHistory", method: "GET", permission: "attendance.report.view", id: "STUDENT", query: { from: TODAY, to: TODAY } },
+  // exams (paid module)
+  { factory: "exams", name: "setupOptions", method: "GET", permission: "exams.manage" },
+  { factory: "exams", name: "listExams", method: "GET", permission: "exams.view" },
+  { factory: "exams", name: "createExam", method: "POST", permission: "exams.manage", body: { course_id: DUMMY, name: "Matrix exam", kind: "WEEKLY", starts_on: TODAY, ends_on: TODAY, batch_ids: [DUMMY], papers: [{ subject_id: DUMMY, full_marks: "20", pass_marks: "7" }] } },
+  { factory: "exams", name: "getExam", method: "GET", permission: "exams.view", id: "EXAM" },
+  { factory: "exams", name: "updateExam", method: "PUT", permission: "exams.manage", id: "EXAM", body: { name: "Renamed", kind: "WEEKLY", starts_on: TODAY, ends_on: TODAY, batch_ids: [DUMMY], papers: [{ subject_id: DUMMY, full_marks: "20", pass_marks: "7" }] } },
+  { factory: "exams", name: "deleteExam", method: "DELETE", permission: "exams.manage", id: "EXAM" },
+  { factory: "exams", name: "getGradeScale", method: "GET", permission: "exams.view" },
+  { factory: "exams", name: "saveGradeScale", method: "PUT", permission: "exams.manage", body: { bands: [{ grade: "P", min_percent: 40, grade_point: 1 }, { grade: "F", min_percent: 0, grade_point: 0 }] } },
+  { factory: "exams", name: "resetGradeScale", method: "DELETE", permission: "exams.manage" },
 ];
 /** Handlers deliberately outside the matrix, with the reason. */
 const OUTSIDE: Partial<Record<Factory, Record<string, string>>> = { files: { publicLogo: "public by design: the host's logo while its public page is shown (D58)" } };
@@ -240,6 +252,7 @@ beforeAll(async () => {
     files: createFilesHandlers({ db, auth, host, storage }) as unknown as Handlers,
     fees: createFeesHandlers({ db, auth, host }) as unknown as Handlers,
     attendance: createAttendanceHandlers({ db, auth, host }) as unknown as Handlers,
+    exams: createExamsHandlers({ db, auth, host }) as unknown as Handlers,
   };
 
   const institute = async (sub: string) => {
@@ -253,7 +266,7 @@ beforeAll(async () => {
 
   // Institute A: one user per baseline role, and one per guarded permission holding only that permission.
   const inst = await institute("matrix-a");
-  await setModules(db, inst.tenant.id, ["fees", "attendance"]);
+  await setModules(db, inst.tenant.id, ["fees", "attendance", "exams"]);
   a = { id: inst.tenant.id, sub: "matrix-a" };
   const perms = await testDb.select().from(permissionRows);
   for (const role of BASELINE) {
@@ -277,7 +290,7 @@ beforeAll(async () => {
 
   // Institute B: one record of every kind a path id can name.
   const b = await institute("matrix-b");
-  await setModules(db, b.tenant.id, ["fees", "attendance"]);
+  await setModules(db, b.tenant.id, ["fees", "attendance", "exams"]);
   const actor = { tenantId: b.tenant.id, userId: b.owner.id };
   const course = await academic.createCourse(db, actor, { name: "B course", code: "BC", dueDay: 10 });
   const subject = await academic.createSubject(db, actor, course.id, { name: "B subject" });
@@ -299,9 +312,12 @@ beforeAll(async () => {
   const [charge] = await feeCharges.listStudentCharges(db, b.tenant.id, s.id);
   const { payment } = await feePayments.collectPayment(db, actor, s.id, { chargeIds: [charge.id], method: "CASH", idempotencyKey: "00000000-0000-4000-8000-0000000000bb" });
   const leaveRow = await leave.enterLeave(db, actor, s.id, { fromDate: "2026-01-05", toDate: "2026-01-06", reason: "Fever" });
+  const exam = await examSetup.createExam(db, { ...actor, permissions: new Set(["exams.manage"]) }, {
+    courseId: course.id, name: "B exam", kind: "WEEKLY", startsOn: "2026-11-01", endsOn: "2026-11-01", batchIds: [batch.id], papers: [{ subjectId: subject.id, fullMarks: "20", passMarks: "7" }],
+  });
   Object.assign(foreign, {
     COURSE: course.id, SUBJECT: subject.id, BATCH: batch.id, BATCH_SUBJECT: batchSubject.id, SCHEDULE_SLOT: slot.id, STUDENT: s.id, MEMBERSHIP: membership.id,
-    INSTRUCTOR: teacher.id, USER: teacherLogin.id, SIGNATURE: signature.id, FILE: file.id, FEE_ITEM: feeItem.id, STUDENT_FEE_AMOUNT: studentAmount.id, FEE_RUN: run.id, FEE_CHARGE: charge.id, FEE_PAYMENT: payment.id, LEAVE: leaveRow.id,
+    INSTRUCTOR: teacher.id, USER: teacherLogin.id, SIGNATURE: signature.id, FILE: file.id, FEE_ITEM: feeItem.id, STUDENT_FEE_AMOUNT: studentAmount.id, FEE_RUN: run.id, FEE_CHARGE: charge.id, FEE_PAYMENT: payment.id, LEAVE: leaveRow.id, EXAM: exam.id,
   });
 }, 120_000);
 
@@ -328,7 +344,7 @@ describe("access matrix: catalogue", () => {
       }
     };
     await walk(root);
-    const moduleOf: Record<string, Factory> = { academic: "academic", students: "students", instructors: "instructors", institute: "institute", settings: "settings", files: "files", fees: "fees", attendance: "attendance" };
+    const moduleOf: Record<string, Factory> = { academic: "academic", students: "students", instructors: "instructors", institute: "institute", settings: "settings", files: "files", fees: "fees", attendance: "attendance", exams: "exams" };
     const seen: string[] = [];
     for (const file of files) {
       const rel = path.relative(root, file).replaceAll("\\", "/");
@@ -376,7 +392,7 @@ describe("access matrix: who passes the guard", () => {
 });
 
 describe("access matrix: paid module switched off", () => {
-  it.each(["fees", "attendance"] as const)("refuses every %s handler while it's off, even to the Owner, and leaves everything else alone", async (key) => {
+  it.each(["fees", "attendance", "exams"] as const)("refuses every %s handler while it's off, even to the Owner, and leaves everything else alone", async (key) => {
     await setModules(db, a.id, [key], false);
     try {
       for (const entry of HANDLERS) {

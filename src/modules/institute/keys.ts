@@ -29,5 +29,9 @@ export const instituteKeys = {
   myLeave: () => ["institute-my-leave"],
   attendanceReport: (kind: string, params: object) => ["institute-attendance-report", kind, params],
   studentAttendance: (id: string, params: object) => ["institute-student-attendance", id, params],
+  exams: (params?: object) => ["institute-exams", params ?? {}],
+  exam: (id: string) => ["institute-exam", id],
+  examOptions: () => ["institute-exam-options"],
+  gradeScale: () => ["institute-grade-scale"],
   register: (batchSubjectId: string, date: string, startsAt: string) => ["institute-register", batchSubjectId, date, startsAt],
 };

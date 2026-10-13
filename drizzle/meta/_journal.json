@@ -64,6 +64,13 @@
       "when": 1791864694030,
       "tag": "0008_exams",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1791865758336,
+      "tag": "0009_exam_published_scale",
+      "breakpoints": true
     }
   ]
 }

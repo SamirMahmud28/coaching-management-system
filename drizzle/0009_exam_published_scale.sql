@@ -1,0 +1,2 @@
+ALTER TABLE "exams" ADD COLUMN "published_scale" jsonb;--> statement-breakpoint
+ALTER TABLE "exams" ADD CONSTRAINT "exams_published_scale" CHECK (("exams"."state" = 'PUBLISHED') = ("exams"."published_scale" IS NOT NULL));
