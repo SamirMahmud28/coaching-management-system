@@ -19,6 +19,7 @@ import { createAttendanceHandlers } from "./attendance/http";
 import { createExamsHandlers } from "./exams/http";
 import { createRoutineHandlers } from "./routine/http";
 import * as routineService from "./routine/service";
+import * as lessonService from "./routine/lessons";
 import * as examSetup from "./exams/setup";
 import { createFeesHandlers } from "./fees/http";
 import { createFilesHandlers } from "./files/http";
@@ -48,7 +49,7 @@ const auth = createTenantAuth(db, { secret: "test-secret-".padEnd(40, "x"), host
 let storage: LocalDiskStorage;
 
 const DUMMY = "00000000-0000-4000-8000-000000000000";
-type Entity = "COURSE" | "SUBJECT" | "BATCH" | "BATCH_SUBJECT" | "SCHEDULE_SLOT" | "STUDENT" | "MEMBERSHIP" | "INSTRUCTOR" | "USER" | "SIGNATURE" | "FILE" | "FEE_ITEM" | "STUDENT_FEE_AMOUNT" | "FEE_RUN" | "FEE_CHARGE" | "FEE_PAYMENT" | "LEAVE" | "EXAM" | "EXAM_PAPER" | "ROUTINE_CHANGE" | "HOLIDAY";
+type Entity = "COURSE" | "SUBJECT" | "BATCH" | "BATCH_SUBJECT" | "SCHEDULE_SLOT" | "STUDENT" | "MEMBERSHIP" | "INSTRUCTOR" | "USER" | "SIGNATURE" | "FILE" | "FEE_ITEM" | "STUDENT_FEE_AMOUNT" | "FEE_RUN" | "FEE_CHARGE" | "FEE_PAYMENT" | "LEAVE" | "EXAM" | "EXAM_PAPER" | "ROUTINE_CHANGE" | "HOLIDAY" | "LESSON_TOPIC";
 type Factory = "academic" | "students" | "instructors" | "institute" | "settings" | "files" | "fees" | "attendance" | "exams" | "routine";
 /** Paid modules: each handler of these factories is refused while its module is off. */
 const PAID: Partial<Record<Factory, "fees" | "attendance" | "exams" | "routine">> = { fees: "fees", attendance: "attendance", exams: "exams", routine: "routine" };
@@ -204,6 +205,13 @@ const HANDLERS: Entry[] = [
   { factory: "routine", name: "withdrawChange", method: "POST", permission: "routine.manage", id: "ROUTINE_CHANGE" },
   { factory: "routine", name: "createHoliday", method: "POST", permission: "routine.manage", body: { name: "Matrix holiday", from_date: "2099-01-01" } },
   { factory: "routine", name: "withdrawHoliday", method: "POST", permission: "routine.manage", id: "HOLIDAY" },
+  { factory: "routine", name: "lessonOverview", method: "GET", permission: "routine.view" },
+  { factory: "routine", name: "lessonPlan", method: "GET", permission: "routine.view", id: "BATCH_SUBJECT" },
+  { factory: "routine", name: "addTopic", method: "POST", permission: "lessons.manage", id: "BATCH_SUBJECT", body: { title: "Matrix topic" } },
+  { factory: "routine", name: "reorderTopics", method: "PUT", permission: "lessons.manage", id: "BATCH_SUBJECT", body: { topic_ids: [] } },
+  { factory: "routine", name: "copyPlan", method: "POST", permission: "routine.manage", id: "BATCH_SUBJECT", body: { from_batch_subject_id: DUMMY } },
+  { factory: "routine", name: "updateTopic", method: "PATCH", permission: "lessons.manage", id: "LESSON_TOPIC", body: { status: "ONGOING" } },
+  { factory: "routine", name: "deleteTopic", method: "DELETE", permission: "lessons.manage", id: "LESSON_TOPIC" },
 ];
 /** Handlers deliberately outside the matrix, with the reason. */
 const OUTSIDE: Partial<Record<Factory, Record<string, string>>> = { files: { publicLogo: "public by design: the host's logo while its public page is shown (D58)" } };
@@ -338,9 +346,10 @@ beforeAll(async () => {
   const routineActor = { ...actor, permissions: new Set(["routine.manage", "academic.view"]) };
   const routineChange = await routineService.createChange(db, routineActor, { batchSubjectId: batchSubject.id, classDate: saturday, startsAt: "09:00", kind: "CANCEL", reason: "Rain" });
   const holiday = await routineService.createHoliday(db, routineActor, { name: "B holiday", fromDate: "2099-02-01" });
+  const lessonTopic = await lessonService.addTopic(db, { ...routineActor, permissions: new Set(["routine.manage", "lessons.manage", "academic.view"]) }, batchSubject.id, { title: "B topic" });
   Object.assign(foreign, {
     COURSE: course.id, SUBJECT: subject.id, BATCH: batch.id, BATCH_SUBJECT: batchSubject.id, SCHEDULE_SLOT: slot.id, STUDENT: s.id, MEMBERSHIP: membership.id,
-    INSTRUCTOR: teacher.id, USER: teacherLogin.id, SIGNATURE: signature.id, FILE: file.id, FEE_ITEM: feeItem.id, STUDENT_FEE_AMOUNT: studentAmount.id, FEE_RUN: run.id, FEE_CHARGE: charge.id, FEE_PAYMENT: payment.id, LEAVE: leaveRow.id, EXAM: exam.id, EXAM_PAPER: exam.papers[0].id, ROUTINE_CHANGE: routineChange.id, HOLIDAY: holiday.id,
+    INSTRUCTOR: teacher.id, USER: teacherLogin.id, SIGNATURE: signature.id, FILE: file.id, FEE_ITEM: feeItem.id, STUDENT_FEE_AMOUNT: studentAmount.id, FEE_RUN: run.id, FEE_CHARGE: charge.id, FEE_PAYMENT: payment.id, LEAVE: leaveRow.id, EXAM: exam.id, EXAM_PAPER: exam.papers[0].id, ROUTINE_CHANGE: routineChange.id, HOLIDAY: holiday.id, LESSON_TOPIC: lessonTopic.id,
   });
 }, 120_000);
 

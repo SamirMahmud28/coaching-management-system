@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import { HowThisWorks } from "@/modules/institute/help/how-this-works";
 import { routineApi, type RoutineClassRow, type RoutineOptions } from "../../api";
 import { instituteKeys } from "../../keys";
+import { RoutineTabs } from "./routine-tabs";
 
 type View = "day" | "batch" | "instructor" | "changes";
 const VIEWS: { value: View; label: string }[] = [
@@ -52,7 +53,7 @@ type Dialog = { kind: "change"; cls: RoutineClassRow } | { kind: "withdraw"; cls
  * The routine (D114–D117): the classes of a day, a batch's week or an instructor's week with every change shown, and
  * (for the office, D115) cancelling, rescheduling, substituting, holidays and withdrawing a change.
  */
-export function RoutinePage({ canManage }: { canManage: boolean }) {
+export function RoutinePage({ canManage, base = "/app/routine", fullGuide = true }: { canManage: boolean; base?: string; fullGuide?: boolean }) {
   const options = useQuery({ queryKey: instituteKeys.routine("options"), queryFn: () => routineApi.options() });
   const [view, setView] = useState<View>("day");
   if (options.isPending) return <LoadingState rows={6} />;
@@ -60,7 +61,8 @@ export function RoutinePage({ canManage }: { canManage: boolean }) {
   return (
     <>
       <PageHeader title="Routine" description="Classes with their changes: cancellations, reschedules, substitutes and holidays." />
-      <HowThisWorks topic="routine" />
+      <RoutineTabs base={base} />
+      <HowThisWorks topic="routine" fullGuide={fullGuide} />
       <div className="flex flex-wrap gap-1" role="group" aria-label="View">
         {VIEWS.map((v) => (
           <Button key={v.value} size="sm" variant={view === v.value ? "default" : "outline"} aria-pressed={view === v.value} onClick={() => setView(v.value)}>

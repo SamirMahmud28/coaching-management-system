@@ -5,6 +5,7 @@ import type { PermissionName } from "../../core/rbac/catalog";
 import type { HostConfig } from "../../core/tenancy/host";
 import type { TenantAuth } from "../auth/tenant-auth";
 import { withAuthorization } from "../authorization/service";
+import * as lessons from "./lessons";
 import * as routine from "./service";
 
 export interface RoutineHttpDeps {
@@ -29,6 +30,17 @@ const changeBody = z.object({
   new_ends_at: time.nullable().optional(),
   substitute_instructor_id: z.uuid().nullable().optional(),
 });
+const topicStatus = z.enum(["PENDING", "ONGOING", "COMPLETED"]);
+const topicBody = z.object({ title: z.string().max(200), start_date: date.nullable().optional(), target_date: date.nullable().optional() });
+const topicUpdateBody = z.object({
+  title: z.string().max(200).optional(),
+  start_date: date.nullable().optional(),
+  target_date: date.nullable().optional(),
+  status: topicStatus.optional(),
+  completed_on: date.nullable().optional(),
+});
+const orderBody = z.object({ topic_ids: z.array(z.uuid()).max(200) });
+const copyBody = z.object({ from_batch_subject_id: z.uuid() });
 const holidayBody = z.object({ name: z.string().max(120), from_date: date, to_date: date.nullable().optional() });
 
 export function createRoutineHandlers({ db, auth, host }: RoutineHttpDeps) {
@@ -104,6 +116,65 @@ export function createRoutineHandlers({ db, auth, host }: RoutineHttpDeps) {
         const actor = await authorize(request, "routine.manage");
         const b = await parseBody(request, holidayBody);
         return json(await routine.createHoliday(db, actor, { name: b.name, fromDate: b.from_date, toDate: b.to_date }), 201);
+      }),
+
+    // GET /api/v1/lessons — every visible batch subject with its plan's progress
+    lessonOverview: (request: Request) =>
+      handle(async () => {
+        const viewer = await authorize(request, "routine.view");
+        return json(await lessons.lessonOverview(db, viewer));
+      }),
+
+    // GET /api/v1/lessons/:id — a batch subject's plan
+    lessonPlan: (request: Request, params: { id: string }) =>
+      handle(async () => {
+        const viewer = await authorize(request, "routine.view");
+        return json(await lessons.lessonPlan(db, viewer, pathId(params.id, "BATCH_SUBJECT")));
+      }),
+
+    // POST /api/v1/lessons/:id/topics
+    addTopic: (request: Request, params: { id: string }) =>
+      handle(async () => {
+        const viewer = await authorize(request, "lessons.manage");
+        const b = await parseBody(request, topicBody);
+        return json(await lessons.addTopic(db, viewer, pathId(params.id, "BATCH_SUBJECT"), { title: b.title, startDate: b.start_date, targetDate: b.target_date }), 201);
+      }),
+
+    // PUT /api/v1/lessons/:id/order
+    reorderTopics: (request: Request, params: { id: string }) =>
+      handle(async () => {
+        const viewer = await authorize(request, "lessons.manage");
+        const b = await parseBody(request, orderBody);
+        await lessons.reorderTopics(db, viewer, pathId(params.id, "BATCH_SUBJECT"), b.topic_ids);
+        return noContent();
+      }),
+
+    // POST /api/v1/lessons/:id/copy — the office (routine.manage) copies another batch's plan (D118)
+    copyPlan: (request: Request, params: { id: string }) =>
+      handle(async () => {
+        const viewer = await authorize(request, "routine.manage");
+        const b = await parseBody(request, copyBody);
+        return json(await lessons.copyPlan(db, viewer, pathId(params.id, "BATCH_SUBJECT"), b.from_batch_subject_id));
+      }),
+
+    // PATCH /api/v1/lesson-topics/:id
+    updateTopic: (request: Request, params: { id: string }) =>
+      handle(async () => {
+        const viewer = await authorize(request, "lessons.manage");
+        const b = await parseBody(request, topicUpdateBody);
+        return json(
+          await lessons.updateTopic(db, viewer, pathId(params.id, "LESSON_TOPIC"), {
+            title: b.title, startDate: b.start_date, targetDate: b.target_date, status: b.status, completedOn: b.completed_on,
+          }),
+        );
+      }),
+
+    // DELETE /api/v1/lesson-topics/:id
+    deleteTopic: (request: Request, params: { id: string }) =>
+      handle(async () => {
+        const viewer = await authorize(request, "lessons.manage");
+        await lessons.deleteTopic(db, viewer, pathId(params.id, "LESSON_TOPIC"));
+        return noContent();
       }),
 
     // POST /api/v1/routine/holidays/:id/withdraw

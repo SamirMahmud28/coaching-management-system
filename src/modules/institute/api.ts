@@ -979,3 +979,50 @@ export const routineApi = {
   createHoliday: (body: { name: string; from_date: string; to_date?: string | null }) => apiFetch<HolidayRow>("/api/v1/routine/holidays", { body }),
   withdrawHoliday: (id: string) => apiFetch<void>(`/api/v1/routine/holidays/${id}/withdraw`, { method: "POST" }),
 };
+
+export type TopicStatus = "PENDING" | "ONGOING" | "COMPLETED";
+
+export interface LessonProgress {
+  total: number;
+  completed: number;
+  ongoing: number;
+  overdue: number;
+  percent: number | null;
+}
+
+export interface LessonOverviewRow {
+  id: string;
+  batch_id: string;
+  batch_name: string;
+  course_name: string;
+  subject_id: string;
+  subject_name: string;
+  editable: boolean;
+  progress: LessonProgress;
+}
+
+export interface LessonTopicRow {
+  id: string;
+  title: string;
+  start_date: string | null;
+  target_date: string | null;
+  status: TopicStatus;
+  completed_on: string | null;
+  overdue: boolean;
+}
+
+export interface LessonPlanDetail extends Omit<LessonOverviewRow, "progress"> {
+  topics: LessonTopicRow[];
+  progress: LessonProgress;
+  copy_sources: { id: string; batch_name: string; course_name: string }[];
+}
+
+export const lessonsApi = {
+  overview: () => apiFetch<LessonOverviewRow[]>("/api/v1/lessons"),
+  plan: (batchSubjectId: string) => apiFetch<LessonPlanDetail>(`/api/v1/lessons/${batchSubjectId}`),
+  addTopic: (batchSubjectId: string, body: { title: string; start_date?: string | null; target_date?: string | null }) => apiFetch<{ id: string }>(`/api/v1/lessons/${batchSubjectId}/topics`, { body }),
+  updateTopic: (id: string, body: { title?: string; start_date?: string | null; target_date?: string | null; status?: TopicStatus }) => apiFetch<{ id: string }>(`/api/v1/lesson-topics/${id}`, { method: "PATCH", body }),
+  deleteTopic: (id: string) => apiFetch<void>(`/api/v1/lesson-topics/${id}`, { method: "DELETE" }),
+  reorder: (batchSubjectId: string, topicIds: string[]) => apiFetch<void>(`/api/v1/lessons/${batchSubjectId}/order`, { method: "PUT", body: { topic_ids: topicIds } }),
+  copy: (batchSubjectId: string, fromBatchSubjectId: string) => apiFetch<{ copied: number }>(`/api/v1/lessons/${batchSubjectId}/copy`, { body: { from_batch_subject_id: fromBatchSubjectId } }),
+};

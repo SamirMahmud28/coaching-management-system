@@ -43,7 +43,8 @@ export type HelpTopicKey =
   | "exams-marks"
   | "exams-results"
   | "results-student"
-  | "routine";
+  | "routine"
+  | "lesson-plans";
 
 export const HELP_TOPICS: readonly HelpTopic[] = [
   {
@@ -604,6 +605,26 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
       { q: "The instructor is ill all week.", a: "Choose a substitute for each class, or cancel them. For the whole institute, add a holiday instead." },
       { q: "Why can't I choose a certain substitute?", a: "They already teach the class, are inactive, or teach another class at that time." },
     ],
+  },
+  {
+    key: "lesson-plans",
+    title: "Lesson plans",
+    area: "Routine",
+    permission: "routine.view",
+    summary: "Each subject of each batch has its own lesson plan: the chapters or topics it will cover, in order, with start and target dates and how far the class has got.",
+    steps: [
+      "Open Routine → Lesson plans and click a subject of a batch.",
+      "Add each chapter or topic with its start and target dates (both optional). Use the arrows to put them in teaching order.",
+      "As teaching goes on, set each topic's status: Pending, Ongoing or Completed. Completing a topic records today's date.",
+      "For another batch of the same subject, the office can click Copy from another batch to start from that batch's topics.",
+    ],
+    rules: [
+      "A topic that is past its target date and not completed shows Overdue.",
+      "The subject's instructor(s) and Owner or Admin can edit a plan. Other instructors of the batch can see it.",
+      "Copying adds the other batch's topics to the end, in order, as Pending and without dates.",
+      "Students see their batches' plans and progress in their portal.",
+    ],
+    faqs: [{ q: "A topic is finished early.", a: "Set it to Completed; the date is recorded and it no longer counts as Overdue." }],
   },
 ];
 

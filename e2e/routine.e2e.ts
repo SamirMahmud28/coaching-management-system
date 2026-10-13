@@ -122,6 +122,31 @@ test("R2: a holiday closes every class that day and appears in Changes & holiday
   await expect(cls(page, "Chemistry", date, "17:30")).toContainText("Victory Day");
 });
 
+test("R3: the Owner builds a lesson plan; a late topic shows Overdue and completing it counts (D118, D119)", async ({ page }) => {
+  await signInAsOwner(page);
+  await page.goto(url("/app/routine"));
+  await page.getByRole("link", { name: "Lesson plans" }).click();
+  await page.getByTestId("lesson-overview").getByRole("link", { name: /Physics/ }).click();
+  await expect(page.getByText("No topics yet").first()).toBeVisible();
+
+  const add = page.getByTestId("add-topic");
+  await add.getByLabel("Chapter or topic").fill("Ch 1: Vectors");
+  await add.getByLabel("Target").fill(day(-3));
+  await add.getByRole("button", { name: "Add topic" }).click();
+  await expect(page.getByTestId("topic-Ch 1: Vectors")).toContainText("Overdue");
+  await add.getByLabel("Chapter or topic").fill("Ch 2: Motion");
+  await add.getByRole("button", { name: "Add topic" }).click();
+  await expect(page.getByTestId("topic-Ch 2: Motion")).toBeVisible();
+
+  await page.getByLabel("Ch 1: Vectors status").click();
+  await page.getByRole("option", { name: "Completed" }).click();
+  await expect(page.getByTestId("topic-Ch 1: Vectors")).not.toContainText("Overdue");
+  await expect(page.getByText("1 of 2 topics completed")).toBeVisible();
+
+  await page.getByRole("button", { name: "Move Ch 2: Motion up" }).click();
+  await expect(page.getByTestId("lesson-topics").getByRole("listitem").first()).toContainText("Ch 2: Motion");
+});
+
 test("Routine disappears while the module is off (D5)", async ({ page }) => {
   await setInstituteModules(INSTITUTE.subdomain, { routine: false });
   try {
