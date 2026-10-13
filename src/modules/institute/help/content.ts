@@ -45,7 +45,10 @@ export type HelpTopicKey =
   | "results-student"
   | "routine"
   | "lesson-plans"
-  | "website";
+  | "website"
+  | "website-notices"
+  | "website-gallery"
+  | "website-testimonials";
 
 export const HELP_TOPICS: readonly HelpTopic[] = [
   {
@@ -654,6 +657,71 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
       { q: "The map shows the wrong place.", a: "Write the address in Institute Settings as Google Maps would find it, e.g. with the area and city." },
       { q: "Can I add my own page or HTML?", a: "Not in this version: the website is built from its sections only." },
     ],
+  },
+  {
+    key: "website-notices",
+    title: "Website notices",
+    area: "Website",
+    permission: "website.manage",
+    summary: "Notices tell visitors what's happening: admission dates, exam schedules, holiday closures. They appear in the Notices section of your website.",
+    steps: [
+      "Open Website → Notices and click Add notice.",
+      "Write a title and the text. The notice date is today unless you choose another day; a later date schedules it.",
+      "Optionally choose Show until: after that day the notice leaves the website by itself.",
+      "Tick Pin to keep an important notice at the top. Click Save notice; it is public at once.",
+    ],
+    rules: [
+      "The website shows notices from their notice date until their Show until date, pinned ones first, then the newest, at most 10.",
+      "A notice can be hidden from the website and shown again later; notices are never deleted, so the office list keeps them all.",
+      "Each notice's status shows where it stands: On the website, Scheduled, Ended or Hidden.",
+      "Long notices open with Read more on the website. Notices have no attachments.",
+      "Notices are for the public website only; they don't reach students' or instructors' portals.",
+    ],
+    faqs: [
+      { q: "A notice has a mistake.", a: "Open its actions and click Edit; the website changes when you save." },
+      { q: "Can I schedule a notice for next week?", a: "Yes: set its notice date to that day. It shows as Scheduled until then." },
+    ],
+  },
+  {
+    key: "website-gallery",
+    title: "Website gallery",
+    area: "Website",
+    permission: "website.manage",
+    summary: "Photos of your classes, events and achievements, shown in the Gallery section of your website.",
+    steps: [
+      "Open Website → Gallery and click Add photos. You can choose several pictures at once.",
+      "Click the pencil under a photo to give it a caption.",
+      "Use the arrows to put the photos in the order you want.",
+      "Click the bin to remove a photo you no longer want.",
+    ],
+    rules: [
+      "The gallery holds up to 60 photos.",
+      "Each photo can be JPG, PNG or WebP up to 5 MB; it is resized and compressed when uploaded.",
+      "Changes are public at once. Removing a photo takes it off the website straight away.",
+      "On the website a photo opens full size when clicked.",
+    ],
+    faqs: [
+      { q: "The gallery is full.", a: "Remove older photos to make room for new ones." },
+      { q: "A photo appears sideways.", a: "Rotate it on your phone or computer and upload it again." },
+    ],
+  },
+  {
+    key: "website-testimonials",
+    title: "Website testimonials",
+    area: "Website",
+    permission: "website.manage",
+    summary: "Words from successful students and happy guardians, entered by the office and shown in the Testimonials section of your website.",
+    steps: [
+      "Open Website → Testimonials and click Add testimonial.",
+      "Write what they said and their name. Optionally add a line under the name, e.g. 'HSC 2025, GPA 5', and a photo.",
+      "Use the arrows to set the order; the first one shows first on the website.",
+    ],
+    rules: [
+      "Only the office adds testimonials; visitors can't submit them.",
+      "Add a person's words or photo only with their permission.",
+      "Changes are public at once. Removing a testimonial takes it off the website straight away.",
+    ],
+    faqs: [{ q: "Someone asked to be removed.", a: "Open their testimonial's actions and click Remove." }],
   },
 ];
 

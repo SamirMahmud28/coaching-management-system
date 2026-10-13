@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactNode } from "react";
-import { ExternalLink, Globe, Mail, MapPin, Phone } from "lucide-react";
+import { ExternalLink, Globe, Mail, MapPin, Phone, Pin, Quote } from "lucide-react";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -121,8 +121,14 @@ export function InstituteWebsite({ site }: { site: Site }) {
         return s.courses.length ? <Courses site={s} t={t} /> : null;
       case "CONTACT":
         return contactsOf(s).length ? <Contact site={s} t={t} /> : null;
+      case "NOTICES":
+        return s.notices.length ? <Notices site={s} t={t} /> : null;
+      case "GALLERY":
+        return s.gallery.length ? <Gallery site={s} t={t} /> : null;
+      case "TESTIMONIALS":
+        return s.testimonials.length ? <Testimonials site={s} t={t} /> : null;
       default:
-        // Notices, gallery, testimonials and the enquiry form arrive with their own milestones (W2, W3).
+        // The enquiry form arrives with W3.
         return null;
     }
   }
@@ -268,6 +274,107 @@ function Courses({ site, t }: { site: Site; t: ThemeStyle }) {
           </article>
         ))}
       </div>
+    </>
+  );
+}
+
+const LONG_NOTICE = 280;
+const noticeDate = (iso: string) => new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+
+/** Public notices (D128): pinned first, then the newest; a long notice opens with "Read more" (no script needed). */
+function Notices({ site, t }: { site: Site; t: ThemeStyle }) {
+  return (
+    <>
+      <SectionHeading id="NOTICES" t={t}>
+        Notices
+      </SectionHeading>
+      <ul className="grid gap-4 md:grid-cols-2">
+        {site.notices.map((n) => (
+          <li key={n.id} data-testid="public-notice" className={cn("space-y-2 p-5", t.card)}>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <time dateTime={n.noticeDate}>{noticeDate(n.noticeDate)}</time>
+              {n.pinned && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-[color-mix(in_srgb,var(--site-brand)_14%,transparent)] px-2 py-0.5 font-medium text-[var(--site-brand)]">
+                  <Pin aria-hidden className="size-3" /> Pinned
+                </span>
+              )}
+            </div>
+            <h3 className="text-lg font-semibold [font-family:var(--site-heading)]">{n.title}</h3>
+            {n.body.length <= LONG_NOTICE ? (
+              <p className="whitespace-pre-line text-sm text-muted-foreground">{n.body}</p>
+            ) : (
+              <details className="group text-sm text-muted-foreground">
+                <summary className="cursor-pointer list-none">
+                  <span className="whitespace-pre-line group-open:hidden">{n.body.slice(0, LONG_NOTICE).trimEnd()}… </span>
+                  <span className="font-medium text-[var(--site-brand)] group-open:hidden">Read more</span>
+                  <span className="hidden font-medium text-[var(--site-brand)] group-open:inline">Show less</span>
+                </summary>
+                <p className="mt-1 whitespace-pre-line">{n.body}</p>
+              </details>
+            )}
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
+/** The gallery (D125): photos in the order set, each opening full size. */
+function Gallery({ site, t }: { site: Site; t: ThemeStyle }) {
+  const rounded = site.settings.theme === "MODERN" ? "rounded-2xl" : site.settings.theme === "BOLD" ? "rounded-sm" : "rounded-lg";
+  return (
+    <>
+      <SectionHeading id="GALLERY" t={t}>
+        Gallery
+      </SectionHeading>
+      <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        {site.gallery.map((p) => (
+          <li key={p.id}>
+            <figure className="space-y-1.5">
+              <a href={imageUrl(p.fileId)} target="_blank" rel="noopener" className={cn("block overflow-hidden", rounded)}>
+                {/* eslint-disable-next-line @next/next/no-img-element -- served by the public website-image endpoint */}
+                <img src={imageUrl(p.fileId)} alt={p.caption ?? ""} loading="lazy" className="aspect-square w-full object-cover transition-transform duration-300 hover:scale-105" />
+              </a>
+              {p.caption && <figcaption className="text-sm text-muted-foreground">{p.caption}</figcaption>}
+            </figure>
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
+/** Testimonials entered by the office (D130). */
+function Testimonials({ site, t }: { site: Site; t: ThemeStyle }) {
+  return (
+    <>
+      <SectionHeading id="TESTIMONIALS" t={t}>
+        What our students say
+      </SectionHeading>
+      <ul className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+        {site.testimonials.map((q) => (
+          <li key={q.id} data-testid="public-testimonial">
+            <figure className={cn("flex h-full flex-col gap-4 p-6", t.card)}>
+              <Quote aria-hidden className="size-6 text-[var(--site-brand)]" />
+              <blockquote className="flex-1 whitespace-pre-line leading-relaxed">{q.quote}</blockquote>
+              <figcaption className="flex items-center gap-3">
+                {q.photoFileId ? (
+                  // eslint-disable-next-line @next/next/no-img-element -- served by the public website-image endpoint
+                  <img src={imageUrl(q.photoFileId)} alt="" loading="lazy" className="size-11 rounded-full object-cover" />
+                ) : (
+                  <span aria-hidden className="flex size-11 items-center justify-center rounded-full bg-[var(--site-brand)] font-semibold text-[var(--site-on-brand)]">
+                    {q.name.slice(0, 1).toUpperCase()}
+                  </span>
+                )}
+                <span>
+                  <span className="block font-semibold">{q.name}</span>
+                  {q.line && <span className="block text-sm text-muted-foreground">{q.line}</span>}
+                </span>
+              </figcaption>
+            </figure>
+          </li>
+        ))}
+      </ul>
     </>
   );
 }

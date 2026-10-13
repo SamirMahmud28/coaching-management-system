@@ -3,6 +3,7 @@ import { files, galleryPhotos, testimonials, websiteSettings } from "../../core/
 import type { DbOrTx } from "../../core/db/types";
 import { isModuleActive } from "../entitlements/service";
 import { getPublicCatalog } from "../portal/service";
+import { listGallery, listTestimonials, publicNotices } from "./content";
 import { getWebsiteSettings } from "./settings";
 
 // What visitors see at `<sub>.<domain>/` while the Website module is on (D21, D124–D133). Callers check the institute's
@@ -13,7 +14,13 @@ export type PublicWebsite = NonNullable<Awaited<ReturnType<typeof getPublicWebsi
 /** The institute's themed website, or null while the Website module is off (the Core page is shown instead, D21). */
 export async function getPublicWebsite(db: DbOrTx, tenantId: string) {
   if (!(await isModuleActive(db, tenantId, "website"))) return null;
-  const [settings, catalog] = await Promise.all([getWebsiteSettings(db, tenantId), getPublicCatalog(db, tenantId)]);
+  const [settings, catalog, notices, gallery, testimonialRows] = await Promise.all([
+    getWebsiteSettings(db, tenantId),
+    getPublicCatalog(db, tenantId),
+    publicNotices(db, tenantId),
+    listGallery(db, tenantId),
+    listTestimonials(db, tenantId),
+  ]);
   return {
     settings: {
       theme: settings.theme,
@@ -29,6 +36,9 @@ export async function getPublicWebsite(db: DbOrTx, tenantId: string) {
     },
     profile: catalog.profile,
     courses: catalog.courses,
+    notices,
+    gallery: gallery.map((p) => ({ id: p.id, fileId: p.fileId, caption: p.caption })),
+    testimonials: testimonialRows.map((t) => ({ id: t.id, quote: t.quote, name: t.name, line: t.line, photoFileId: t.photoFileId })),
   };
 }
 

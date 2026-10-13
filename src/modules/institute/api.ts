@@ -1057,3 +1057,62 @@ export const websiteApi = {
   settings: () => apiFetch<WebsiteSettingsRow>("/api/v1/website/settings"),
   saveSettings: (body: WebsiteSettingsBody) => apiFetch<WebsiteSettingsRow>("/api/v1/website/settings", { method: "PUT", body }),
 };
+
+export type NoticeStatus = "ON_WEBSITE" | "SCHEDULED" | "EXPIRED" | "HIDDEN";
+
+export interface WebsiteNoticeRow {
+  id: string;
+  title: string;
+  body: string;
+  notice_date: string;
+  pinned: boolean;
+  show_until: string | null;
+  status: NoticeStatus;
+}
+
+export interface WebsiteNoticeBody {
+  title: string;
+  body: string;
+  notice_date: string | null;
+  pinned: boolean;
+  show_until: string | null;
+}
+
+export interface GalleryPhotoRow {
+  id: string;
+  file_id: string;
+  caption: string | null;
+}
+
+export interface TestimonialRow {
+  id: string;
+  quote: string;
+  name: string;
+  line: string | null;
+  photo_file_id: string | null;
+}
+
+export interface TestimonialBody {
+  quote: string;
+  name: string;
+  line: string | null;
+  photo_file_id: string | null;
+}
+
+export const websiteContentApi = {
+  notices: () => apiFetch<{ items: WebsiteNoticeRow[] }>("/api/v1/website/notices"),
+  createNotice: (body: WebsiteNoticeBody) => apiFetch<WebsiteNoticeRow>("/api/v1/website/notices", { body }),
+  updateNotice: (id: string, body: WebsiteNoticeBody) => apiFetch<WebsiteNoticeRow>(`/api/v1/website/notices/${id}`, { method: "PATCH", body }),
+  hideNotice: (id: string) => apiFetch<WebsiteNoticeRow>(`/api/v1/website/notices/${id}/hide`, { method: "POST" }),
+  showNotice: (id: string) => apiFetch<WebsiteNoticeRow>(`/api/v1/website/notices/${id}/show`, { method: "POST" }),
+  gallery: () => apiFetch<{ items: GalleryPhotoRow[]; limit: number }>("/api/v1/website/gallery"),
+  addPhoto: (body: { file_id: string; caption?: string | null }) => apiFetch<GalleryPhotoRow>("/api/v1/website/gallery", { body }),
+  updatePhoto: (id: string, caption: string | null) => apiFetch<GalleryPhotoRow>(`/api/v1/website/gallery/${id}`, { method: "PATCH", body: { caption } }),
+  removePhoto: (id: string) => apiFetch<void>(`/api/v1/website/gallery/${id}`, { method: "DELETE" }),
+  reorderGallery: (ids: string[]) => apiFetch<void>("/api/v1/website/gallery/order", { method: "PUT", body: { ids } }),
+  testimonials: () => apiFetch<{ items: TestimonialRow[] }>("/api/v1/website/testimonials"),
+  createTestimonial: (body: TestimonialBody) => apiFetch<TestimonialRow>("/api/v1/website/testimonials", { body }),
+  updateTestimonial: (id: string, body: TestimonialBody) => apiFetch<TestimonialRow>(`/api/v1/website/testimonials/${id}`, { method: "PATCH", body }),
+  removeTestimonial: (id: string) => apiFetch<void>(`/api/v1/website/testimonials/${id}`, { method: "DELETE" }),
+  reorderTestimonials: (ids: string[]) => apiFetch<void>("/api/v1/website/testimonials/order", { method: "PUT", body: { ids } }),
+};

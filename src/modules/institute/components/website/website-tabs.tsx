@@ -4,7 +4,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
-const TABS = [{ href: "/app/website", label: "Design" }];
+const TABS = [
+  { href: "/app/website", label: "Design" },
+  { href: "/app/website/notices", label: "Notices" },
+  { href: "/app/website/gallery", label: "Gallery" },
+  { href: "/app/website/testimonials", label: "Testimonials" },
+];
 
 /** The Website module's sections. */
 export function WebsiteTabs() {

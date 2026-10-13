@@ -21,6 +21,7 @@ import { createRoutineHandlers } from "./routine/http";
 import { createWebsiteHandlers } from "./website/http";
 import * as routineService from "./routine/service";
 import * as lessonService from "./routine/lessons";
+import * as websiteContent from "./website/content";
 import * as examSetup from "./exams/setup";
 import { createFeesHandlers } from "./fees/http";
 import { createFilesHandlers } from "./files/http";
@@ -50,7 +51,7 @@ const auth = createTenantAuth(db, { secret: "test-secret-".padEnd(40, "x"), host
 let storage: LocalDiskStorage;
 
 const DUMMY = "00000000-0000-4000-8000-000000000000";
-type Entity = "COURSE" | "SUBJECT" | "BATCH" | "BATCH_SUBJECT" | "SCHEDULE_SLOT" | "STUDENT" | "MEMBERSHIP" | "INSTRUCTOR" | "USER" | "SIGNATURE" | "FILE" | "FEE_ITEM" | "STUDENT_FEE_AMOUNT" | "FEE_RUN" | "FEE_CHARGE" | "FEE_PAYMENT" | "LEAVE" | "EXAM" | "EXAM_PAPER" | "ROUTINE_CHANGE" | "HOLIDAY" | "LESSON_TOPIC";
+type Entity = "COURSE" | "SUBJECT" | "BATCH" | "BATCH_SUBJECT" | "SCHEDULE_SLOT" | "STUDENT" | "MEMBERSHIP" | "INSTRUCTOR" | "USER" | "SIGNATURE" | "FILE" | "FEE_ITEM" | "STUDENT_FEE_AMOUNT" | "FEE_RUN" | "FEE_CHARGE" | "FEE_PAYMENT" | "LEAVE" | "EXAM" | "EXAM_PAPER" | "ROUTINE_CHANGE" | "HOLIDAY" | "LESSON_TOPIC" | "NOTICE" | "GALLERY_PHOTO" | "TESTIMONIAL";
 type Factory = "academic" | "students" | "instructors" | "institute" | "settings" | "files" | "fees" | "attendance" | "exams" | "routine" | "website";
 /** Paid modules: each handler of these factories is refused while its module is off. */
 const PAID: Partial<Record<Factory, "fees" | "attendance" | "exams" | "routine" | "website">> = { fees: "fees", attendance: "attendance", exams: "exams", routine: "routine", website: "website" };
@@ -216,6 +217,21 @@ const HANDLERS: Entry[] = [
   // website (paid module)
   { factory: "website", name: "getSettings", method: "GET", permission: "website.manage" },
   { factory: "website", name: "saveSettings", method: "PUT", permission: "website.manage", body: { theme: "BOLD", heading_font: "INTER", sections: [], hero_button: "NONE" } },
+  { factory: "website", name: "listNotices", method: "GET", permission: "website.manage" },
+  { factory: "website", name: "createNotice", method: "POST", permission: "website.manage", body: { title: "Matrix notice", body: "Text" } },
+  { factory: "website", name: "updateNotice", method: "PATCH", permission: "website.manage", id: "NOTICE", body: { title: "Matrix notice", body: "Text" } },
+  { factory: "website", name: "hideNotice", method: "POST", permission: "website.manage", id: "NOTICE" },
+  { factory: "website", name: "showNotice", method: "POST", permission: "website.manage", id: "NOTICE" },
+  { factory: "website", name: "listGallery", method: "GET", permission: "website.manage" },
+  { factory: "website", name: "addGalleryPhoto", method: "POST", permission: "website.manage", body: { file_id: DUMMY } },
+  { factory: "website", name: "updateGalleryPhoto", method: "PATCH", permission: "website.manage", id: "GALLERY_PHOTO", body: { caption: "Matrix" } },
+  { factory: "website", name: "removeGalleryPhoto", method: "DELETE", permission: "website.manage", id: "GALLERY_PHOTO" },
+  { factory: "website", name: "reorderGallery", method: "PUT", permission: "website.manage", body: { ids: [] } },
+  { factory: "website", name: "listTestimonials", method: "GET", permission: "website.manage" },
+  { factory: "website", name: "createTestimonial", method: "POST", permission: "website.manage", body: { quote: "Great", name: "Matrix" } },
+  { factory: "website", name: "updateTestimonial", method: "PATCH", permission: "website.manage", id: "TESTIMONIAL", body: { quote: "Great", name: "Matrix" } },
+  { factory: "website", name: "removeTestimonial", method: "DELETE", permission: "website.manage", id: "TESTIMONIAL" },
+  { factory: "website", name: "reorderTestimonials", method: "PUT", permission: "website.manage", body: { ids: [] } },
 ];
 /** Handlers deliberately outside the matrix, with the reason. */
 const OUTSIDE: Partial<Record<Factory, Record<string, string>>> = {
@@ -355,9 +371,13 @@ beforeAll(async () => {
   const routineChange = await routineService.createChange(db, routineActor, { batchSubjectId: batchSubject.id, classDate: saturday, startsAt: "09:00", kind: "CANCEL", reason: "Rain" });
   const holiday = await routineService.createHoliday(db, routineActor, { name: "B holiday", fromDate: "2099-02-01" });
   const lessonTopic = await lessonService.addTopic(db, { ...routineActor, permissions: new Set(["routine.manage", "lessons.manage", "academic.view"]) }, batchSubject.id, { title: "B topic" });
+  const websitePicture = await uploadFile(db, storage, actor, { category: "WEBSITE_IMAGE", filename: "w.jpg", bytes });
+  const notice = await websiteContent.createNotice(db, actor, { title: "B notice", body: "Text" });
+  const galleryPhoto = await websiteContent.addGalleryPhoto(db, actor, { fileId: websitePicture.id });
+  const testimonial = await websiteContent.createTestimonial(db, actor, { quote: "Great", name: "B" });
   Object.assign(foreign, {
     COURSE: course.id, SUBJECT: subject.id, BATCH: batch.id, BATCH_SUBJECT: batchSubject.id, SCHEDULE_SLOT: slot.id, STUDENT: s.id, MEMBERSHIP: membership.id,
-    INSTRUCTOR: teacher.id, USER: teacherLogin.id, SIGNATURE: signature.id, FILE: file.id, FEE_ITEM: feeItem.id, STUDENT_FEE_AMOUNT: studentAmount.id, FEE_RUN: run.id, FEE_CHARGE: charge.id, FEE_PAYMENT: payment.id, LEAVE: leaveRow.id, EXAM: exam.id, EXAM_PAPER: exam.papers[0].id, ROUTINE_CHANGE: routineChange.id, HOLIDAY: holiday.id, LESSON_TOPIC: lessonTopic.id,
+    INSTRUCTOR: teacher.id, USER: teacherLogin.id, SIGNATURE: signature.id, FILE: file.id, FEE_ITEM: feeItem.id, STUDENT_FEE_AMOUNT: studentAmount.id, FEE_RUN: run.id, FEE_CHARGE: charge.id, FEE_PAYMENT: payment.id, LEAVE: leaveRow.id, EXAM: exam.id, EXAM_PAPER: exam.papers[0].id, ROUTINE_CHANGE: routineChange.id, HOLIDAY: holiday.id, LESSON_TOPIC: lessonTopic.id, NOTICE: notice.id, GALLERY_PHOTO: galleryPhoto.id, TESTIMONIAL: testimonial.id,
   });
 }, 120_000);
 

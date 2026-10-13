@@ -91,6 +91,47 @@ test("W1: the Owner designs the website and it is public at once (D124, D126, D1
   await expect(page.getByRole("link", { name: "Open in Maps" })).toBeVisible();
 });
 
+test("W2: the Owner posts a notice, fills the gallery and adds a testimonial (D125, D128, D130)", async ({ page }) => {
+  await signInAsOwner(page);
+  await page.goto(url("/app/website/notices"));
+  await page.getByRole("button", { name: "Add notice" }).click();
+  let dialog = page.getByRole("dialog");
+  await dialog.getByLabel("Title").fill("Admission open for HSC 2027");
+  await dialog.getByLabel("Text").fill("Forms are available at the office from 10 am to 6 pm.");
+  await dialog.getByLabel("Pin to the top of the notices").click();
+  await dialog.getByRole("button", { name: "Save notice" }).click();
+  await expect(page.getByText("Notice added.")).toBeVisible();
+  await expect(page.getByTestId("notice-Admission open for HSC 2027")).toContainText("On the website");
+
+  await page.getByRole("link", { name: "Gallery" }).click();
+  await page.getByTestId("gallery-input").setInputFiles([await picture(), { ...(await picture()), name: "prize.jpg" }]);
+  await expect(page.getByText("2 photos added.")).toBeVisible();
+  await expect(page.getByTestId("gallery-count")).toContainText("2 of 60 photos");
+  await page.getByRole("button", { name: "Edit caption of Photo 1" }).click();
+  await page.getByRole("dialog").getByLabel("Caption", { exact: true }).fill("Prize-giving 2026");
+  await page.getByRole("button", { name: "Save caption" }).click();
+  await expect(page.getByText("Caption saved.")).toBeVisible();
+  await page.getByRole("button", { name: "Move Prize-giving 2026 later" }).click();
+  await expect(page.getByTestId("gallery-photo").last()).toContainText("Prize-giving 2026");
+
+  await page.getByRole("link", { name: "Testimonials" }).click();
+  await page.getByRole("button", { name: "Add testimonial" }).click();
+  dialog = page.getByRole("dialog");
+  await dialog.getByLabel("What they said").fill("The weekly tests made all the difference.");
+  await dialog.getByLabel("Name", { exact: true }).fill("Nabila Hossain");
+  await dialog.getByLabel("Line under the name").fill("SSC 2026, GPA 5");
+  await dialog.getByRole("button", { name: "Save testimonial" }).click();
+  await expect(page.getByText("Testimonial added.")).toBeVisible();
+
+  await page.goto(url("/"));
+  await expect(page.getByTestId("public-notice")).toContainText("Admission open for HSC 2027");
+  await expect(page.getByTestId("public-notice")).toContainText("Pinned");
+  await expect(page.getByTestId("section-gallery").locator("img")).toHaveCount(2);
+  await expect(page.getByRole("img", { name: "Prize-giving 2026" })).toBeVisible();
+  await expect(page.getByTestId("public-testimonial")).toContainText("SSC 2026, GPA 5");
+  await expect(page.getByRole("navigation", { name: "Sections" }).getByRole("link", { name: "Gallery" })).toBeVisible();
+});
+
 test("Website disappears while the module is off and the basic page returns, with the design kept (D5, D21)", async ({ page }) => {
   await setInstituteModules(INSTITUTE.subdomain, { website: false });
   try {
