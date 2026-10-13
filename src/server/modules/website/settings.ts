@@ -6,9 +6,14 @@ import { assertFileReference } from "../../core/files/service";
 import { ValidationError } from "../../core/errors";
 import { audit } from "../audit/service";
 import {
-  APPEARANCES, BACKGROUNDS, BODY_FONTS, BUTTON_STYLES, CARD_STYLES, DENSITIES, GRADIENT_CHOICES, HEX_COLOUR, PALETTE_CHOICES, RADII, TEXT_SIZES,
-  WEBSITE_FONTS, WEBSITE_THEMES, completeDesign, legacyDesign, type WebsiteDesign, type WebsiteFont, type WebsiteTheme,
+  APPEARANCES, BACKGROUNDS, BODY_FONTS, BUTTON_STYLES, CARD_STYLES, COURSE_LAYOUTS, DENSITIES, GALLERY_LAYOUTS, GRADIENT_CHOICES, HEADER_STYLES, HERO_LAYOUTS,
+  HERO_OVERLAYS, HEX_COLOUR, NOTICE_LAYOUTS, PALETTE_CHOICES, RADII, SITE_LANGUAGES, TESTIMONIAL_LAYOUTS, TEXT_SIZES, WEBSITE_FONTS, WEBSITE_THEMES,
+  completeDesign, legacyDesign, type WebsiteDesign, type WebsiteFont, type WebsiteTheme,
 } from "./design";
+import {
+  ANNOUNCEMENT_MAX, DEFAULT_CONTENT, LINK_LABEL_MAX, SECTION_SUBTITLE_MAX, SECTION_TITLE_MAX, SOCIAL_HOSTS, SOCIAL_NETWORKS, completeContent, normaliseLink,
+  type WebsiteContent,
+} from "./site-content";
 
 // The website's look and fixed content (D124, D126, D131, D135, D136): theme, heading font, the design settings, the
 // sections below the hero (on/off and order), and the hero and about texts and pictures. Every save is public at once
@@ -28,6 +33,7 @@ export interface WebsiteSettings {
   theme: WebsiteTheme;
   headingFont: WebsiteFont;
   design: WebsiteDesign;
+  content: WebsiteContent;
   sections: WebsiteSectionSetting[];
   heroHeading: string | null;
   heroSubheading: string | null;
@@ -49,6 +55,7 @@ const DEFAULTS: WebsiteSettings = {
   theme: "CLASSIC",
   headingFont: "INTER",
   design: legacyDesign("CLASSIC"),
+  content: DEFAULT_CONTENT,
   sections: DEFAULT_SECTIONS,
   heroHeading: null,
   heroSubheading: null,
@@ -78,6 +85,7 @@ export async function getWebsiteSettings(db: DbOrTx, tenantId: string): Promise<
     theme: row.theme,
     headingFont: row.headingFont,
     design: completeDesign(row.design, legacyDesign(row.theme)),
+    content: completeContent(row.content),
     sections: completeSections(row.sections),
     heroHeading: row.heroHeading,
     heroSubheading: row.heroSubheading,
@@ -125,11 +133,57 @@ function cleanDesign(d: WebsiteDesign): WebsiteDesign {
     density: oneOf(d.density, DENSITIES, "design.density", choice),
     background: oneOf(d.background, BACKGROUNDS, "design.background", choice),
     appearance: oneOf(d.appearance, APPEARANCES, "design.appearance", choice),
+    headerStyle: oneOf(d.headerStyle, HEADER_STYLES, "design.headerStyle", choice),
+    heroLayout: oneOf(d.heroLayout, HERO_LAYOUTS, "design.heroLayout", choice),
+    heroOverlay: oneOf(d.heroOverlay, HERO_OVERLAYS, "design.heroOverlay", choice),
+    galleryLayout: oneOf(d.galleryLayout, GALLERY_LAYOUTS, "design.galleryLayout", choice),
+    testimonialLayout: oneOf(d.testimonialLayout, TESTIMONIAL_LAYOUTS, "design.testimonialLayout", choice),
+    courseLayout: oneOf(d.courseLayout, COURSE_LAYOUTS, "design.courseLayout", choice),
+    noticeLayout: oneOf(d.noticeLayout, NOTICE_LAYOUTS, "design.noticeLayout", choice),
+    language: oneOf(d.language, SITE_LANGUAGES, "design.language", "Choose English or Bangla."),
   };
   if (design.palette === "CUSTOM" && !design.customPrimary) {
     throw new ValidationError("VALIDATION_COLOUR", "Choose your main colour for the custom palette.", { field: "design.customPrimary" });
   }
   return design;
+}
+
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+/** A link the office typed: https on any site, or an in-page link to one of the sections (`#enquiry`). */
+function link(value: string | null | undefined, field: string, hosts?: readonly string[], message = "Use a web address such as https://example.com."): string | null {
+  const v = value?.trim() ?? "";
+  if (v === "") return null;
+  if (!hosts && /^#[a-z]+$/.test(v) && (WEBSITE_SECTIONS as readonly string[]).includes(v.slice(1).toUpperCase())) return v;
+  const url = v.length <= 300 ? normaliseLink(v, hosts) : null;
+  if (!url) throw new ValidationError("VALIDATION_LINK", message, { field });
+  return url;
+}
+
+/** Section titles, the announcement bar and social links (D138, D140). */
+function cleanContent(c: WebsiteContent): WebsiteContent {
+  const sectionTitles: WebsiteContent["sectionTitles"] = {};
+  for (const [key, t] of Object.entries(c.sectionTitles ?? {})) {
+    if (!(WEBSITE_SECTIONS as readonly string[]).includes(key)) throw new ValidationError("VALIDATION_CHOICE", "Unknown section.", { field: "content.sectionTitles" });
+    const title = text(t?.title, SECTION_TITLE_MAX, `content.sectionTitles.${key}.title`, "A section heading");
+    const subtitle = text(t?.subtitle, SECTION_SUBTITLE_MAX, `content.sectionTitles.${key}.subtitle`, "A line under a heading");
+    if (title || subtitle) sectionTitles[key as WebsiteSectionKey] = { title, subtitle };
+  }
+  let announcement: WebsiteContent["announcement"] = null;
+  const a = c.announcement;
+  const announcementText = text(a?.text, ANNOUNCEMENT_MAX, "content.announcement.text", "The announcement");
+  if (a && announcementText) {
+    const showUntil = a.showUntil?.trim() || null;
+    if (showUntil && (!ISO_DATE.test(showUntil) || Number.isNaN(Date.parse(`${showUntil}T00:00:00Z`)))) {
+      throw new ValidationError("VALIDATION_DATE", "Use a date such as 2026-12-31.", { field: "content.announcement.showUntil" });
+    }
+    const linkUrl = link(a.linkUrl, "content.announcement.linkUrl");
+    announcement = { text: announcementText, linkUrl, linkLabel: linkUrl ? text(a.linkLabel, LINK_LABEL_MAX, "content.announcement.linkLabel", "The link's words") : null, showUntil };
+  }
+  const social = Object.fromEntries(
+    SOCIAL_NETWORKS.map((n) => [n, link(c.social?.[n], `content.social.${n}`, SOCIAL_HOSTS[n], `Use your ${n === "tiktok" ? "TikTok" : n === "youtube" ? "YouTube" : n === "linkedin" ? "LinkedIn" : n[0].toUpperCase() + n.slice(1)} page's address.`)]),
+  ) as WebsiteContent["social"];
+  return { sectionTitles, announcement, social };
 }
 
 /** Every section exactly once, in the order given. */
@@ -141,7 +195,7 @@ function cleanSections(sections: WebsiteSectionSetting[]): WebsiteSectionSetting
 }
 
 const valuesOf = (s: WebsiteSettings): WebsiteSettingsInput => ({
-  theme: s.theme, headingFont: s.headingFont, design: s.design, sections: s.sections, heroHeading: s.heroHeading, heroSubheading: s.heroSubheading,
+  theme: s.theme, headingFont: s.headingFont, design: s.design, content: s.content, sections: s.sections, heroHeading: s.heroHeading, heroSubheading: s.heroSubheading,
   heroImageFileId: s.heroImageFileId, heroButton: s.heroButton, aboutHeading: s.aboutHeading, aboutText: s.aboutText, aboutImageFileId: s.aboutImageFileId,
 });
 
@@ -151,6 +205,7 @@ export async function saveWebsiteSettings(db: DbOrTx, actor: Actor, input: Websi
     theme: oneOf(input.theme, WEBSITE_THEMES, "theme", "Choose one of the themes."),
     headingFont: oneOf(input.headingFont, WEBSITE_FONTS, "headingFont", "Choose one of the fonts."),
     design: cleanDesign(input.design),
+    content: cleanContent(input.content ?? DEFAULT_CONTENT),
     sections: cleanSections(input.sections),
     heroHeading: text(input.heroHeading, 120, "heroHeading", "The heading"),
     heroSubheading: text(input.heroSubheading, 250, "heroSubheading", "The subheading"),

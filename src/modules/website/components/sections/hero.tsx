@@ -2,8 +2,12 @@ import type { CSSProperties, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { imageUrl, mediaClass, telHref, type SectionProps } from "./shared";
 
-// The welcome banner (D131) in the composition of the theme (D136). Every variant keeps the same heading, subheading,
-// picture and button; only the arrangement and colours change.
+// The welcome banner (D131) in the composition of the theme (D136), or another composition chosen in Layout (D135).
+// Every variant keeps the same heading, subheading, picture and button; only the arrangement and colours change.
+
+/** How dark the shade over a banner picture is (D135): over a photo, and over a photo tinted in the main colour. */
+const SHADE = { LIGHT: "bg-black/30", MEDIUM: "bg-black/50", STRONG: "bg-black/70" } as const;
+const TINT = { LIGHT: "bg-[color-mix(in_srgb,var(--site-primary)_65%,transparent)]", MEDIUM: "bg-[color-mix(in_srgb,var(--site-primary)_82%,transparent)]", STRONG: "bg-[color-mix(in_srgb,var(--site-primary)_92%,transparent)]" } as const;
 
 interface HeroParts {
   heading: string;
@@ -12,7 +16,7 @@ interface HeroParts {
   button: { href: string; label: string } | null;
 }
 
-function parts({ site }: SectionProps, enquiry: boolean): HeroParts {
+function parts({ site, t }: SectionProps, enquiry: boolean): HeroParts {
   const { settings, profile } = site;
   return {
     heading: settings.heroHeading ?? profile.name,
@@ -20,9 +24,9 @@ function parts({ site }: SectionProps, enquiry: boolean): HeroParts {
     image: settings.heroImageFileId ? imageUrl(settings.heroImageFileId) : null,
     button:
       settings.heroButton === "ENQUIRE" && enquiry
-        ? { href: "#enquiry", label: "Enquire about admission" }
+        ? { href: "#enquiry", label: t.enquire }
         : settings.heroButton === "CALL" && profile.phone
-          ? { href: telHref(profile.phone), label: `Call ${profile.phone}` }
+          ? { href: telHref(profile.phone), label: t.call(profile.phone) }
           : null,
   };
 }
@@ -54,9 +58,13 @@ export function Hero(props: SectionProps & { enquiry: boolean }) {
   const { sig } = props;
   const p = parts(props, props.enquiry);
   const media = mediaClass(sig.media);
+  // The region keeps its English name "Welcome" for assistive technology and tests in either language.
   const label = "Welcome";
+  const { heroLayout, heroOverlay } = props.site.settings.design;
+  const shade = SHADE[heroOverlay];
+  const tint = TINT[heroOverlay];
 
-  switch (sig.hero) {
+  switch (heroLayout === "THEME" ? sig.hero : heroLayout) {
     case "SPLIT":
       return (
         <section aria-label={label} className="site-tint">
@@ -77,7 +85,7 @@ export function Hero(props: SectionProps & { enquiry: boolean }) {
           {p.image && (
             <>
               <Img src={p.image} className="absolute inset-0 -z-20 size-full object-cover" />
-              <div aria-hidden className="absolute inset-0 -z-10 bg-[color-mix(in_srgb,var(--site-primary)_82%,transparent)]" />
+              <div aria-hidden className={cn("absolute inset-0 -z-10", tint)} />
             </>
           )}
           <Wrap className="space-y-6 py-20 sm:py-32">
@@ -139,7 +147,7 @@ export function Hero(props: SectionProps & { enquiry: boolean }) {
           {p.image && (
             <>
               <Img src={p.image} className="absolute inset-0 -z-20 size-full object-cover" />
-              <div aria-hidden className="absolute inset-0 -z-10 bg-black/35" />
+              <div aria-hidden className={cn("absolute inset-0 -z-10", shade)} />
             </>
           )}
           <Wrap className="py-20 sm:py-32">
@@ -197,11 +205,11 @@ export function Hero(props: SectionProps & { enquiry: boolean }) {
 
     case "CENTRED":
       return (
-        <section aria-label={label} className={cn("relative isolate overflow-hidden", p.image ? "text-white" : "site-tint")}>
+        <section aria-label={label} className={cn("relative isolate overflow-hidden", p.image ? "site-on-colour text-white" : "site-tint")} style={p.image ? onColour("#111827", "#ffffff") : undefined}>
           {p.image && (
             <>
               <Img src={p.image} className="absolute inset-0 -z-20 size-full object-cover" />
-              <div aria-hidden className="absolute inset-0 -z-10 bg-black/50" />
+              <div aria-hidden className={cn("absolute inset-0 -z-10", shade)} />
             </>
           )}
           <Wrap className="space-y-6 py-20 text-center sm:py-28">

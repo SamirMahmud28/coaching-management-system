@@ -15,6 +15,7 @@ import { createTenantAuth } from "../auth/tenant-auth";
 import { createWebsiteHandlers } from "./http";
 import { getPublicWebsite, isPublicWebsiteImage } from "./public";
 import { DEFAULT_DESIGN } from "./design";
+import { DEFAULT_CONTENT, type WebsiteContent } from "./site-content";
 import { DEFAULT_SECTIONS, getWebsiteSettings, saveWebsiteSettings, type WebsiteSettingsInput } from "./settings";
 
 const { db: testDb, reset, close } = createTestDb();
@@ -45,7 +46,7 @@ async function institute(status: "ACTIVE" | "SUSPENDED" | "DEACTIVATED" = "ACTIV
 
 const input = (o: Partial<WebsiteSettingsInput> = {}): WebsiteSettingsInput => ({
   theme: "MODERN", headingFont: "POPPINS", sections: DEFAULT_SECTIONS, heroHeading: "Best coaching in town", heroSubheading: null,
-  heroImageFileId: null, heroButton: "CALL", aboutHeading: null, aboutText: null, aboutImageFileId: null, design: DEFAULT_DESIGN, ...o,
+  heroImageFileId: null, heroButton: "CALL", aboutHeading: null, aboutText: null, aboutImageFileId: null, design: DEFAULT_DESIGN, content: DEFAULT_CONTENT, ...o,
 });
 
 describe("website settings (D124, D126, D131)", () => {
@@ -147,6 +148,70 @@ describe("website design (D135, D136)", () => {
     await setModules(db, s.tenant.id, ["website"]);
     await saveWebsiteSettings(db, s.actor, input({ theme: "NEO_BRUTAL", design: pro }));
     expect((await getPublicWebsite(db, s.tenant.id))?.settings).toMatchObject({ theme: "NEO_BRUTAL", design: pro });
+  });
+});
+
+describe("website layout, words and language (D135, D138, D140)", () => {
+  const content = (o: Partial<WebsiteContent> = {}): WebsiteContent => ({ ...DEFAULT_CONTENT, ...o });
+
+  it("saves layouts, the language, section titles, the announcement and social links", async () => {
+    const s = await institute();
+    const design = { ...DEFAULT_DESIGN, headerStyle: "CENTRED", heroLayout: "GLASS", heroOverlay: "STRONG", galleryLayout: "MASONRY", testimonialLayout: "SPOTLIGHT", courseLayout: "LIST", noticeLayout: "TIMELINE", language: "BN" } as const;
+    const saved = await saveWebsiteSettings(db, s.actor, input({
+      design,
+      content: content({
+        sectionTitles: { COURSES: { title: "  আমাদের কোর্স  ", subtitle: null }, GALLERY: { title: "", subtitle: "" } },
+        announcement: { text: "Admission open", linkUrl: "#enquiry", linkLabel: "Enquire now", showUntil: "2026-12-31" },
+        social: { ...DEFAULT_CONTENT.social, facebook: "facebook.com/alo.coaching", youtube: "https://www.youtube.com/@alo" },
+      }),
+    }));
+    expect(saved.design).toEqual(design);
+    expect(saved.content).toEqual({
+      sectionTitles: { COURSES: { title: "আমাদের কোর্স", subtitle: null } },
+      announcement: { text: "Admission open", linkUrl: "#enquiry", linkLabel: "Enquire now", showUntil: "2026-12-31" },
+      social: { ...DEFAULT_CONTENT.social, facebook: "https://facebook.com/alo.coaching", youtube: "https://www.youtube.com/@alo" },
+    });
+    expect((await getWebsiteSettings(db, s.tenant.id)).content).toEqual(saved.content);
+  });
+
+  it.each([
+    [{ social: { ...DEFAULT_CONTENT.social, facebook: "https://evil.example.com/facebook.com" } }, "VALIDATION_LINK"],
+    [{ social: { ...DEFAULT_CONTENT.social, youtube: "javascript:alert(1)" } }, "VALIDATION_LINK"],
+    [{ announcement: { text: "Hi", linkUrl: "javascript:alert(1)", linkLabel: null, showUntil: null } }, "VALIDATION_LINK"],
+    [{ announcement: { text: "Hi", linkUrl: "#nowhere", linkLabel: null, showUntil: null } }, "VALIDATION_LINK"],
+    [{ announcement: { text: "Hi", linkUrl: null, linkLabel: null, showUntil: "31/12/2026" } }, "VALIDATION_DATE"],
+    [{ announcement: { text: "x".repeat(161), linkUrl: null, linkLabel: null, showUntil: null } }, "VALIDATION_TEXT"],
+    [{ sectionTitles: { COURSES: { title: "x".repeat(81), subtitle: null } } }, "VALIDATION_TEXT"],
+    [{ sectionTitles: { NOPE: { title: "x", subtitle: null } } as never }, "VALIDATION_CHOICE"],
+  ])("refuses the content %o", async (o, code) => {
+    const s = await institute();
+    await expect(saveWebsiteSettings(db, s.actor, input({ content: content(o as Partial<WebsiteContent>) }))).rejects.toMatchObject({ code });
+  });
+
+  it("drops an announcement without text, and a link's words without a link", async () => {
+    const s = await institute();
+    const saved = await saveWebsiteSettings(db, s.actor, input({ content: content({ announcement: { text: "  ", linkUrl: "#enquiry", linkLabel: "Go", showUntil: null } }) }));
+    expect(saved.content.announcement).toBeNull();
+    const again = await saveWebsiteSettings(db, s.actor, input({ content: content({ announcement: { text: "Open", linkUrl: null, linkLabel: "Go", showUntil: null } }) }));
+    expect(again.content.announcement).toEqual({ text: "Open", linkUrl: null, linkLabel: null, showUntil: null });
+  });
+
+  it("keeps the announcement off the public website after its last day", async () => {
+    const s = await institute();
+    await setModules(db, s.tenant.id, ["website"]);
+    await saveWebsiteSettings(db, s.actor, input({ content: content({ announcement: { text: "Old news", linkUrl: null, linkLabel: null, showUntil: "2020-01-01" } }) }));
+    expect((await getPublicWebsite(db, s.tenant.id))?.settings.content.announcement).toBeNull();
+    await saveWebsiteSettings(db, s.actor, input({ content: content({ announcement: { text: "Fresh news", linkUrl: null, linkLabel: null, showUntil: "2999-01-01" } }) }));
+    expect((await getPublicWebsite(db, s.tenant.id))?.settings.content.announcement?.text).toBe("Fresh news");
+  });
+
+  it("reads a row saved before W6 with empty words and the default layouts", async () => {
+    const s = await institute();
+    await saveWebsiteSettings(db, s.actor, input());
+    await testDb.update(websiteSettings).set({ content: {}, design: { palette: "OCEAN" } }).where(eq(websiteSettings.tenantId, s.tenant.id));
+    const read = await getWebsiteSettings(db, s.tenant.id);
+    expect(read.content).toEqual(DEFAULT_CONTENT);
+    expect(read.design).toMatchObject({ palette: "OCEAN", headerStyle: "SOLID", heroLayout: "THEME", language: "EN" });
   });
 });
 

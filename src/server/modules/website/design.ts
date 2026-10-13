@@ -10,6 +10,10 @@ export const WEBSITE_FONTS = [
 /** Fonts comfortable for paragraphs; display faces (Playfair, DM Serif, Oswald, Tiro, Baloo) are headings only. */
 export const BODY_FONTS = ["INTER", "POPPINS", "LATO", "NUNITO", "MONTSERRAT", "RALEWAY", "OUTFIT", "LORA", "MERRIWEATHER", "HIND_SILIGURI", "ANEK_BANGLA", "NOTO_SERIF_BENGALI"] as const;
 
+/** The sections below the hero, in the order shown; each can be turned off (D20). */
+export const WEBSITE_SECTIONS = ["ABOUT", "COURSES", "NOTICES", "GALLERY", "TESTIMONIALS", "ENQUIRY", "CONTACT"] as const;
+export type WebsiteSectionKey = (typeof WEBSITE_SECTIONS)[number];
+
 export type WebsiteTheme = (typeof WEBSITE_THEMES)[number];
 export type WebsiteFont = (typeof WEBSITE_FONTS)[number];
 export type BodyFont = (typeof BODY_FONTS)[number];
@@ -110,6 +114,29 @@ export type Density = (typeof DENSITIES)[number];
 export type Background = (typeof BACKGROUNDS)[number];
 export type Appearance = (typeof APPEARANCES)[number];
 
+// --- layout and language (D135, D140) -----------------------------------------------------------------------------
+
+/** `THEME` uses the theme's own banner; the others borrow another theme's composition. */
+export const HERO_LAYOUTS = ["THEME", "CENTRED", "SPLIT", "BANNER", "GRADIENT", "MINIMAL", "AURORA", "GLASS", "BENTO", "BRUTAL"] as const;
+export const HEADER_STYLES = ["SOLID", "GLASS", "CENTRED"] as const;
+/** How dark the shade over a banner picture is, so the heading stays readable. */
+export const HERO_OVERLAYS = ["LIGHT", "MEDIUM", "STRONG"] as const;
+export const GALLERY_LAYOUTS = ["GRID", "MASONRY", "CAROUSEL"] as const;
+export const TESTIMONIAL_LAYOUTS = ["GRID", "CAROUSEL", "SPOTLIGHT"] as const;
+export const COURSE_LAYOUTS = ["CARDS", "LIST"] as const;
+export const NOTICE_LAYOUTS = ["CARDS", "TIMELINE"] as const;
+/** The language of the site's built-in labels (D140); what the office writes is shown as written. */
+export const SITE_LANGUAGES = ["EN", "BN"] as const;
+
+export type HeroLayout = (typeof HERO_LAYOUTS)[number];
+export type HeaderStyle = (typeof HEADER_STYLES)[number];
+export type HeroOverlay = (typeof HERO_OVERLAYS)[number];
+export type GalleryLayout = (typeof GALLERY_LAYOUTS)[number];
+export type TestimonialLayout = (typeof TESTIMONIAL_LAYOUTS)[number];
+export type CourseLayout = (typeof COURSE_LAYOUTS)[number];
+export type NoticeLayout = (typeof NOTICE_LAYOUTS)[number];
+export type SiteLanguage = (typeof SITE_LANGUAGES)[number];
+
 /** Everything about the look except the theme and heading font, which have their own columns. */
 export interface WebsiteDesign {
   palette: PaletteChoice;
@@ -124,12 +151,23 @@ export interface WebsiteDesign {
   density: Density;
   background: Background;
   appearance: Appearance;
+  headerStyle: HeaderStyle;
+  heroLayout: HeroLayout;
+  heroOverlay: HeroOverlay;
+  galleryLayout: GalleryLayout;
+  testimonialLayout: TestimonialLayout;
+  courseLayout: CourseLayout;
+  noticeLayout: NoticeLayout;
+  language: SiteLanguage;
 }
 
-/** What "Apply this theme's defaults" sets. The palette is the institute's identity, so it is left alone. */
-export type ThemePreset = { headingFont: WebsiteFont } & Omit<WebsiteDesign, "palette" | "customPrimary" | "customAccent">;
+/** What picking a theme sets. The colours are the institute's identity and the language its audience: both stay. */
+export type ThemePreset = { headingFont: WebsiteFont } & Omit<WebsiteDesign, "palette" | "customPrimary" | "customAccent" | "language">;
 
-export const THEME_PRESETS: Record<WebsiteTheme, ThemePreset> = {
+type LookPreset = Pick<ThemePreset, "headingFont" | "bodyFont" | "gradient" | "textSize" | "radius" | "buttonStyle" | "cardStyle" | "density" | "background" | "appearance">;
+type LayoutPreset = Omit<ThemePreset, keyof LookPreset>;
+
+const LOOK: Record<WebsiteTheme, LookPreset> = {
   CLASSIC: { headingFont: "INTER", bodyFont: "INTER", gradient: "AUTO", textSize: "MEDIUM", radius: "MEDIUM", buttonStyle: "SOLID", cardStyle: "BORDER", density: "COMFORTABLE", background: "PLAIN", appearance: "VISITOR" },
   MODERN: { headingFont: "POPPINS", bodyFont: "INTER", gradient: "AUTO", textSize: "MEDIUM", radius: "LARGE", buttonStyle: "SOLID", cardStyle: "SHADOW", density: "SPACIOUS", background: "PLAIN", appearance: "VISITOR" },
   BOLD: { headingFont: "MONTSERRAT", bodyFont: "INTER", gradient: "AUTO", textSize: "MEDIUM", radius: "SMALL", buttonStyle: "SOLID", cardStyle: "BORDER", density: "COMFORTABLE", background: "PLAIN", appearance: "VISITOR" },
@@ -143,6 +181,27 @@ export const THEME_PRESETS: Record<WebsiteTheme, ThemePreset> = {
   AURORA: { headingFont: "POPPINS", bodyFont: "INTER", gradient: "AURORA", textSize: "MEDIUM", radius: "LARGE", buttonStyle: "GRADIENT", cardStyle: "GLASS", density: "SPACIOUS", background: "GRADIENT", appearance: "VISITOR" },
   NEO_BRUTAL: { headingFont: "SPACE_GROTESK", bodyFont: "INTER", gradient: "AUTO", textSize: "MEDIUM", radius: "NONE", buttonStyle: "BRUTAL", cardStyle: "BRUTAL", density: "COMFORTABLE", background: "PLAIN", appearance: "VISITOR" },
 };
+
+const layout = (o: Partial<LayoutPreset> = {}): LayoutPreset => ({
+  headerStyle: "SOLID", heroLayout: "THEME", heroOverlay: "MEDIUM", galleryLayout: "GRID", testimonialLayout: "GRID", courseLayout: "CARDS", noticeLayout: "CARDS", ...o,
+});
+
+const LAYOUT: Record<WebsiteTheme, LayoutPreset> = {
+  CLASSIC: layout(),
+  MODERN: layout({ testimonialLayout: "CAROUSEL" }),
+  BOLD: layout({ heroOverlay: "STRONG" }),
+  ELEGANT: layout({ headerStyle: "CENTRED", heroOverlay: "LIGHT", noticeLayout: "TIMELINE", testimonialLayout: "SPOTLIGHT" }),
+  PLAYFUL: layout({ galleryLayout: "CAROUSEL", testimonialLayout: "CAROUSEL" }),
+  MINIMAL: layout({ courseLayout: "LIST", noticeLayout: "TIMELINE" }),
+  VIBRANT: layout({ galleryLayout: "MASONRY", testimonialLayout: "CAROUSEL" }),
+  MIDNIGHT: layout({ headerStyle: "GLASS", galleryLayout: "MASONRY", testimonialLayout: "SPOTLIGHT" }),
+  GLASS: layout({ headerStyle: "GLASS", testimonialLayout: "CAROUSEL" }),
+  BENTO: layout({ galleryLayout: "MASONRY" }),
+  AURORA: layout({ headerStyle: "GLASS", testimonialLayout: "SPOTLIGHT", galleryLayout: "CAROUSEL" }),
+  NEO_BRUTAL: layout({ heroOverlay: "STRONG", noticeLayout: "TIMELINE" }),
+};
+
+export const THEME_PRESETS: Record<WebsiteTheme, ThemePreset> = Object.fromEntries(WEBSITE_THEMES.map((t) => [t, { ...LOOK[t], ...LAYOUT[t] }])) as Record<WebsiteTheme, ThemePreset>;
 
 /**
  * The look of a site that has never changed its design: the brand colour and Classic-like shapes, so that every site
@@ -161,6 +220,14 @@ export const DEFAULT_DESIGN: WebsiteDesign = {
   density: "COMFORTABLE",
   background: "PLAIN",
   appearance: "VISITOR",
+  headerStyle: "SOLID",
+  heroLayout: "THEME",
+  heroOverlay: "MEDIUM",
+  galleryLayout: "GRID",
+  testimonialLayout: "GRID",
+  courseLayout: "CARDS",
+  noticeLayout: "CARDS",
+  language: "EN",
 };
 
 /** Before Website Pro, each theme fixed its card look; a stored row without a design keeps that look. */
@@ -194,6 +261,14 @@ export function completeDesign(stored: unknown, base: WebsiteDesign = DEFAULT_DE
     density: pick(s.density, DENSITIES, base.density),
     background: pick(s.background, BACKGROUNDS, base.background),
     appearance: pick(s.appearance, APPEARANCES, base.appearance),
+    headerStyle: pick(s.headerStyle, HEADER_STYLES, base.headerStyle),
+    heroLayout: pick(s.heroLayout, HERO_LAYOUTS, base.heroLayout),
+    heroOverlay: pick(s.heroOverlay, HERO_OVERLAYS, base.heroOverlay),
+    galleryLayout: pick(s.galleryLayout, GALLERY_LAYOUTS, base.galleryLayout),
+    testimonialLayout: pick(s.testimonialLayout, TESTIMONIAL_LAYOUTS, base.testimonialLayout),
+    courseLayout: pick(s.courseLayout, COURSE_LAYOUTS, base.courseLayout),
+    noticeLayout: pick(s.noticeLayout, NOTICE_LAYOUTS, base.noticeLayout),
+    language: pick(s.language, SITE_LANGUAGES, base.language),
   };
 }
 

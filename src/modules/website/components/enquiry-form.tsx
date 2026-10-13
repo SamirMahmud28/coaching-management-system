@@ -3,13 +3,14 @@
 import { CheckCircle2, Loader2 } from "lucide-react";
 import { useRef, useState } from "react";
 import { cn } from "@/lib/utils";
+import type { EnquiryLabels } from "../i18n";
 
 // The website's admission enquiry form (D22, D129). The hidden "website" field and the time the form was opened let the
-// server drop bot submissions; the server answers the same either way.
+// server drop bot submissions; the server answers the same either way. Labels come in the site's language (D140).
 
 const field = "w-full rounded-md border bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-[var(--site-primary)]";
 
-export function EnquiryForm({ courses, card }: { courses: { id: string; name: string }[]; card: string }) {
+export function EnquiryForm({ courses, card, labels: l }: { courses: { id: string; name: string }[]; card: string; labels: EnquiryLabels }) {
   const startedAt = useRef<number | null>(null);
   const [values, setValues] = useState({ name: "", mobile: "", course_id: "", message: "", website: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -25,8 +26,8 @@ export function EnquiryForm({ courses, card }: { courses: { id: string; name: st
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     const missing: Record<string, string> = {};
-    if (!values.name.trim()) missing.name = "Please write the student's name.";
-    if (!values.mobile.trim()) missing.mobile = "Please write a mobile number.";
+    if (!values.name.trim()) missing.name = l.nameMissing;
+    if (!values.mobile.trim()) missing.mobile = l.mobileMissing;
     setErrors(missing);
     setFailure(null);
     if (Object.keys(missing).length) return;
@@ -45,12 +46,14 @@ export function EnquiryForm({ courses, card }: { courses: { id: string; name: st
       }
       const body = (await res.json().catch(() => null)) as { error?: { message?: string; details?: { field?: string } } } | null;
       const fieldName = body?.error?.details?.field;
-      const message = body?.error?.message ?? "Something went wrong. Please try again, or call us.";
-      if (fieldName === "mobile" || fieldName === "name" || fieldName === "message") setErrors({ [fieldName]: message });
+      const message = body?.error?.message ?? l.failed;
+      // The server's mobile check is the one visitors hit; in Bangla it is shown translated.
+      if (fieldName === "mobile") setErrors({ mobile: l.mobileInvalid ?? message });
+      else if (fieldName === "name" || fieldName === "message") setErrors({ [fieldName]: message });
       else if (fieldName === "courseId") setErrors({ course_id: message });
       else setFailure(message);
     } catch {
-      setFailure("Couldn't send. Check your connection and try again.");
+      setFailure(l.offline);
     } finally {
       setSending(false);
     }
@@ -60,8 +63,8 @@ export function EnquiryForm({ courses, card }: { courses: { id: string; name: st
     return (
       <div role="status" data-testid="enquiry-sent" className={cn("flex flex-col items-center gap-3 p-8 text-center", card)}>
         <CheckCircle2 aria-hidden className="size-10 text-[var(--site-primary-ink)]" />
-        <p className="text-lg font-semibold">Thank you! Your enquiry has been sent.</p>
-        <p className="text-sm text-muted-foreground">We&apos;ll call you on the number you gave us.</p>
+        <p className="text-lg font-semibold">{l.thanks}</p>
+        <p className="text-sm text-muted-foreground">{l.thanksLine}</p>
       </div>
     );
   }
@@ -74,18 +77,18 @@ export function EnquiryForm({ courses, card }: { courses: { id: string; name: st
     );
 
   return (
-    <form onSubmit={submit} noValidate className={cn("space-y-4 p-6", card)} aria-label="Admission enquiry">
+    <form onSubmit={submit} noValidate className={cn("space-y-4 p-6", card)} aria-label={l.form}>
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
           <label htmlFor="enq-name" className="text-sm font-medium">
-            Student&apos;s name <span className="text-destructive">*</span>
+            {l.name} <span className="text-destructive">*</span>
           </label>
           <input id="enq-name" className={field} autoComplete="name" maxLength={100} value={values.name} onChange={set("name")} aria-invalid={!!errors.name} aria-describedby={errors.name ? "enq-name-error" : undefined} />
           {error("name")}
         </div>
         <div className="space-y-1.5">
           <label htmlFor="enq-mobile" className="text-sm font-medium">
-            Mobile number <span className="text-destructive">*</span>
+            {l.mobile} <span className="text-destructive">*</span>
           </label>
           <input id="enq-mobile" className={field} type="tel" inputMode="tel" autoComplete="tel" placeholder="01XXXXXXXXX" maxLength={20} value={values.mobile} onChange={set("mobile")} aria-invalid={!!errors.mobile} aria-describedby={errors.mobile ? "enq-mobile-error" : undefined} />
           {error("mobile")}
@@ -94,10 +97,10 @@ export function EnquiryForm({ courses, card }: { courses: { id: string; name: st
       {courses.length > 0 && (
         <div className="space-y-1.5">
           <label htmlFor="enq-course" className="text-sm font-medium">
-            Course
+            {l.course}
           </label>
           <select id="enq-course" className={field} value={values.course_id} onChange={set("course_id")}>
-            <option value="">Not sure yet</option>
+            <option value="">{l.notSure}</option>
             {courses.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.name}
@@ -109,9 +112,9 @@ export function EnquiryForm({ courses, card }: { courses: { id: string; name: st
       )}
       <div className="space-y-1.5">
         <label htmlFor="enq-message" className="text-sm font-medium">
-          Message
+          {l.message}
         </label>
-        <textarea id="enq-message" className={field} rows={4} maxLength={1000} placeholder="Class, preferred batch time, or any question" value={values.message} onChange={set("message")} />
+        <textarea id="enq-message" className={field} rows={4} maxLength={1000} placeholder={l.messageHint} value={values.message} onChange={set("message")} />
         {error("message")}
       </div>
       {/* Hidden from people; bots that fill every field give themselves away. */}
@@ -125,7 +128,7 @@ export function EnquiryForm({ courses, card }: { courses: { id: string; name: st
         </p>
       )}
       <button type="submit" disabled={sending} className="site-btn disabled:opacity-60">
-        {sending && <Loader2 aria-hidden className="size-4 animate-spin" />} Send enquiry
+        {sending && <Loader2 aria-hidden className="size-4 animate-spin" />} {l.send}
       </button>
     </form>
   );

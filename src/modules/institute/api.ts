@@ -1,6 +1,8 @@
 import type {
-  Appearance, Background, BodyFont, ButtonStyle, CardStyle, Density, GradientChoice, PaletteChoice, Radius, TextSize, WebsiteFont, WebsiteTheme,
+  Appearance, Background, BodyFont, ButtonStyle, CardStyle, CourseLayout, Density, GalleryLayout, GradientChoice, HeaderStyle, HeroLayout, HeroOverlay,
+  NoticeLayout, PaletteChoice, Radius, SiteLanguage, TestimonialLayout, TextSize, WebsiteFont, WebsiteTheme,
 } from "@/server/modules/website/design";
+import type { SocialNetwork } from "@/server/modules/website/site-content";
 import { apiFetch } from "@/lib/api-client";
 import type { AuditLogRow } from "@/components/shared/audit-log-table";
 import type { ModuleKey } from "@/server/core/modules/registry";
@@ -1050,12 +1052,28 @@ export interface WebsiteDesignWire {
   density: Density;
   background: Background;
   appearance: Appearance;
+  header_style: HeaderStyle;
+  hero_layout: HeroLayout;
+  hero_overlay: HeroOverlay;
+  gallery_layout: GalleryLayout;
+  testimonial_layout: TestimonialLayout;
+  course_layout: CourseLayout;
+  notice_layout: NoticeLayout;
+  language: SiteLanguage;
+}
+
+/** Section titles, the announcement bar and social links on the wire (D138, D140). */
+export interface WebsiteContentWire {
+  section_titles: Partial<Record<WebsiteSectionKey, { title: string | null; subtitle: string | null }>>;
+  announcement: { text: string; link_url: string | null; link_label: string | null; show_until: string | null } | null;
+  social: Record<SocialNetwork, string | null>;
 }
 
 export interface WebsiteSettingsBody {
   theme: WebsiteTheme;
   heading_font: WebsiteFont;
   design: WebsiteDesignWire;
+  content: WebsiteContentWire;
   sections: { key: WebsiteSectionKey; enabled: boolean }[];
   hero_heading: string | null;
   hero_subheading: string | null;

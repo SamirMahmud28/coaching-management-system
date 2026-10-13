@@ -16,7 +16,12 @@ import { isModuleActive } from "../entitlements/service";
 import * as content from "./content";
 import * as enquiries from "./enquiries";
 import { isPublicWebsiteImage } from "./public";
-import { APPEARANCES, BACKGROUNDS, BODY_FONTS, BUTTON_STYLES, CARD_STYLES, DENSITIES, GRADIENT_CHOICES, PALETTE_CHOICES, RADII, TEXT_SIZES } from "./design";
+import { toCamelCaseKeys } from "../../core/http/case";
+import {
+  APPEARANCES, BACKGROUNDS, BODY_FONTS, BUTTON_STYLES, CARD_STYLES, COURSE_LAYOUTS, DENSITIES, GALLERY_LAYOUTS, GRADIENT_CHOICES, HEADER_STYLES, HERO_LAYOUTS,
+  HERO_OVERLAYS, NOTICE_LAYOUTS, PALETTE_CHOICES, RADII, SITE_LANGUAGES, TESTIMONIAL_LAYOUTS, TEXT_SIZES, type WebsiteDesign,
+} from "./design";
+import { SOCIAL_NETWORKS, type WebsiteContent } from "./site-content";
 import { HERO_BUTTONS, WEBSITE_FONTS, WEBSITE_THEMES, getWebsiteSettings, saveWebsiteSettings } from "./settings";
 
 export interface WebsiteHttpDeps {
@@ -41,11 +46,25 @@ const designBody = z.object({
   density: z.enum(DENSITIES),
   background: z.enum(BACKGROUNDS),
   appearance: z.enum(APPEARANCES),
+  header_style: z.enum(HEADER_STYLES),
+  hero_layout: z.enum(HERO_LAYOUTS),
+  hero_overlay: z.enum(HERO_OVERLAYS),
+  gallery_layout: z.enum(GALLERY_LAYOUTS),
+  testimonial_layout: z.enum(TESTIMONIAL_LAYOUTS),
+  course_layout: z.enum(COURSE_LAYOUTS),
+  notice_layout: z.enum(NOTICE_LAYOUTS),
+  language: z.enum(SITE_LANGUAGES),
+});
+const contentBody = z.object({
+  section_titles: z.partialRecord(z.enum(WEBSITE_SECTIONS), z.object({ title: optionalText(200), subtitle: optionalText(400) })),
+  announcement: z.object({ text: z.string().max(400), link_url: optionalText(400), link_label: optionalText(80), show_until: optionalText(10) }).nullable(),
+  social: z.object(Object.fromEntries(SOCIAL_NETWORKS.map((n) => [n, optionalText(400)])) as Record<(typeof SOCIAL_NETWORKS)[number], ReturnType<typeof optionalText>>),
 });
 const settingsBody = z.object({
   theme: z.enum(WEBSITE_THEMES),
   heading_font: z.enum(WEBSITE_FONTS),
   design: designBody,
+  content: contentBody,
   sections: z.array(z.object({ key: z.enum(WEBSITE_SECTIONS), enabled: z.boolean() })).max(WEBSITE_SECTIONS.length),
   hero_heading: optionalText(200),
   hero_subheading: optionalText(400),
@@ -115,11 +134,8 @@ export function createWebsiteHandlers({ db, auth, host, storage }: WebsiteHttpDe
           theme: b.theme, headingFont: b.heading_font, sections: b.sections, heroHeading: b.hero_heading ?? null, heroSubheading: b.hero_subheading ?? null,
           heroImageFileId: b.hero_image_file_id ?? null, heroButton: b.hero_button, aboutHeading: b.about_heading ?? null, aboutText: b.about_text ?? null,
           aboutImageFileId: b.about_image_file_id ?? null,
-          design: {
-            palette: b.design.palette, customPrimary: b.design.custom_primary ?? null, customAccent: b.design.custom_accent ?? null, gradient: b.design.gradient,
-            bodyFont: b.design.body_font, textSize: b.design.text_size, radius: b.design.radius, buttonStyle: b.design.button_style, cardStyle: b.design.card_style,
-            density: b.design.density, background: b.design.background, appearance: b.design.appearance,
-          },
+          design: toCamelCaseKeys<WebsiteDesign>({ ...b.design, custom_primary: b.design.custom_primary ?? null, custom_accent: b.design.custom_accent ?? null }),
+          content: toCamelCaseKeys<WebsiteContent>(b.content),
         });
         return json(await withBrand(actor.tenantId, saved));
       }),

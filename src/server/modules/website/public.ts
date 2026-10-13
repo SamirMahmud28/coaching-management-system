@@ -4,6 +4,7 @@ import type { DbOrTx } from "../../core/db/types";
 import { isModuleActive } from "../entitlements/service";
 import { getPublicCatalog } from "../portal/service";
 import { listGallery, listTestimonials, publicNotices } from "./content";
+import { todayInDhaka } from "../../../lib/dates";
 import { getWebsiteSettings } from "./settings";
 
 // What visitors see at `<sub>.<domain>/` while the Website module is on (D21, D124–D133). Callers check the institute's
@@ -27,6 +28,8 @@ export async function getPublicWebsite(db: DbOrTx, tenantId: string) {
       theme: settings.theme,
       headingFont: settings.headingFont,
       design: settings.design,
+      /** The announcement is left out after its last day (D138). */
+      content: { ...settings.content, announcement: settings.content.announcement && (!settings.content.announcement.showUntil || settings.content.announcement.showUntil >= todayInDhaka()) ? settings.content.announcement : null },
       sections: settings.sections,
       heroHeading: settings.heroHeading,
       heroSubheading: settings.heroSubheading,

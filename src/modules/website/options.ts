@@ -1,7 +1,8 @@
 import type { WebsiteSectionKey } from "@/server/core/db/schema/website";
 import { BODY_FONTS } from "@/server/modules/website/design";
 import type {
-  Appearance, Background, BodyFont, ButtonStyle, CardStyle, Density, PaletteFamily, Radius, TextSize, WebsiteFont, WebsiteTheme,
+  Appearance, Background, BodyFont, ButtonStyle, CardStyle, CourseLayout, Density, GalleryLayout, HeaderStyle, HeroLayout, HeroOverlay, NoticeLayout, PaletteFamily,
+  Radius, SiteLanguage, TestimonialLayout, TextSize, WebsiteFont, WebsiteTheme,
 } from "@/server/modules/website/design";
 
 // Labels shared by the website editor and the public site (D124, D131, D135, D136).
@@ -112,6 +113,58 @@ export const APPEARANCE_OPTIONS: { value: Appearance; label: string; description
   { value: "VISITOR", label: "Visitor's choice", description: "Follows each visitor's phone or computer, with a light/dark switch." },
   { value: "LIGHT", label: "Always light", description: "No switch." },
   { value: "DARK", label: "Always dark", description: "No switch." },
+];
+
+export const HEADER_STYLE_OPTIONS: { value: HeaderStyle; label: string }[] = [
+  { value: "SOLID", label: "Classic bar" },
+  { value: "GLASS", label: "Frosted glass" },
+  { value: "CENTRED", label: "Centred name" },
+];
+
+export const HERO_LAYOUT_OPTIONS: { value: HeroLayout; label: string }[] = [
+  { value: "THEME", label: "The theme's own" },
+  { value: "CENTRED", label: "Centred" },
+  { value: "SPLIT", label: "Picture beside" },
+  { value: "BANNER", label: "Colour band" },
+  { value: "GRADIENT", label: "Gradient band" },
+  { value: "MINIMAL", label: "Big heading" },
+  { value: "AURORA", label: "Colour clouds" },
+  { value: "GLASS", label: "Glass panel" },
+  { value: "BENTO", label: "Tiles" },
+  { value: "BRUTAL", label: "Outlined band" },
+];
+
+export const HERO_OVERLAY_OPTIONS: { value: HeroOverlay; label: string }[] = [
+  { value: "LIGHT", label: "Light" },
+  { value: "MEDIUM", label: "Medium" },
+  { value: "STRONG", label: "Strong" },
+];
+
+export const GALLERY_LAYOUT_OPTIONS: { value: GalleryLayout; label: string }[] = [
+  { value: "GRID", label: "Square grid" },
+  { value: "MASONRY", label: "Masonry" },
+  { value: "CAROUSEL", label: "Swipe row" },
+];
+
+export const TESTIMONIAL_LAYOUT_OPTIONS: { value: TestimonialLayout; label: string }[] = [
+  { value: "GRID", label: "Cards" },
+  { value: "CAROUSEL", label: "Swipe row" },
+  { value: "SPOTLIGHT", label: "Spotlight" },
+];
+
+export const COURSE_LAYOUT_OPTIONS: { value: CourseLayout; label: string }[] = [
+  { value: "CARDS", label: "Cards" },
+  { value: "LIST", label: "List" },
+];
+
+export const NOTICE_LAYOUT_OPTIONS: { value: NoticeLayout; label: string }[] = [
+  { value: "CARDS", label: "Cards" },
+  { value: "TIMELINE", label: "Timeline" },
+];
+
+export const LANGUAGE_OPTIONS: { value: SiteLanguage; label: string; sample: string }[] = [
+  { value: "EN", label: "English", sample: "Courses · Notices · Admission enquiry · Contact us" },
+  { value: "BN", label: "বাংলা", sample: "কোর্সসমূহ · নোটিশ · ভর্তি সংক্রান্ত জিজ্ঞাসা · যোগাযোগ করুন" },
 ];
 
 export const HERO_BUTTON_OPTIONS: { value: HeroButton; label: string }[] = [

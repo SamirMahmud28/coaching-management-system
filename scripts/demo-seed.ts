@@ -28,7 +28,8 @@ import { saveInstitutionProfile } from "../src/server/modules/settings/service";
 import { admitStudent } from "../src/server/modules/students/service";
 import * as websiteContent from "../src/server/modules/website/content";
 import * as enquiries from "../src/server/modules/website/enquiries";
-import { DEFAULT_DESIGN, THEME_PRESETS } from "../src/server/modules/website/design";
+import { THEME_PRESETS, completeDesign } from "../src/server/modules/website/design";
+import { DEFAULT_CONTENT } from "../src/server/modules/website/site-content";
 import { DEFAULT_SECTIONS, saveWebsiteSettings } from "../src/server/modules/website/settings";
 
 // npm run demo:seed [-- --subdomain=demo]
@@ -208,7 +209,12 @@ async function main() {
     const upload = async (label: string, from: string, to: string, w?: number, h?: number) =>
       (await uploadFile(db, storage, actor, { category: "WEBSITE_IMAGE", filename: `${label}.jpg`, bytes: await picture(label, from, to, w, h) })).id;
     await saveWebsiteSettings(db, actor, {
-      theme: "MODERN", headingFont: "POPPINS", design: { ...DEFAULT_DESIGN, ...THEME_PRESETS.MODERN, palette: "PADMA" }, sections: DEFAULT_SECTIONS, heroHeading: "Bright results start here", heroSubheading: "SSC and HSC science coaching in Mirpur, with small batches and weekly tests.",
+      theme: "MODERN", headingFont: "POPPINS", design: completeDesign({ ...THEME_PRESETS.MODERN, palette: "PADMA" }), sections: DEFAULT_SECTIONS,
+      content: {
+        ...DEFAULT_CONTENT,
+        announcement: { text: "Admission open for HSC 2027: limited seats in the morning batch.", linkUrl: "#enquiry", linkLabel: "Enquire now", showUntil: null },
+        social: { ...DEFAULT_CONTENT.social, facebook: "https://www.facebook.com/alo.coaching.demo", youtube: "https://www.youtube.com/@alo-coaching-demo" },
+      }, heroHeading: "Bright results start here", heroSubheading: "SSC and HSC science coaching in Mirpur, with small batches and weekly tests.",
       heroImageFileId: await upload("Alo Coaching", "#0f766e", "#155e75"), heroButton: "ENQUIRE", aboutHeading: null,
       aboutText: "Since 2012 we have helped Mirpur's students prepare for their SSC and HSC science exams.\n\nEvery batch has at most 25 students, a weekly test, and teachers who know each student by name.",
       aboutImageFileId: await upload("Our classroom", "#1e3a8a", "#0f766e", 1200, 900),

@@ -2,7 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 import sharp from "sharp";
 import { clearRateLimits, instituteUrl, seedInstitute, seedTeaching, setInstituteModules, setInstituteProfile } from "./helpers";
 
-// One serial story for the Website module; each milestone (W1–W3) adds its steps.
+// One serial story for the Website module; each milestone (W1–W3, then Website Pro W5–W9) adds its steps.
 test.describe.configure({ mode: "serial" });
 
 const INSTITUTE = {
@@ -76,7 +76,7 @@ test("W1 + W5: the Owner designs the website and it is public at once (D124, D12
   await page.getByRole("radiogroup", { name: "Background" }).getByRole("radio", { name: /Nakshi Kantha/ }).click();
   await page.getByRole("radio", { name: /Always dark/ }).click();
 
-  await page.getByRole("tab", { name: "Banner & About" }).click();
+  await page.getByRole("tab", { name: "Content" }).click();
   await page.getByLabel("Heading", { exact: true }).first().fill("Your path to GPA 5");
   await page.getByLabel("Line under the heading").fill("SSC and HSC coaching in Mirpur since 2010");
   await page.locator("#hero_image").setInputFiles(await picture());
@@ -209,4 +209,52 @@ test("Website disappears while the module is off and the basic page returns, wit
   }
   await page.goto(url("/"));
   await expect(page.getByTestId("hero-heading")).toHaveText("Your path to GPA 5");
+});
+
+test("W6: the Owner sets the layout, writes an announcement, adds Facebook and switches the site to Bangla (D135, D138, D140)", async ({ page }) => {
+  await signInAsOwner(page);
+  await page.getByRole("link", { name: "Website", exact: true }).click();
+
+  await page.getByRole("tab", { name: "Layout" }).click();
+  await page.getByRole("radiogroup", { name: "Header" }).getByRole("radio", { name: /Centred name/ }).click();
+  await page.getByRole("radiogroup", { name: "Banner layout" }).getByRole("radio", { name: /Glass panel/ }).click();
+  await page.getByRole("radiogroup", { name: "Notices" }).getByRole("radio", { name: /Timeline/ }).click();
+  await page.getByRole("radiogroup", { name: "Testimonials" }).getByRole("radio", { name: /Swipe row/ }).click();
+
+  await page.getByRole("tab", { name: "Content" }).click();
+  await page.getByRole("radiogroup", { name: "Website language" }).getByRole("radio", { name: /বাংলা/ }).click();
+  await page.getByLabel("Announcement", { exact: true }).fill("ভর্তি চলছে: এইচএসসি ২০২৭");
+  await page.getByLabel("Link", { exact: true }).fill("#enquiry");
+  await page.getByLabel("Link words").fill("যোগাযোগ করুন");
+  await page.getByLabel("Facebook").fill("facebook.com/prottasha.coaching");
+
+  await page.getByRole("tab", { name: "Sections" }).click();
+  await page.getByRole("button", { name: "Rename Gallery" }).click();
+  await page.getByLabel("Heading", { exact: true }).fill("আমাদের মুহূর্তগুলো");
+
+  await page.getByRole("button", { name: "Save website" }).click();
+  await expect(page.getByText("Website saved. It's public now.")).toBeVisible();
+
+  await page.goto(url("/"));
+  const site = page.getByTestId("website");
+  await expect(site).toHaveAttribute("lang", "bn");
+  await expect(site).toHaveAttribute("data-site-header", "CENTRED");
+  await expect(page.getByTestId("announcement")).toContainText("ভর্তি চলছে: এইচএসসি ২০২৭");
+  await expect(page.getByTestId("announcement").getByRole("link", { name: /যোগাযোগ করুন/ })).toHaveAttribute("href", "#enquiry");
+  await expect(page.getByRole("link", { name: "Facebook" }).first()).toHaveAttribute("href", "https://facebook.com/prottasha.coaching");
+  await expect(page.getByRole("heading", { name: "আমাদের মুহূর্তগুলো" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "ভর্তি সংক্রান্ত জিজ্ঞাসা" })).toBeVisible();
+  await expect(page.getByTestId("section-notices").locator("ol")).toHaveCount(1);
+  await expect(page.getByRole("region", { name: "Welcome" }).locator(".backdrop-blur-xl")).toHaveCount(1);
+
+  // A visitor closes the announcement; it stays closed on the next page view of this visit.
+  await page.getByTestId("announcement").getByRole("button", { name: "বন্ধ করুন" }).click();
+  await expect(page.getByTestId("announcement")).toHaveCount(0);
+  await page.reload();
+  await expect(page.getByTestId("announcement")).toHaveCount(0);
+
+  // The enquiry form speaks Bangla too.
+  const form = page.getByRole("form", { name: "ভর্তি সংক্রান্ত জিজ্ঞাসা" });
+  await form.getByRole("button", { name: "পাঠান" }).click();
+  await expect(form.getByText("শিক্ষার্থীর নাম লিখুন।")).toBeVisible();
 });

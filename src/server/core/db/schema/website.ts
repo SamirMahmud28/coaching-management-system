@@ -3,7 +3,7 @@ import { sql } from "drizzle-orm";
 import { courses } from "./academic";
 import { files, tenants, users } from "./core";
 import { students } from "./students";
-import { WEBSITE_FONTS, WEBSITE_THEMES } from "../../../modules/website/design";
+import { WEBSITE_FONTS, WEBSITE_THEMES, type WebsiteSectionKey } from "../../../modules/website/design";
 
 // Website (paid module `website`): D13, D19–D23, D124–D133. The themed public site at `<sub>.<domain>/`, its notices,
 // gallery and testimonials, and the admission enquiry inbox. Website Pro (D135–D141) adds the `design` settings. Every save is public at once (D126). Image files are
@@ -14,9 +14,7 @@ export const websiteFontEnum = pgEnum("website_font", WEBSITE_FONTS);
 export const heroButtonEnum = pgEnum("website_hero_button", ["ENQUIRE", "CALL", "NONE"]);
 export const enquiryStatusEnum = pgEnum("enquiry_status", ["NEW", "CONTACTED", "CONVERTED", "CLOSED"]);
 
-/** The sections below the hero, in the order shown; each can be turned off (D20). */
-export const WEBSITE_SECTIONS = ["ABOUT", "COURSES", "NOTICES", "GALLERY", "TESTIMONIALS", "ENQUIRY", "CONTACT"] as const;
-export type WebsiteSectionKey = (typeof WEBSITE_SECTIONS)[number];
+export { WEBSITE_SECTIONS, type WebsiteSectionKey } from "../../../modules/website/design";
 export type WebsiteSectionSetting = { key: WebsiteSectionKey; enabled: boolean };
 
 /** One row per institute, created on first save; until then the defaults in `website/settings.ts` apply. */
@@ -34,6 +32,8 @@ export const websiteSettings = pgTable("website_settings", {
   aboutImageFileId: uuid("about_image_file_id"),
   /** The look beyond theme and heading font (D135, D136), validated and completed in `website/design.ts`. */
   design: jsonb("design").$type<object>().notNull().default({}),
+  /** Section titles, the announcement bar and social links (D138, D140), validated and completed in `website/site-content.ts`. */
+  content: jsonb("content").$type<object>().notNull().default({}),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   updatedBy: uuid("updated_by"),
 }, (t) => [

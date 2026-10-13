@@ -14,3 +14,17 @@ export function toSnakeCaseKeys<T>(value: T): unknown {
   }
   return value;
 }
+
+/** The reverse of `toSnakeCaseKeys`, for request bodies: snake_case keys become camelCase; constant-style keys stay. */
+export function toCamelCaseKeys<T>(value: unknown): T {
+  if (Array.isArray(value)) return value.map((v) => toCamelCaseKeys(v)) as T;
+  if (value !== null && typeof value === "object" && Object.getPrototypeOf(value) === Object.prototype) {
+    const out: Record<string, unknown> = {};
+    for (const [key, val] of Object.entries(value as Record<string, unknown>)) {
+      const name = /^[A-Z][A-Z0-9_]*$/.test(key) ? key : key.replace(/_([a-z0-9])/g, (_, c: string) => c.toUpperCase());
+      out[name] = toCamelCaseKeys(val);
+    }
+    return out as T;
+  }
+  return value as T;
+}

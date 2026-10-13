@@ -19,21 +19,17 @@ import type { WebsiteDesignWire } from "../../api";
 // Controls for the website's look (D135, D136). There is no live preview of the whole site (D139): instead every
 // choice is shown as a swatch, a sample in its own font, or a small drawing in the institute's colours.
 
-export const fromWire = (d: WebsiteDesignWire): WebsiteDesign => ({
-  palette: d.palette, customPrimary: d.custom_primary, customAccent: d.custom_accent, gradient: d.gradient, bodyFont: d.body_font, textSize: d.text_size,
-  radius: d.radius, buttonStyle: d.button_style, cardStyle: d.card_style, density: d.density, background: d.background, appearance: d.appearance,
-});
+const toCamel = (k: string) => k.replace(/_([a-z])/g, (_, c: string) => c.toUpperCase());
+const toSnake = (k: string) => k.replace(/[A-Z]/g, (c) => `_${c.toLowerCase()}`);
 
-/** The theme's preset on the wire, keeping the colours (the institute's identity). */
+/** The design settings as the server and the public site name them. */
+export const fromWire = (d: WebsiteDesignWire): WebsiteDesign => Object.fromEntries(Object.entries(d).map(([k, v]) => [toCamel(k), v])) as unknown as WebsiteDesign;
+
+/** The theme's preset on the wire, keeping the colours (the institute's identity) and the language (its audience). */
 export function presetWire(theme: WebsiteTheme, current: WebsiteDesignWire): { heading_font: WebsiteFont; design: WebsiteDesignWire } {
-  const p = THEME_PRESETS[theme];
-  return {
-    heading_font: p.headingFont,
-    design: {
-      ...current, gradient: p.gradient, body_font: p.bodyFont, text_size: p.textSize, radius: p.radius, button_style: p.buttonStyle, card_style: p.cardStyle,
-      density: p.density, background: p.background, appearance: p.appearance,
-    },
-  };
+  const { headingFont, ...preset } = THEME_PRESETS[theme];
+  const wire = Object.fromEntries(Object.entries(preset).map(([k, v]) => [toSnake(k), v])) as Partial<WebsiteDesignWire>;
+  return { heading_font: headingFont, design: { ...current, ...wire } };
 }
 
 // --- the style sample -------------------------------------------------------------------------------------------
@@ -67,7 +63,7 @@ export function StyleSample({ theme, headingFont, design, brand, size }: SampleP
       )}
     >
       {layer && <div className={cn("absolute inset-0 -z-10", layer.className)} style={layer.style} />}
-      <MiniHero kind={sig.hero} thumb={thumb} title={cn("site-heading leading-tight", sig.heroTitle.includes("uppercase") && "uppercase", sig.heroTitle.includes("font-black") || sig.heroTitle.includes("extrabold") ? "font-extrabold" : "font-bold")} />
+      <MiniHero kind={design.heroLayout === "THEME" ? sig.hero : design.heroLayout} thumb={thumb} title={cn("site-heading leading-tight", sig.heroTitle.includes("uppercase") && "uppercase", sig.heroTitle.includes("font-black") || sig.heroTitle.includes("extrabold") ? "font-extrabold" : "font-bold")} />
       <div className={cn("grid grid-cols-2", thumb ? "gap-1.5 p-2" : "gap-3 p-4")}>
         {[0, 1].map((i) => (
           <div key={i} className={cn("site-card", thumb ? "space-y-1 p-1.5" : "space-y-1.5 p-3")}>
@@ -77,6 +73,16 @@ export function StyleSample({ theme, headingFont, design, brand, size }: SampleP
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+/** Just the banner in one composition, for the banner layout picker. */
+export function HeroThumb({ kind, theme, headingFont, design, brand }: { kind: HeroKind; theme: WebsiteTheme; headingFont: WebsiteFont; design: WebsiteDesign; brand: string | null }) {
+  const style = siteVariables(design, brand, FONT_FAMILY[headingFont], FONT_FAMILY[design.bodyFont]);
+  return (
+    <div aria-hidden data-website="" data-site-button={design.buttonStyle} data-site-card={design.cardStyle} style={style} className={cn("overflow-hidden rounded-md border bg-background text-foreground", design.appearance === "DARK" && "dark")}>
+      <MiniHero kind={kind} thumb title={cn("site-heading font-bold leading-tight", THEMES[theme].heroTitle.includes("uppercase") && "uppercase")} />
     </div>
   );
 }

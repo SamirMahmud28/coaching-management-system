@@ -219,7 +219,12 @@ const HANDLERS: Entry[] = [
   { factory: "website", name: "getSettings", method: "GET", permission: "website.manage" },
   { factory: "website", name: "saveSettings", method: "PUT", permission: "website.manage", body: {
       theme: "BOLD", heading_font: "INTER", sections: [], hero_button: "NONE",
-      design: { palette: "BRAND", gradient: "AUTO", body_font: "INTER", text_size: "MEDIUM", radius: "MEDIUM", button_style: "SOLID", card_style: "BORDER", density: "COMFORTABLE", background: "PLAIN", appearance: "VISITOR" },
+      design: {
+        palette: "BRAND", gradient: "AUTO", body_font: "INTER", text_size: "MEDIUM", radius: "MEDIUM", button_style: "SOLID", card_style: "BORDER", density: "COMFORTABLE", background: "PLAIN",
+        appearance: "VISITOR", header_style: "SOLID", hero_layout: "THEME", hero_overlay: "MEDIUM", gallery_layout: "GRID", testimonial_layout: "GRID", course_layout: "CARDS",
+        notice_layout: "CARDS", language: "EN",
+      },
+      content: { section_titles: {}, announcement: null, social: {} },
     } },
   { factory: "website", name: "listNotices", method: "GET", permission: "website.manage" },
   { factory: "website", name: "createNotice", method: "POST", permission: "website.manage", body: { title: "Matrix notice", body: "Text" } },

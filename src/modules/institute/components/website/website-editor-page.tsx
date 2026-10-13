@@ -3,76 +3,30 @@
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowDown, ArrowUp, ExternalLink, Loader2 } from "lucide-react";
+import { ExternalLink, Loader2 } from "lucide-react";
 import Link from "next/link";
-import { Controller, useForm, useWatch } from "react-hook-form";
-import { z } from "zod";
+import { useForm, useWatch } from "react-hook-form";
 import { FormField } from "@/components/shared/form-field";
-import { ImageField } from "@/components/shared/image-field";
 import { PageHeader } from "@/components/shared/page-header";
 import { ErrorState, LoadingState } from "@/components/shared/states";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
 import { submitForm } from "@/lib/feedback";
 import { cn } from "@/lib/utils";
 import { HowThisWorks } from "@/modules/institute/help/how-this-works";
 import {
-  APPEARANCE_OPTIONS, BODY_FONT_OPTIONS, BUTTON_STYLE_OPTIONS, CARD_STYLE_OPTIONS, DENSITY_OPTIONS, FONT_OPTIONS, HERO_BUTTON_OPTIONS, RADIUS_OPTIONS,
-  SECTION_LABELS, TEXT_SIZE_OPTIONS, THEME_OPTIONS,
+  APPEARANCE_OPTIONS, BODY_FONT_OPTIONS, BUTTON_STYLE_OPTIONS, CARD_STYLE_OPTIONS, DENSITY_OPTIONS, FONT_OPTIONS, RADIUS_OPTIONS, TEXT_SIZE_OPTIONS, THEME_OPTIONS,
 } from "@/modules/website/options";
 import { siteColours } from "@/modules/website/tokens";
-import {
-  APPEARANCES, BACKGROUNDS, BODY_FONTS, BUTTON_STYLES, CARD_STYLES, DENSITIES, GRADIENT_CHOICES, PALETTE_CHOICES, RADII, TEXT_SIZES, WEBSITE_FONTS, WEBSITE_THEMES,
-} from "@/server/modules/website/design";
-import { websiteApi, type WebsiteDesignWire, type WebsiteSettingsBody, type WebsiteSettingsRow } from "../../api";
+import { websiteApi, type WebsiteDesignWire, type WebsiteSettingsRow } from "../../api";
 import { instituteKeys } from "../../keys";
 import { BackgroundPicker, FontSelect, fromWire, GradientPicker, PalettePicker, presetWire, Segmented, SiteScope, StyleSample, ThemePicker } from "./design-controls";
+import { editorSchema, toBody, toEditorValues, type EditorValues } from "./editor-schema";
+import { ContentTab, LayoutTab, SectionsTab } from "./editor-tabs";
 import { WebsiteTabs } from "./website-tabs";
 
-const hex = z.string().regex(/^#[0-9a-fA-F]{6}$/, "Use a colour like #1d4ed8.").nullable();
-const schema = z
-  .object({
-    theme: z.enum(WEBSITE_THEMES),
-    heading_font: z.enum(WEBSITE_FONTS),
-    design: z.object({
-      palette: z.enum(PALETTE_CHOICES),
-      custom_primary: hex,
-      custom_accent: hex,
-      gradient: z.enum(GRADIENT_CHOICES),
-      body_font: z.enum(BODY_FONTS),
-      text_size: z.enum(TEXT_SIZES),
-      radius: z.enum(RADII),
-      button_style: z.enum(BUTTON_STYLES),
-      card_style: z.enum(CARD_STYLES),
-      density: z.enum(DENSITIES),
-      background: z.enum(BACKGROUNDS),
-      appearance: z.enum(APPEARANCES),
-    }),
-    sections: z.array(z.object({ key: z.enum(["ABOUT", "COURSES", "NOTICES", "GALLERY", "TESTIMONIALS", "ENQUIRY", "CONTACT"]), enabled: z.boolean() })),
-    hero_heading: z.string().trim().max(120, "At most 120 characters."),
-    hero_subheading: z.string().trim().max(250, "At most 250 characters."),
-    hero_image_file_id: z.string(),
-    hero_button: z.enum(["ENQUIRE", "CALL", "NONE"]),
-    about_heading: z.string().trim().max(120, "At most 120 characters."),
-    about_text: z.string().trim().max(3000, "At most 3000 characters."),
-    about_image_file_id: z.string(),
-  })
-  .refine((v) => v.design.palette !== "CUSTOM" || !!v.design.custom_primary, { message: "Choose your main colour.", path: ["design", "custom_primary"] });
-type Values = z.infer<typeof schema>;
-
-const toValues = (s: WebsiteSettingsRow): Values => ({
-  theme: s.theme, heading_font: s.heading_font, design: s.design, sections: s.sections, hero_heading: s.hero_heading ?? "", hero_subheading: s.hero_subheading ?? "",
-  hero_image_file_id: s.hero_image_file_id ?? "", hero_button: s.hero_button, about_heading: s.about_heading ?? "", about_text: s.about_text ?? "",
-  about_image_file_id: s.about_image_file_id ?? "",
-});
-const orNull = (v: string) => (v.trim() === "" ? null : v.trim());
-
-/** The website's look, welcome banner, About text and sections (`website.manage`, D124–D141). Saves are public at once (D126). */
+/** The website's look, layout, words and sections (`website.manage`, D124–D141). Saves are public at once (D126, D139). */
 export function WebsiteEditorPage() {
   const settings = useQuery({ queryKey: instituteKeys.website("settings"), queryFn: websiteApi.settings });
   return (
@@ -97,10 +51,10 @@ export function WebsiteEditorPage() {
 
 function Editor({ settings }: { settings: WebsiteSettingsRow }) {
   const queryClient = useQueryClient();
-  const form = useForm<Values>({ resolver: zodResolver(schema), defaultValues: toValues(settings) });
+  const form = useForm<EditorValues>({ resolver: zodResolver(editorSchema), defaultValues: toEditorValues(settings) });
   const errors = form.formState.errors;
   const brand = settings.brand;
-  const [undo, setUndo] = useState<{ theme: Values["theme"]; heading_font: Values["heading_font"]; design: WebsiteDesignWire } | null>(null);
+  const [undo, setUndo] = useState<{ theme: EditorValues["theme"]; heading_font: EditorValues["heading_font"]; design: WebsiteDesignWire } | null>(null);
 
   const theme = useWatch({ control: form.control, name: "theme" });
   const headingFont = useWatch({ control: form.control, name: "heading_font" });
@@ -109,8 +63,8 @@ function Editor({ settings }: { settings: WebsiteSettingsRow }) {
   const setDesign = (patch: Partial<WebsiteDesignWire>) => form.setValue("design", { ...form.getValues("design"), ...patch }, { shouldDirty: true });
   const designField = <K extends keyof WebsiteDesignWire>(key: K) => ({ value: design[key], onChange: (v: WebsiteDesignWire[K]) => setDesign({ [key]: v } as Partial<WebsiteDesignWire>) });
 
-  /** Picking a theme also applies its fonts, shapes and background; the colours stay. One click undoes it. */
-  function pickTheme(next: Values["theme"]) {
+  /** Picking a theme also applies its fonts, shapes, background and layouts; the colours and language stay. One click undoes it. */
+  function pickTheme(next: EditorValues["theme"]) {
     if (next === theme) return;
     setUndo({ theme, heading_font: headingFont, design: form.getValues("design") });
     const preset = presetWire(next, form.getValues("design"));
@@ -126,24 +80,16 @@ function Editor({ settings }: { settings: WebsiteSettingsRow }) {
     setUndo(null);
   }
 
-  async function save(v: Values) {
-    const body: WebsiteSettingsBody = {
-      theme: v.theme, heading_font: v.heading_font, design: v.design, sections: v.sections, hero_heading: orNull(v.hero_heading), hero_subheading: orNull(v.hero_subheading),
-      hero_image_file_id: v.hero_image_file_id || null, hero_button: v.hero_button, about_heading: orNull(v.about_heading), about_text: orNull(v.about_text),
-      about_image_file_id: v.about_image_file_id || null,
-    };
+  async function save(v: EditorValues) {
     await submitForm(
       form,
       async () => {
-        const saved = await websiteApi.saveSettings(body);
+        const saved = await websiteApi.saveSettings(toBody(v));
         queryClient.setQueryData(instituteKeys.website("settings"), saved);
       },
       {
         success: "Website saved. It's public now.",
-        fieldMap: {
-          heroHeading: "hero_heading", heroSubheading: "hero_subheading", heroImageFileId: "hero_image_file_id", aboutHeading: "about_heading", aboutText: "about_text",
-          aboutImageFileId: "about_image_file_id", headingFont: "heading_font", "design.customPrimary": "design.custom_primary", "design.customAccent": "design.custom_accent",
-        },
+        fieldMap: { heroHeading: "hero_heading", heroSubheading: "hero_subheading", heroImageFileId: "hero_image_file_id", aboutHeading: "about_heading", aboutText: "about_text", aboutImageFileId: "about_image_file_id", headingFont: "heading_font" },
       },
     );
   }
@@ -156,7 +102,8 @@ function Editor({ settings }: { settings: WebsiteSettingsRow }) {
       <Tabs defaultValue="look">
         <TabsList>
           <TabsTrigger value="look">Look</TabsTrigger>
-          <TabsTrigger value="content">Banner &amp; About</TabsTrigger>
+          <TabsTrigger value="layout">Layout</TabsTrigger>
+          <TabsTrigger value="content">Content</TabsTrigger>
           <TabsTrigger value="sections">Sections</TabsTrigger>
         </TabsList>
 
@@ -316,119 +263,21 @@ function Editor({ settings }: { settings: WebsiteSettingsRow }) {
           </div>
         </TabsContent>
 
-        <TabsContent value="content" className="mt-4 space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Welcome banner</CardTitle>
-              <CardDescription>The top of the website, always shown first.</CardDescription>
-            </CardHeader>
-            <CardContent className="grid gap-4 sm:grid-cols-2">
-              <FormField id="hero_heading" label="Heading" hint="Leave empty to show the institute's name." error={errors.hero_heading?.message} className="sm:col-span-2">
-                <Input id="hero_heading" {...form.register("hero_heading")} />
-              </FormField>
-              <FormField id="hero_subheading" label="Line under the heading" hint="Optional, e.g. 'SSC and HSC coaching in Mirpur since 2010'." error={errors.hero_subheading?.message} className="sm:col-span-2">
-                <Input id="hero_subheading" {...form.register("hero_subheading")} />
-              </FormField>
-              <FormField id="hero_image" label="Picture" hint="Optional. A wide photo works best.">
-                <Controller control={form.control} name="hero_image_file_id" render={({ field }) => (
-                  <ImageField id="hero_image" category="WEBSITE_IMAGE" label="Welcome banner picture" value={field.value || null} onChange={(id) => field.onChange(id ?? "")} />
-                )} />
-              </FormField>
-              <FormField id="hero_button" label="Button" hint={!brand.phone ? "Call needs a phone number in Institute Settings." : "Enquire shows once the enquiry form section is on."}>
-                <Controller
-                  control={form.control}
-                  name="hero_button"
-                  render={({ field }) => (
-                    <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger id="hero_button" className="w-full sm:w-80">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {HERO_BUTTON_OPTIONS.map((o) => (
-                          <SelectItem key={o.value} value={o.value}>
-                            {o.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-                />
-              </FormField>
-            </CardContent>
-          </Card>
+        <TabsContent value="layout" className="mt-4">
+          <LayoutTab designField={designField} design={designValue} theme={theme} headingFont={headingFont} brand={brand.primary_color} />
+        </TabsContent>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">About</CardTitle>
-              <CardDescription>A few lines about your institute. Hidden while it has no text or picture.</CardDescription>
-            </CardHeader>
-            <CardContent className="grid gap-4 sm:grid-cols-2">
-              <FormField id="about_heading" label="Heading" hint="Leave empty for 'About' and your institute's name." error={errors.about_heading?.message} className="sm:col-span-2">
-                <Input id="about_heading" {...form.register("about_heading")} />
-              </FormField>
-              <FormField id="about_text" label="Text" error={errors.about_text?.message} className="sm:col-span-2">
-                <Textarea id="about_text" rows={6} {...form.register("about_text")} />
-              </FormField>
-              <FormField id="about_image" label="Picture" hint="Optional.">
-                <Controller control={form.control} name="about_image_file_id" render={({ field }) => (
-                  <ImageField id="about_image" category="WEBSITE_IMAGE" label="About picture" value={field.value || null} onChange={(id) => field.onChange(id ?? "")} />
-                )} />
-              </FormField>
-            </CardContent>
-          </Card>
+        <TabsContent value="content" className="mt-4">
+          <ContentTab form={form} designField={designField} brandPhone={brand.phone} />
         </TabsContent>
 
         <TabsContent value="sections" className="mt-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Sections</CardTitle>
-              <CardDescription>Switch sections on or off and set their order. A section with nothing to show stays hidden.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Controller
-                control={form.control}
-                name="sections"
-                render={({ field }) => {
-                  const move = (from: number, to: number) => {
-                    const next = [...field.value];
-                    [next[from], next[to]] = [next[to], next[from]];
-                    field.onChange(next);
-                  };
-                  return (
-                    <ol data-testid="website-sections" className="divide-y rounded-md border">
-                      {field.value.map((s, i) => {
-                        const meta = SECTION_LABELS[s.key];
-                        return (
-                          <li key={s.key} className="flex items-center gap-3 px-3 py-2.5">
-                            <Switch
-                              id={`section-${s.key}`}
-                              checked={s.enabled}
-                              aria-label={`Show ${meta.label}`}
-                              onCheckedChange={(on) => field.onChange(field.value.map((x) => (x.key === s.key ? { ...x, enabled: on } : x)))}
-                            />
-                            <label htmlFor={`section-${s.key}`} className="min-w-0 flex-1">
-                              <span className={cn("block text-sm font-medium", !s.enabled && "text-muted-foreground")}>{meta.label}</span>
-                              <span className="block text-xs text-muted-foreground">{meta.source}</span>
-                            </label>
-                            <Button type="button" variant="ghost" size="icon" disabled={i === 0} aria-label={`Move ${meta.label} up`} onClick={() => move(i, i - 1)}>
-                              <ArrowUp />
-                            </Button>
-                            <Button type="button" variant="ghost" size="icon" disabled={i === field.value.length - 1} aria-label={`Move ${meta.label} down`} onClick={() => move(i, i + 1)}>
-                              <ArrowDown />
-                            </Button>
-                          </li>
-                        );
-                      })}
-                    </ol>
-                  );
-                }}
-              />
-            </CardContent>
-          </Card>
+          <SectionsTab form={form} language={design.language} />
         </TabsContent>
       </Tabs>
 
       <div className="sticky bottom-0 z-10 -mx-1 flex items-center justify-end gap-3 border-t bg-background/95 px-1 py-3 backdrop-blur">
+        {Object.keys(errors).length > 0 && <span className="text-sm text-destructive">Check the highlighted fields.</span>}
         {form.formState.isDirty && <span className="text-sm text-muted-foreground">Unsaved changes</span>}
         <Button type="submit" disabled={form.formState.isSubmitting}>
           {form.formState.isSubmitting && <Loader2 className="animate-spin" />} Save website
