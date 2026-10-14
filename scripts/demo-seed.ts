@@ -28,6 +28,7 @@ import { saveInstitutionProfile } from "../src/server/modules/settings/service";
 import { admitStudent } from "../src/server/modules/students/service";
 import * as websiteContent from "../src/server/modules/website/content";
 import * as enquiries from "../src/server/modules/website/enquiries";
+import * as showcase from "../src/server/modules/website/showcase";
 import { THEME_PRESETS, completeDesign } from "../src/server/modules/website/design";
 import { DEFAULT_CONTENT } from "../src/server/modules/website/site-content";
 import { DEFAULT_SECTIONS, saveWebsiteSettings } from "../src/server/modules/website/settings";
@@ -209,11 +210,28 @@ async function main() {
     const upload = async (label: string, from: string, to: string, w?: number, h?: number) =>
       (await uploadFile(db, storage, actor, { category: "WEBSITE_IMAGE", filename: `${label}.jpg`, bytes: await picture(label, from, to, w, h) })).id;
     await saveWebsiteSettings(db, actor, {
-      theme: "MODERN", headingFont: "POPPINS", design: completeDesign({ ...THEME_PRESETS.MODERN, palette: "PADMA" }), sections: DEFAULT_SECTIONS,
+      // Website Pro (D135–D141): the Aurora theme in the Padma palette, with every showcase section filled except the video.
+      theme: "AURORA", headingFont: THEME_PRESETS.AURORA.headingFont, design: completeDesign({ ...THEME_PRESETS.AURORA, palette: "PADMA" }), sections: DEFAULT_SECTIONS,
       content: {
         ...DEFAULT_CONTENT,
         announcement: { text: "Admission open for HSC 2027: limited seats in the morning batch.", linkUrl: "#enquiry", linkLabel: "Enquire now", showUntil: null },
         social: { ...DEFAULT_CONTENT.social, facebook: "https://www.facebook.com/alo.coaching.demo", youtube: "https://www.youtube.com/@alo-coaching-demo" },
+        stats: [
+          { value: 1200, suffix: "+", label: "Students taught" }, { value: 98, suffix: "%", label: "SSC pass rate" },
+          { value: 14, suffix: null, label: "Years in Mirpur" }, { value: 312, suffix: null, label: "GPA 5 holders" },
+        ],
+        features: [
+          { icon: "Users", title: "Small batches", text: "At most 25 students, so every question gets answered." },
+          { icon: "ClipboardCheck", title: "Weekly tests", text: "Marked and discussed within two days." },
+          { icon: "HeartHandshake", title: "Guardians kept informed", text: "A call when a student misses class." },
+          { icon: "FlaskConical", title: "Practical science", text: "Lab demonstrations for Physics and Chemistry." },
+        ],
+        faqs: [
+          { question: "When does admission open?", answer: "SSC batches start in January and HSC batches in July. Seats are limited to 25 per batch." },
+          { question: "Can my child attend a trial class?", answer: "Yes. The first week is free, so your child can decide before you pay." },
+          { question: "What should we bring for admission?", answer: "The last exam's result sheet and two passport-size photos." },
+          { question: "How do we pay the monthly fee?", answer: "At the office, in cash, by the 10th of each month. You get a printed receipt." },
+        ],
       }, heroHeading: "Bright results start here", heroSubheading: "SSC and HSC science coaching in Mirpur, with small batches and weekly tests.",
       heroImageFileId: await upload("Alo Coaching", "#0f766e", "#155e75"), heroButton: "ENQUIRE", aboutHeading: null,
       aboutText: "Since 2012 we have helped Mirpur's students prepare for their SSC and HSC science exams.\n\nEvery batch has at most 25 students, a weekly test, and teachers who know each student by name.",
@@ -230,6 +248,12 @@ async function main() {
     await websiteContent.createTestimonial(db, actor, { quote: "The weekly tests showed me exactly where I was weak. I got GPA 5 in SSC.", name: "Nabila Sultana", line: "SSC 2025, GPA 5" });
     await websiteContent.createTestimonial(db, actor, { quote: "Teachers call us when our son misses class. That care made the difference.", name: "Kamrul Hasan", line: "Guardian" });
     await websiteContent.createTestimonial(db, actor, { quote: "Small batches meant I could ask every question I had.", name: "Rifat Hossain", line: "HSC 2025, GPA 5" });
+    for (const [teacher, line] of [[mahmud, "BUET, 8 years teaching"], [sharmin, "Dhaka University, 6 years"], [rezaul, "Jahangirnagar University, 10 years"]] as const) {
+      await showcase.addFaculty(db, actor, { instructorId: teacher.id, line });
+    }
+    for (const [name, result, exam] of [["Nabila Sultana", "GPA 5.00", "SSC 2025"], ["Rifat Hossain", "GPA 5.00", "HSC 2025"], ["Tasnim Ara", "GPA 5.00", "SSC 2025"], ["Arif Chowdhury", "Merit 18, Dhaka Board", "HSC 2025"]] as const) {
+      await showcase.createAchiever(db, actor, { name, result, exam });
+    }
 
     for (const [name, mobile, courseId, message] of [
       ["Shuvo Rahman", "01819223344", hsc.id, "Is there an evening batch for HSC?"], ["Maliha Tasnim", "01612445566", ssc.id, "What is the monthly fee?"], ["Imran Khan", "01915667788", null, null],
