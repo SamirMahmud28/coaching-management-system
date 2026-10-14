@@ -1,9 +1,12 @@
 import { z } from "zod";
 import {
-  APPEARANCES, BACKGROUNDS, BODY_FONTS, BUTTON_STYLES, CARD_STYLES, COURSE_LAYOUTS, DENSITIES, GALLERY_LAYOUTS, GRADIENT_CHOICES, HEADER_STYLES, HERO_LAYOUTS,
+  APPEARANCES, BACKGROUNDS, BODY_FONTS, BUTTON_STYLES, CARD_STYLES, COURSE_LAYOUTS, DENSITIES, FAQ_LAYOUTS, GALLERY_LAYOUTS, GRADIENT_CHOICES, HEADER_STYLES, HERO_LAYOUTS,
   HERO_OVERLAYS, NOTICE_LAYOUTS, PALETTE_CHOICES, RADII, SITE_LANGUAGES, TESTIMONIAL_LAYOUTS, TEXT_SIZES, WEBSITE_FONTS, WEBSITE_SECTIONS, WEBSITE_THEMES,
 } from "@/server/modules/website/design";
-import { ANNOUNCEMENT_MAX, LINK_LABEL_MAX, SECTION_SUBTITLE_MAX, SECTION_TITLE_MAX, SOCIAL_NETWORKS } from "@/server/modules/website/site-content";
+import {
+  ANNOUNCEMENT_MAX, FEATURE_ICONS, LINK_LABEL_MAX, MAX_FAQS, MAX_FEATURES, MAX_STAT_VALUE, MAX_STATS, SECTION_SUBTITLE_MAX, SECTION_TITLE_MAX, SOCIAL_NETWORKS,
+  youtubeIdOf,
+} from "@/server/modules/website/site-content";
 import type { WebsiteSettingsBody, WebsiteSettingsRow } from "../../api";
 
 // The website editor's form (D124–D141): the settings as text fields, and their conversion to and from the wire.
@@ -35,11 +38,24 @@ export const editorSchema = z
       testimonial_layout: z.enum(TESTIMONIAL_LAYOUTS),
       course_layout: z.enum(COURSE_LAYOUTS),
       notice_layout: z.enum(NOTICE_LAYOUTS),
+      faq_layout: z.enum(FAQ_LAYOUTS),
       language: z.enum(SITE_LANGUAGES),
     }),
     titles: z.record(z.enum(WEBSITE_SECTIONS), z.object({ title: max(SECTION_TITLE_MAX), subtitle: max(SECTION_SUBTITLE_MAX) })),
     announcement: z.object({ text: max(ANNOUNCEMENT_MAX), link_url: max(300), link_label: max(LINK_LABEL_MAX), show_until: z.string() }),
     social: z.object(Object.fromEntries(SOCIAL_NETWORKS.map((n) => [n, max(300)])) as Record<(typeof SOCIAL_NETWORKS)[number], ReturnType<typeof max>>),
+    stats: z
+      .array(
+        z.object({
+          value: z.string().trim().regex(/^\d{1,8}$/, "A whole number, e.g. 1200.").refine((v) => Number(v) <= MAX_STAT_VALUE, "That number is too big."),
+          suffix: max(4),
+          label: max(40).min(1, "Say what the number counts."),
+        }),
+      )
+      .max(MAX_STATS),
+    features: z.array(z.object({ icon: z.enum(FEATURE_ICONS), title: max(60).min(1, "Give the reason a title."), text: max(200) })).max(MAX_FEATURES),
+    faqs: z.array(z.object({ question: max(150).min(1, "Write the question."), answer: max(1000).min(1, "Write the answer.") })).max(MAX_FAQS),
+    video: z.object({ url: z.string().trim().refine((v) => v === "" || !!youtubeIdOf(v), "Paste a YouTube video's address."), title: max(100) }),
     sections: z.array(z.object({ key: z.enum(WEBSITE_SECTIONS), enabled: z.boolean() })),
     hero_heading: max(120),
     hero_subheading: max(250),
@@ -64,6 +80,10 @@ export function toEditorValues(s: WebsiteSettingsRow): EditorValues {
     titles: Object.fromEntries(WEBSITE_SECTIONS.map((k) => [k, { title: s.content.section_titles[k]?.title ?? "", subtitle: s.content.section_titles[k]?.subtitle ?? "" }])) as EditorValues["titles"],
     announcement: { text: a?.text ?? "", link_url: a?.link_url ?? "", link_label: a?.link_label ?? "", show_until: a?.show_until ?? "" },
     social: Object.fromEntries(SOCIAL_NETWORKS.map((n) => [n, s.content.social[n] ?? ""])) as EditorValues["social"],
+    stats: s.content.stats.map((x) => ({ value: String(x.value), suffix: x.suffix ?? "", label: x.label })),
+    features: s.content.features.map((x) => ({ icon: x.icon, title: x.title, text: x.text ?? "" })),
+    faqs: s.content.faqs,
+    video: { url: s.content.video ? `https://youtu.be/${s.content.video.youtube_id}` : "", title: s.content.video?.title ?? "" },
     sections: s.sections,
     hero_heading: s.hero_heading ?? "",
     hero_subheading: s.hero_subheading ?? "",
@@ -91,6 +111,10 @@ export function toBody(v: EditorValues): WebsiteSettingsBody {
         ? { text: v.announcement.text.trim(), link_url: orNull(v.announcement.link_url), link_label: orNull(v.announcement.link_label), show_until: orNull(v.announcement.show_until) }
         : null,
       social: Object.fromEntries(SOCIAL_NETWORKS.map((n) => [n, orNull(v.social[n])])) as WebsiteSettingsBody["content"]["social"],
+      stats: v.stats.map((x) => ({ value: Number(x.value), suffix: orNull(x.suffix), label: x.label.trim() })),
+      features: v.features.map((x) => ({ icon: x.icon, title: x.title.trim(), text: orNull(x.text) })),
+      faqs: v.faqs.map((x) => ({ question: x.question.trim(), answer: x.answer.trim() })),
+      video: orNull(v.video.url) ? { youtube_id: v.video.url.trim(), title: orNull(v.video.title) } : null,
     },
     sections: v.sections,
     hero_heading: orNull(v.hero_heading),

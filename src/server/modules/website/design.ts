@@ -11,7 +11,7 @@ export const WEBSITE_FONTS = [
 export const BODY_FONTS = ["INTER", "POPPINS", "LATO", "NUNITO", "MONTSERRAT", "RALEWAY", "OUTFIT", "LORA", "MERRIWEATHER", "HIND_SILIGURI", "ANEK_BANGLA", "NOTO_SERIF_BENGALI"] as const;
 
 /** The sections below the hero, in the order shown; each can be turned off (D20). */
-export const WEBSITE_SECTIONS = ["ABOUT", "COURSES", "NOTICES", "GALLERY", "TESTIMONIALS", "ENQUIRY", "CONTACT"] as const;
+export const WEBSITE_SECTIONS = ["ABOUT", "STATS", "FEATURES", "COURSES", "FACULTY", "ACHIEVERS", "NOTICES", "GALLERY", "VIDEO", "TESTIMONIALS", "FAQ", "ENQUIRY", "CONTACT"] as const;
 export type WebsiteSectionKey = (typeof WEBSITE_SECTIONS)[number];
 
 export type WebsiteTheme = (typeof WEBSITE_THEMES)[number];
@@ -125,6 +125,7 @@ export const GALLERY_LAYOUTS = ["GRID", "MASONRY", "CAROUSEL"] as const;
 export const TESTIMONIAL_LAYOUTS = ["GRID", "CAROUSEL", "SPOTLIGHT"] as const;
 export const COURSE_LAYOUTS = ["CARDS", "LIST"] as const;
 export const NOTICE_LAYOUTS = ["CARDS", "TIMELINE"] as const;
+export const FAQ_LAYOUTS = ["ACCORDION", "TWO_COLUMN"] as const;
 /** The language of the site's built-in labels (D140); what the office writes is shown as written. */
 export const SITE_LANGUAGES = ["EN", "BN"] as const;
 
@@ -135,6 +136,7 @@ export type GalleryLayout = (typeof GALLERY_LAYOUTS)[number];
 export type TestimonialLayout = (typeof TESTIMONIAL_LAYOUTS)[number];
 export type CourseLayout = (typeof COURSE_LAYOUTS)[number];
 export type NoticeLayout = (typeof NOTICE_LAYOUTS)[number];
+export type FaqLayout = (typeof FAQ_LAYOUTS)[number];
 export type SiteLanguage = (typeof SITE_LANGUAGES)[number];
 
 /** Everything about the look except the theme and heading font, which have their own columns. */
@@ -158,6 +160,7 @@ export interface WebsiteDesign {
   testimonialLayout: TestimonialLayout;
   courseLayout: CourseLayout;
   noticeLayout: NoticeLayout;
+  faqLayout: FaqLayout;
   language: SiteLanguage;
 }
 
@@ -183,20 +186,20 @@ const LOOK: Record<WebsiteTheme, LookPreset> = {
 };
 
 const layout = (o: Partial<LayoutPreset> = {}): LayoutPreset => ({
-  headerStyle: "SOLID", heroLayout: "THEME", heroOverlay: "MEDIUM", galleryLayout: "GRID", testimonialLayout: "GRID", courseLayout: "CARDS", noticeLayout: "CARDS", ...o,
+  headerStyle: "SOLID", heroLayout: "THEME", heroOverlay: "MEDIUM", galleryLayout: "GRID", testimonialLayout: "GRID", courseLayout: "CARDS", noticeLayout: "CARDS", faqLayout: "ACCORDION", ...o,
 });
 
 const LAYOUT: Record<WebsiteTheme, LayoutPreset> = {
   CLASSIC: layout(),
   MODERN: layout({ testimonialLayout: "CAROUSEL" }),
   BOLD: layout({ heroOverlay: "STRONG" }),
-  ELEGANT: layout({ headerStyle: "CENTRED", heroOverlay: "LIGHT", noticeLayout: "TIMELINE", testimonialLayout: "SPOTLIGHT" }),
+  ELEGANT: layout({ headerStyle: "CENTRED", heroOverlay: "LIGHT", noticeLayout: "TIMELINE", testimonialLayout: "SPOTLIGHT", faqLayout: "TWO_COLUMN" }),
   PLAYFUL: layout({ galleryLayout: "CAROUSEL", testimonialLayout: "CAROUSEL" }),
   MINIMAL: layout({ courseLayout: "LIST", noticeLayout: "TIMELINE" }),
   VIBRANT: layout({ galleryLayout: "MASONRY", testimonialLayout: "CAROUSEL" }),
   MIDNIGHT: layout({ headerStyle: "GLASS", galleryLayout: "MASONRY", testimonialLayout: "SPOTLIGHT" }),
   GLASS: layout({ headerStyle: "GLASS", testimonialLayout: "CAROUSEL" }),
-  BENTO: layout({ galleryLayout: "MASONRY" }),
+  BENTO: layout({ galleryLayout: "MASONRY", faqLayout: "TWO_COLUMN" }),
   AURORA: layout({ headerStyle: "GLASS", testimonialLayout: "SPOTLIGHT", galleryLayout: "CAROUSEL" }),
   NEO_BRUTAL: layout({ heroOverlay: "STRONG", noticeLayout: "TIMELINE" }),
 };
@@ -227,6 +230,7 @@ export const DEFAULT_DESIGN: WebsiteDesign = {
   testimonialLayout: "GRID",
   courseLayout: "CARDS",
   noticeLayout: "CARDS",
+  faqLayout: "ACCORDION",
   language: "EN",
 };
 
@@ -268,6 +272,7 @@ export function completeDesign(stored: unknown, base: WebsiteDesign = DEFAULT_DE
     testimonialLayout: pick(s.testimonialLayout, TESTIMONIAL_LAYOUTS, base.testimonialLayout),
     courseLayout: pick(s.courseLayout, COURSE_LAYOUTS, base.courseLayout),
     noticeLayout: pick(s.noticeLayout, NOTICE_LAYOUTS, base.noticeLayout),
+    faqLayout: pick(s.faqLayout, FAQ_LAYOUTS, base.faqLayout),
     language: pick(s.language, SITE_LANGUAGES, base.language),
   };
 }

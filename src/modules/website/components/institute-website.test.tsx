@@ -2,7 +2,7 @@
 import "@testing-library/jest-dom/vitest";
 import { cleanup, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { DEFAULT_DESIGN, type WebsiteDesign } from "@/server/modules/website/design";
+import { DEFAULT_DESIGN, WEBSITE_SECTIONS, type WebsiteDesign } from "@/server/modules/website/design";
 import { DEFAULT_CONTENT, type WebsiteContent } from "@/server/modules/website/site-content";
 import { SITE_LABELS, bnDigits } from "../i18n";
 import { InstituteWebsite } from "./institute-website";
@@ -13,7 +13,6 @@ vi.mock("../fonts", () => ({ FONT_FAMILY: new Proxy({}, { get: (_, k) => `font-$
 
 afterEach(cleanup);
 
-const SECTIONS = ["ABOUT", "COURSES", "NOTICES", "GALLERY", "TESTIMONIALS", "ENQUIRY", "CONTACT"] as const;
 
 function site(design: Partial<WebsiteDesign> = {}, content: Partial<WebsiteContent> = {}): Site {
   return {
@@ -22,7 +21,7 @@ function site(design: Partial<WebsiteDesign> = {}, content: Partial<WebsiteConte
       headingFont: "INTER",
       design: { ...DEFAULT_DESIGN, ...design },
       content: { ...DEFAULT_CONTENT, ...content },
-      sections: SECTIONS.map((key) => ({ key, enabled: true })),
+      sections: WEBSITE_SECTIONS.map((key) => ({ key, enabled: true })),
       heroHeading: "Bright results",
       heroSubheading: null,
       heroImageFileId: null,
@@ -40,6 +39,8 @@ function site(design: Partial<WebsiteDesign> = {}, content: Partial<WebsiteConte
       { id: "t1", quote: "Great teachers.", name: "Nabila", line: null, photoFileId: null },
       { id: "t2", quote: "Weekly tests helped.", name: "Rafi", line: null, photoFileId: null },
     ],
+    faculty: [],
+    achievers: [],
   } as unknown as Site;
 }
 
@@ -95,5 +96,45 @@ describe("layouts and extras (D135, D138)", () => {
   it("uses another theme's banner when chosen in Layout", () => {
     const { container } = render(<InstituteWebsite site={site({ heroLayout: "GRADIENT" })} />);
     expect(container.querySelector("section[aria-label='Welcome']")).toHaveClass("site-gradient");
+  });
+});
+
+describe("showcase sections (D138, D141)", () => {
+  it("shows stats, reasons, faculty, achievers, the video and questions, each only when filled", () => {
+    const filled = site(
+      { faqLayout: "TWO_COLUMN" },
+      {
+        stats: [{ value: 1200, suffix: "+", label: "Students taught" }],
+        features: [{ icon: "Users", title: "Small batches", text: "At most 25." }],
+        faqs: [{ question: "When does admission open?", answer: "In January." }],
+        video: { youtubeId: "dQw4w9WgXcQ", title: "Our classrooms" },
+      },
+    );
+    filled.faculty = [{ id: "f1", name: "Rahim Uddin", photoFileId: null, line: "BUET", subjects: ["Physics"] }];
+    filled.achievers = [{ id: "a1", name: "Nusrat", result: "GPA 5.00", exam: "SSC 2025", photoFileId: null }];
+    render(<InstituteWebsite site={filled} />);
+
+    expect(screen.getByTestId("public-stat")).toHaveTextContent("1,200+Students taught");
+    expect(screen.getByTestId("public-feature")).toHaveTextContent("Small batches");
+    expect(screen.getByTestId("public-faculty")).toHaveTextContent("Rahim UddinPhysicsBUET");
+    expect(screen.getByTestId("public-achiever")).toHaveTextContent("GPA 5.00");
+    expect(screen.getByTestId("public-faq").querySelector("details")).not.toBeNull();
+    // The video is only a picture and a button until it is played.
+    expect(screen.getByRole("button", { name: "Play video: Our classrooms" })).toBeInTheDocument();
+    expect(screen.getByTestId("section-video").querySelector("iframe")).toBeNull();
+    // Stats, reasons and the video sit between other sections without a menu link.
+    const nav = screen.getByRole("navigation", { name: "Sections" });
+    expect(within(nav).queryByRole("link", { name: "Results" })).toBeNull();
+    expect(within(nav).getByRole("link", { name: "Teachers" })).toHaveAttribute("href", "#faculty");
+  });
+
+  it("leaves the showcase sections out while they are empty", () => {
+    render(<InstituteWebsite site={site()} />);
+    for (const key of ["stats", "features", "faculty", "achievers", "video", "faq"]) expect(screen.queryByTestId(`section-${key}`)).toBeNull();
+  });
+
+  it("writes the stats in Bangla digits on a Bangla site", () => {
+    render(<InstituteWebsite site={site({ language: "BN" }, { stats: [{ value: 1200, suffix: "+", label: "শিক্ষার্থী" }] })} />);
+    expect(screen.getByTestId("public-stat")).toHaveTextContent("১,২০০+");
   });
 });

@@ -49,6 +49,8 @@ export type HelpTopicKey =
   | "website-notices"
   | "website-gallery"
   | "website-testimonials"
+  | "website-faculty"
+  | "website-achievers"
   | "website-enquiries";
 
 export const HELP_TOPICS: readonly HelpTopic[] = [
@@ -644,6 +646,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
       "On the Layout tab, choose the header, the welcome banner's layout (the theme's own or another theme's), how dark the shade over its picture is, and how courses, notices, the gallery and testimonials are laid out.",
       "On the Content tab, choose the website's language (English or বাংলা). Then, under Welcome banner, write the heading and a line under it, add a background picture, and choose the button: Enquire, Call, or none.",
       "Under About, write a few lines about your institute and add a picture.",
+      "Further down the Content tab: Stats (big numbers that count up, e.g. 1200+ students taught), Why choose us (reasons with icons), Questions & answers, and a YouTube Video. Each section stays hidden while it's empty.",
       "Still on the Content tab: an Announcement bar (one line at the very top, e.g. 'Admission open for HSC 2027', with an optional link and a last day) and your Social links (Facebook, YouTube, Instagram, TikTok, LinkedIn).",
       "On the Sections tab, click the pencil to rename a section's heading or add a line under it. Then switch each section on or off and use the arrows to set their order. The welcome banner is always at the top. Notices, Gallery, Testimonials and Enquiries have their own tabs.",
       "Click Save. The website changes straight away; click View website to see it.",
@@ -655,6 +658,8 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
       "Language: বাংলা changes every built-in label (menu, headings, the enquiry form, the footer) and shows numbers, class times and dates in Bangla digits. What you write yourself (notices, course names, your own headings) is shown as you wrote it.",
       "The announcement bar disappears by itself after its Show until day. A visitor who closes it doesn't see it again during that visit.",
       "Social links must point to that network (a Facebook link to facebook.com, and so on).",
+      "The video loads from YouTube only when a visitor taps play, so the page stays fast on mobile data.",
+      "Faculty and Achievers have their own tabs. Faculty shows only the instructors you add, with name, photo and subjects; never phone numbers or emails.",
       "Pictures can be JPG, PNG or WebP up to 5 MB; they are resized and compressed when uploaded.",
       "A section with nothing to show stays hidden, with its menu link: About without text or a picture, Courses with no active course, Notices, Gallery or Testimonials while empty, Contact without any contact details.",
       "The banner's Enquire button shows only while the Admission enquiry form section is on.",
@@ -736,6 +741,47 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
       "Changes are public at once. Removing a testimonial takes it off the website straight away.",
     ],
     faqs: [{ q: "Someone asked to be removed.", a: "Open their testimonial's actions and click Remove." }],
+  },
+  {
+    key: "website-faculty",
+    title: "Website faculty",
+    area: "Website",
+    permission: "website.manage",
+    summary: "Show your instructors in the Faculty section of your website: their photo, name and the subjects they teach, with an optional line such as 'BUET, 8 years teaching'.",
+    steps: [
+      "Open Website → Faculty and click Add instructor.",
+      "Choose an active instructor and, if you like, write a line under their name. Click Add to website.",
+      "Use the arrows to set the order. To change a photo, open the instructor in Instructors and upload it there.",
+    ],
+    rules: [
+      "Only the instructors you add are shown. Nobody appears on the website automatically.",
+      "The website shows the name, photo, subjects (from their active batches) and your line; never their phone number, email or address.",
+      "An instructor who becomes inactive disappears from the website by itself, and their photo stops being public.",
+      "Taking someone off the website changes only the website; the instructor and their batches stay as they are.",
+      "Changes are public at once.",
+    ],
+    faqs: [
+      { q: "An instructor has no photo on the website.", a: "Add a photo to their profile in Instructors; the website uses the same photo." },
+      { q: "The subjects are wrong.", a: "They come from the batches the instructor teaches. Update the batch's subjects and instructors in Courses & batches." },
+    ],
+  },
+  {
+    key: "website-achievers",
+    title: "Website achievers",
+    area: "Website",
+    permission: "website.manage",
+    summary: "Celebrate top results in the Achievers section of your website: each with the student's name, the result (e.g. 'GPA 5.00'), the exam (e.g. 'SSC 2025') and an optional photo.",
+    steps: [
+      "Open Website → Achievers and click Add achiever.",
+      "Write the student's name and result, and optionally the exam and a photo.",
+      "Use the arrows to set the order; the first one shows first.",
+    ],
+    rules: [
+      "Achievers are typed in by the office; they are not linked to student records, so nothing about a student is published automatically.",
+      "Add a name or photo only with the student's or guardian's permission.",
+      "Up to 48 achievers. Changes are public at once.",
+    ],
+    faqs: [{ q: "A guardian asked us to remove their child.", a: "Open the achiever's actions and click Remove; they leave the website at once." }],
   },
   {
     key: "website-enquiries",

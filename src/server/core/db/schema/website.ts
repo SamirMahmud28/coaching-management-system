@@ -2,6 +2,7 @@ import { boolean, check, date, foreignKey, index, integer, jsonb, pgEnum, pgTabl
 import { sql } from "drizzle-orm";
 import { courses } from "./academic";
 import { files, tenants, users } from "./core";
+import { instructors } from "./instructors";
 import { students } from "./students";
 import { WEBSITE_FONTS, WEBSITE_THEMES, type WebsiteSectionKey } from "../../../modules/website/design";
 
@@ -134,4 +135,47 @@ export const enquiries = pgTable("enquiries", {
   foreignKey({ name: "enquiries_student_fk", columns: [t.tenantId, t.studentId], foreignColumns: [students.tenantId, students.id] }),
   foreignKey({ name: "enquiries_updated_by_fk", columns: [t.tenantId, t.updatedBy], foreignColumns: [users.tenantId, users.id] }),
   check("enquiries_converted", sql`(${t.status} = 'CONVERTED') = (${t.studentId} IS NOT NULL)`),
+]);
+
+/**
+ * An instructor the office shows on the website (D141): opt-in, with an optional line such as "BUET, 8 years". The
+ * public site shows the name, photo and subjects only, and only while the instructor is active. Removing one deletes
+ * the row, never the instructor.
+ */
+export const websiteFaculty = pgTable("website_faculty", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  tenantId: uuid("tenant_id").notNull(),
+  instructorId: uuid("instructor_id").notNull(),
+  line: varchar("line", { length: 120 }),
+  sortOrder: integer("sort_order").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedBy: uuid("updated_by").notNull(),
+}, (t) => [
+  unique("website_faculty_tenant_id_unique").on(t.tenantId, t.id),
+  unique("website_faculty_instructor_unique").on(t.tenantId, t.instructorId),
+  index("website_faculty_order_idx").on(t.tenantId, t.sortOrder),
+  foreignKey({ name: "website_faculty_tenant_fk", columns: [t.tenantId], foreignColumns: [tenants.id] }),
+  foreignKey({ name: "website_faculty_instructor_fk", columns: [t.tenantId, t.instructorId], foreignColumns: [instructors.tenantId, instructors.id] }),
+  foreignKey({ name: "website_faculty_updated_by_fk", columns: [t.tenantId, t.updatedBy], foreignColumns: [users.tenantId, users.id] }),
+]);
+
+/** A top result typed in by the office (D141), like a testimonial (D130); not linked to a student record. */
+export const websiteAchievers = pgTable("website_achievers", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  tenantId: uuid("tenant_id").notNull(),
+  name: varchar("name", { length: 100 }).notNull(),
+  result: varchar("result", { length: 80 }).notNull(),
+  exam: varchar("exam", { length: 40 }),
+  photoFileId: uuid("photo_file_id"),
+  sortOrder: integer("sort_order").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedBy: uuid("updated_by").notNull(),
+}, (t) => [
+  unique("website_achievers_tenant_id_unique").on(t.tenantId, t.id),
+  index("website_achievers_order_idx").on(t.tenantId, t.sortOrder),
+  foreignKey({ name: "website_achievers_tenant_fk", columns: [t.tenantId], foreignColumns: [tenants.id] }),
+  foreignKey({ name: "website_achievers_photo_fk", columns: [t.tenantId, t.photoFileId], foreignColumns: [files.tenantId, files.id] }),
+  foreignKey({ name: "website_achievers_updated_by_fk", columns: [t.tenantId, t.updatedBy], foreignColumns: [users.tenantId, users.id] }),
 ]);

@@ -162,6 +162,11 @@ export const NOTICE_LAYOUT_OPTIONS: { value: NoticeLayout; label: string }[] = [
   { value: "TIMELINE", label: "Timeline" },
 ];
 
+export const FAQ_LAYOUT_OPTIONS: { value: "ACCORDION" | "TWO_COLUMN"; label: string }[] = [
+  { value: "ACCORDION", label: "One column" },
+  { value: "TWO_COLUMN", label: "Two columns" },
+];
+
 export const LANGUAGE_OPTIONS: { value: SiteLanguage; label: string; sample: string }[] = [
   { value: "EN", label: "English", sample: "Courses · Notices · Admission enquiry · Contact us" },
   { value: "BN", label: "বাংলা", sample: "কোর্সসমূহ · নোটিশ · ভর্তি সংক্রান্ত জিজ্ঞাসা · যোগাযোগ করুন" },
@@ -175,11 +180,17 @@ export const HERO_BUTTON_OPTIONS: { value: HeroButton; label: string }[] = [
 
 /** Section names: `label` in the editor, `nav` in the website's menu. */
 export const SECTION_LABELS: Record<WebsiteSectionKey, { label: string; nav: string; source: string }> = {
-  ABOUT: { label: "About", nav: "About", source: "The heading, text and picture below." },
+  ABOUT: { label: "About", nav: "About", source: "The heading, text and picture on the Content tab." },
+  STATS: { label: "Stats", nav: "Results", source: "Your counters, e.g. 1,200+ students (Content tab)." },
+  FEATURES: { label: "Why choose us", nav: "Why us", source: "Your reasons, each with an icon (Content tab)." },
   COURSES: { label: "Courses & batches", nav: "Courses", source: "Your active courses, subjects and class times (Courses)." },
+  FACULTY: { label: "Faculty", nav: "Teachers", source: "The instructors you add on the Faculty tab." },
+  ACHIEVERS: { label: "Achievers", nav: "Achievers", source: "Top results you add on the Achievers tab." },
   NOTICES: { label: "Notices", nav: "Notices", source: "Your website notices." },
   GALLERY: { label: "Gallery", nav: "Gallery", source: "Your gallery photos." },
+  VIDEO: { label: "Video", nav: "Video", source: "A YouTube video (Content tab)." },
   TESTIMONIALS: { label: "Testimonials", nav: "Testimonials", source: "Your testimonials." },
+  FAQ: { label: "FAQ", nav: "FAQ", source: "Your questions and answers (Content tab)." },
   ENQUIRY: { label: "Admission enquiry form", nav: "Admission", source: "Visitors send their name, mobile number and course." },
   CONTACT: { label: "Contact & map", nav: "Contact", source: "Address, phone and email from Institute Settings, with a map of the address." },
 };

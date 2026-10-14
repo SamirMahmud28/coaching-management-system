@@ -6,13 +6,13 @@ import { assertFileReference } from "../../core/files/service";
 import { ValidationError } from "../../core/errors";
 import { audit } from "../audit/service";
 import {
-  APPEARANCES, BACKGROUNDS, BODY_FONTS, BUTTON_STYLES, CARD_STYLES, COURSE_LAYOUTS, DENSITIES, GALLERY_LAYOUTS, GRADIENT_CHOICES, HEADER_STYLES, HERO_LAYOUTS,
+  APPEARANCES, BACKGROUNDS, BODY_FONTS, BUTTON_STYLES, CARD_STYLES, COURSE_LAYOUTS, DENSITIES, FAQ_LAYOUTS, GALLERY_LAYOUTS, GRADIENT_CHOICES, HEADER_STYLES, HERO_LAYOUTS,
   HERO_OVERLAYS, HEX_COLOUR, NOTICE_LAYOUTS, PALETTE_CHOICES, RADII, SITE_LANGUAGES, TESTIMONIAL_LAYOUTS, TEXT_SIZES, WEBSITE_FONTS, WEBSITE_THEMES,
   completeDesign, legacyDesign, type WebsiteDesign, type WebsiteFont, type WebsiteTheme,
 } from "./design";
 import {
-  ANNOUNCEMENT_MAX, DEFAULT_CONTENT, LINK_LABEL_MAX, SECTION_SUBTITLE_MAX, SECTION_TITLE_MAX, SOCIAL_HOSTS, SOCIAL_NETWORKS, completeContent, normaliseLink,
-  type WebsiteContent,
+  ANNOUNCEMENT_MAX, DEFAULT_CONTENT, FEATURE_ICONS, LINK_LABEL_MAX, MAX_FAQS, MAX_FEATURES, MAX_STAT_VALUE, MAX_STATS, SECTION_SUBTITLE_MAX, SECTION_TITLE_MAX,
+  SOCIAL_HOSTS, SOCIAL_NETWORKS, completeContent, normaliseLink, youtubeIdOf, type WebsiteContent,
 } from "./site-content";
 
 // The website's look and fixed content (D124, D126, D131, D135, D136): theme, heading font, the design settings, the
@@ -69,13 +69,20 @@ const DEFAULTS: WebsiteSettings = {
 };
 
 /**
- * Stored sections in their saved order. A section added to the product later than the institute's last save is
- * appended (switched on), so an old row always lists every section exactly once.
+ * Stored sections in their saved order. A section added to the product later than the institute's last save is put in
+ * its natural place, after the section that comes before it in the product's order, and switched on (it stays hidden
+ * while it has nothing to show), so an old row always lists every section exactly once.
  */
 function completeSections(stored: WebsiteSectionSetting[]): WebsiteSectionSetting[] {
-  const known = stored.filter((s, i) => WEBSITE_SECTIONS.includes(s.key) && stored.findIndex((o) => o.key === s.key) === i);
-  const missing = WEBSITE_SECTIONS.filter((key) => !known.some((s) => s.key === key)).map((key) => ({ key, enabled: true }));
-  return [...known.map((s) => ({ key: s.key, enabled: !!s.enabled })), ...missing];
+  const result = stored
+    .filter((s, i) => WEBSITE_SECTIONS.includes(s.key) && stored.findIndex((o) => o.key === s.key) === i)
+    .map((s) => ({ key: s.key, enabled: !!s.enabled }));
+  WEBSITE_SECTIONS.forEach((key, order) => {
+    if (result.some((s) => s.key === key)) return;
+    const before = WEBSITE_SECTIONS.slice(0, order).findLast((k) => result.some((s) => s.key === k));
+    result.splice(before ? result.findIndex((s) => s.key === before) + 1 : 0, 0, { key, enabled: true });
+  });
+  return result;
 }
 
 export async function getWebsiteSettings(db: DbOrTx, tenantId: string): Promise<WebsiteSettings> {
@@ -140,6 +147,7 @@ function cleanDesign(d: WebsiteDesign): WebsiteDesign {
     testimonialLayout: oneOf(d.testimonialLayout, TESTIMONIAL_LAYOUTS, "design.testimonialLayout", choice),
     courseLayout: oneOf(d.courseLayout, COURSE_LAYOUTS, "design.courseLayout", choice),
     noticeLayout: oneOf(d.noticeLayout, NOTICE_LAYOUTS, "design.noticeLayout", choice),
+    faqLayout: oneOf(d.faqLayout, FAQ_LAYOUTS, "design.faqLayout", choice),
     language: oneOf(d.language, SITE_LANGUAGES, "design.language", "Choose English or Bangla."),
   };
   if (design.palette === "CUSTOM" && !design.customPrimary) {
@@ -183,7 +191,39 @@ function cleanContent(c: WebsiteContent): WebsiteContent {
   const social = Object.fromEntries(
     SOCIAL_NETWORKS.map((n) => [n, link(c.social?.[n], `content.social.${n}`, SOCIAL_HOSTS[n], `Use your ${n === "tiktok" ? "TikTok" : n === "youtube" ? "YouTube" : n === "linkedin" ? "LinkedIn" : n[0].toUpperCase() + n.slice(1)} page's address.`)]),
   ) as WebsiteContent["social"];
-  return { sectionTitles, announcement, social };
+  const most = <T,>(items: T[] | undefined, n: number, field: string, what: string): T[] => {
+    if ((items?.length ?? 0) > n) throw new ValidationError("VALIDATION_TOO_MANY", `At most ${n} ${what}.`, { field });
+    return items ?? [];
+  };
+  const stats = most(c.stats, MAX_STATS, "content.stats", "numbers").map((x, i) => {
+    const value = Number(x.value);
+    if (!Number.isInteger(value) || value < 0 || value > MAX_STAT_VALUE) {
+      throw new ValidationError("VALIDATION_NUMBER", `Use a whole number from 0 to ${MAX_STAT_VALUE.toLocaleString("en-US")}.`, { field: `content.stats.${i}.value` });
+    }
+    return { value, suffix: text(x.suffix, 4, `content.stats.${i}.suffix`, "The sign after the number"), label: required(x.label, 40, `content.stats.${i}.label`, "What the number counts") };
+  });
+  const features = most(c.features, MAX_FEATURES, "content.features", "reasons").map((x, i) => ({
+    icon: oneOf(x.icon, FEATURE_ICONS, `content.features.${i}.icon`, "Choose one of the icons."),
+    title: required(x.title, 60, `content.features.${i}.title`, "The title"),
+    text: text(x.text, 200, `content.features.${i}.text`, "The text"),
+  }));
+  const faqs = most(c.faqs, MAX_FAQS, "content.faqs", "questions").map((x, i) => ({
+    question: required(x.question, 150, `content.faqs.${i}.question`, "The question"),
+    answer: required(x.answer, 1000, `content.faqs.${i}.answer`, "The answer"),
+  }));
+  let video: WebsiteContent["video"] = null;
+  if (c.video?.youtubeId?.trim()) {
+    const youtubeId = youtubeIdOf(c.video.youtubeId);
+    if (!youtubeId) throw new ValidationError("VALIDATION_LINK", "Paste a YouTube video's address, e.g. https://youtu.be/…", { field: "content.video.youtubeId" });
+    video = { youtubeId, title: text(c.video.title, 100, "content.video.title", "The video's title") };
+  }
+  return { sectionTitles, announcement, social, stats, features, faqs, video };
+}
+
+function required(value: string | null | undefined, max: number, field: string, label: string): string {
+  const v = text(value, max, field, label);
+  if (!v) throw new ValidationError("VALIDATION_REQUIRED", `${label} is required.`, { field });
+  return v;
 }
 
 /** Every section exactly once, in the order given. */

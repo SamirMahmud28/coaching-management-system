@@ -18,10 +18,11 @@ import * as enquiries from "./enquiries";
 import { isPublicWebsiteImage } from "./public";
 import { toCamelCaseKeys } from "../../core/http/case";
 import {
-  APPEARANCES, BACKGROUNDS, BODY_FONTS, BUTTON_STYLES, CARD_STYLES, COURSE_LAYOUTS, DENSITIES, GALLERY_LAYOUTS, GRADIENT_CHOICES, HEADER_STYLES, HERO_LAYOUTS,
+  APPEARANCES, BACKGROUNDS, BODY_FONTS, BUTTON_STYLES, CARD_STYLES, COURSE_LAYOUTS, DENSITIES, FAQ_LAYOUTS, GALLERY_LAYOUTS, GRADIENT_CHOICES, HEADER_STYLES, HERO_LAYOUTS,
   HERO_OVERLAYS, NOTICE_LAYOUTS, PALETTE_CHOICES, RADII, SITE_LANGUAGES, TESTIMONIAL_LAYOUTS, TEXT_SIZES, type WebsiteDesign,
 } from "./design";
-import { SOCIAL_NETWORKS, type WebsiteContent } from "./site-content";
+import { FEATURE_ICONS, SOCIAL_NETWORKS, type WebsiteContent } from "./site-content";
+import * as showcase from "./showcase";
 import { HERO_BUTTONS, WEBSITE_FONTS, WEBSITE_THEMES, getWebsiteSettings, saveWebsiteSettings } from "./settings";
 
 export interface WebsiteHttpDeps {
@@ -53,13 +54,21 @@ const designBody = z.object({
   testimonial_layout: z.enum(TESTIMONIAL_LAYOUTS),
   course_layout: z.enum(COURSE_LAYOUTS),
   notice_layout: z.enum(NOTICE_LAYOUTS),
+  faq_layout: z.enum(FAQ_LAYOUTS),
   language: z.enum(SITE_LANGUAGES),
 });
 const contentBody = z.object({
   section_titles: z.partialRecord(z.enum(WEBSITE_SECTIONS), z.object({ title: optionalText(200), subtitle: optionalText(400) })),
   announcement: z.object({ text: z.string().max(400), link_url: optionalText(400), link_label: optionalText(80), show_until: optionalText(10) }).nullable(),
   social: z.object(Object.fromEntries(SOCIAL_NETWORKS.map((n) => [n, optionalText(400)])) as Record<(typeof SOCIAL_NETWORKS)[number], ReturnType<typeof optionalText>>),
+  stats: z.array(z.object({ value: z.number(), suffix: optionalText(20), label: z.string().max(200) })).max(50).optional(),
+  features: z.array(z.object({ icon: z.enum(FEATURE_ICONS), title: z.string().max(200), text: optionalText(600) })).max(50).optional(),
+  faqs: z.array(z.object({ question: z.string().max(600), answer: z.string().max(3000) })).max(100).optional(),
+  video: z.object({ youtube_id: z.string().max(400), title: optionalText(300) }).nullable().optional(),
 });
+const facultyBody = z.object({ instructor_id: z.uuid(), line: optionalText(240) });
+const facultyLineBody = z.object({ line: optionalText(240) });
+const achieverBody = z.object({ name: z.string().max(200), result: z.string().max(160), exam: optionalText(80), photo_file_id: z.uuid().nullable().optional() });
 const settingsBody = z.object({
   theme: z.enum(WEBSITE_THEMES),
   heading_font: z.enum(WEBSITE_FONTS),
@@ -138,6 +147,89 @@ export function createWebsiteHandlers({ db, auth, host, storage }: WebsiteHttpDe
           content: toCamelCaseKeys<WebsiteContent>(b.content),
         });
         return json(await withBrand(actor.tenantId, saved));
+      }),
+
+    // --- faculty and achievers (D141) -----------------------------------------------------------------------------
+
+    // GET /api/v1/website/faculty — the instructors on the website, and those that can be added
+    listFaculty: (request: Request) =>
+      handle(async () => {
+        const actor = await authorize(request, "website.manage");
+        const [items, candidates] = await Promise.all([showcase.listFaculty(db, actor.tenantId), showcase.facultyCandidates(db, actor.tenantId)]);
+        return json({ items, candidates, limit: showcase.MAX_FACULTY });
+      }),
+
+    // POST /api/v1/website/faculty
+    addFaculty: (request: Request) =>
+      handle(async () => {
+        const actor = await authorize(request, "website.manage");
+        const b = await parseBody(request, facultyBody);
+        return json(await showcase.addFaculty(db, actor, { instructorId: b.instructor_id, line: b.line }), 201);
+      }),
+
+    // PATCH /api/v1/website/faculty/:id
+    updateFaculty: (request: Request, params: { id: string }) =>
+      handle(async () => {
+        const actor = await authorize(request, "website.manage");
+        const b = await parseBody(request, facultyLineBody);
+        return json(await showcase.updateFaculty(db, actor, pathId(params.id, "FACULTY"), { line: b.line }));
+      }),
+
+    // DELETE /api/v1/website/faculty/:id — takes the instructor off the website only
+    removeFaculty: (request: Request, params: { id: string }) =>
+      handle(async () => {
+        const actor = await authorize(request, "website.manage");
+        await showcase.removeFaculty(db, actor, pathId(params.id, "FACULTY"));
+        return noContent();
+      }),
+
+    // PUT /api/v1/website/faculty/order
+    reorderFaculty: (request: Request) =>
+      handle(async () => {
+        const actor = await authorize(request, "website.manage");
+        const b = await parseBody(request, orderBody);
+        await showcase.reorderFaculty(db, actor, b.ids);
+        return noContent();
+      }),
+
+    // GET /api/v1/website/achievers
+    listAchievers: (request: Request) =>
+      handle(async () => {
+        const actor = await authorize(request, "website.manage");
+        return json({ items: await showcase.listAchievers(db, actor.tenantId), limit: showcase.MAX_ACHIEVERS });
+      }),
+
+    // POST /api/v1/website/achievers
+    createAchiever: (request: Request) =>
+      handle(async () => {
+        const actor = await authorize(request, "website.manage");
+        const b = await parseBody(request, achieverBody);
+        return json(await showcase.createAchiever(db, actor, { name: b.name, result: b.result, exam: b.exam, photoFileId: b.photo_file_id }), 201);
+      }),
+
+    // PATCH /api/v1/website/achievers/:id
+    updateAchiever: (request: Request, params: { id: string }) =>
+      handle(async () => {
+        const actor = await authorize(request, "website.manage");
+        const b = await parseBody(request, achieverBody);
+        return json(await showcase.updateAchiever(db, actor, pathId(params.id, "ACHIEVER"), { name: b.name, result: b.result, exam: b.exam, photoFileId: b.photo_file_id }));
+      }),
+
+    // DELETE /api/v1/website/achievers/:id
+    removeAchiever: (request: Request, params: { id: string }) =>
+      handle(async () => {
+        const actor = await authorize(request, "website.manage");
+        await showcase.removeAchiever(db, actor, pathId(params.id, "ACHIEVER"));
+        return noContent();
+      }),
+
+    // PUT /api/v1/website/achievers/order
+    reorderAchievers: (request: Request) =>
+      handle(async () => {
+        const actor = await authorize(request, "website.manage");
+        const b = await parseBody(request, orderBody);
+        await showcase.reorderAchievers(db, actor, b.ids);
+        return noContent();
       }),
 
     // --- notices (D128) ---------------------------------------------------------------------------------------

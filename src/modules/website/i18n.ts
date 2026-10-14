@@ -56,6 +56,8 @@ export interface SiteLabels {
   sectionsNav: string;
   close: string;
   more: string;
+  playVideo: string;
+  menu: string;
   follow: string;
   enquiry: EnquiryLabels;
 }
@@ -64,9 +66,15 @@ const EN: SiteLabels = {
   lang: "en",
   num: (t) => t,
   date: (iso) => new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }),
-  nav: { ABOUT: "About", COURSES: "Courses", NOTICES: "Notices", GALLERY: "Gallery", TESTIMONIALS: "Testimonials", ENQUIRY: "Admission", CONTACT: "Contact" },
-  title: { ABOUT: "About", COURSES: "Courses", NOTICES: "Notices", GALLERY: "Gallery", TESTIMONIALS: "What our students say", ENQUIRY: "Admission enquiry", CONTACT: "Contact us" },
-  subtitle: { COURSES: "Our courses, subjects and class times." },
+  nav: {
+    ABOUT: "About", STATS: "Results", FEATURES: "Why us", COURSES: "Courses", FACULTY: "Teachers", ACHIEVERS: "Achievers", NOTICES: "Notices", GALLERY: "Gallery", VIDEO: "Video",
+    TESTIMONIALS: "Testimonials", FAQ: "FAQ", ENQUIRY: "Admission", CONTACT: "Contact",
+  },
+  title: {
+    ABOUT: "About", STATS: "Our results in numbers", FEATURES: "Why choose us", COURSES: "Courses", FACULTY: "Our teachers", ACHIEVERS: "Our achievers", NOTICES: "Notices",
+    GALLERY: "Gallery", VIDEO: "See us in action", TESTIMONIALS: "What our students say", FAQ: "Frequently asked questions", ENQUIRY: "Admission enquiry", CONTACT: "Contact us",
+  },
+  subtitle: { COURSES: "Our courses, subjects and class times.", ACHIEVERS: "Students who made us proud." },
   aboutTitle: (name) => `About ${name}`,
   welcome: "Welcome",
   enquire: "Enquire about admission",
@@ -87,6 +95,8 @@ const EN: SiteLabels = {
   sectionsNav: "Sections",
   close: "Close",
   more: "Learn more",
+  playVideo: "Play video",
+  menu: "Menu",
   follow: "Follow us",
   enquiry: {
     form: "Admission enquiry",
@@ -111,9 +121,15 @@ const BN: SiteLabels = {
   lang: "bn",
   num: bnDigits,
   date: (iso) => new Date(`${iso}T00:00:00Z`).toLocaleDateString("bn-BD", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }),
-  nav: { ABOUT: "আমাদের কথা", COURSES: "কোর্স", NOTICES: "নোটিশ", GALLERY: "গ্যালারি", TESTIMONIALS: "মতামত", ENQUIRY: "ভর্তি", CONTACT: "যোগাযোগ" },
-  title: { ABOUT: "আমাদের কথা", COURSES: "কোর্সসমূহ", NOTICES: "নোটিশ", GALLERY: "গ্যালারি", TESTIMONIALS: "শিক্ষার্থীরা যা বলে", ENQUIRY: "ভর্তি সংক্রান্ত জিজ্ঞাসা", CONTACT: "যোগাযোগ করুন" },
-  subtitle: { COURSES: "আমাদের কোর্স, বিষয় ও ক্লাসের সময়।" },
+  nav: {
+    ABOUT: "আমাদের কথা", STATS: "ফলাফল", FEATURES: "কেন আমরা", COURSES: "কোর্স", FACULTY: "শিক্ষক", ACHIEVERS: "কৃতী শিক্ষার্থী", NOTICES: "নোটিশ", GALLERY: "গ্যালারি", VIDEO: "ভিডিও",
+    TESTIMONIALS: "মতামত", FAQ: "জিজ্ঞাসা", ENQUIRY: "ভর্তি", CONTACT: "যোগাযোগ",
+  },
+  title: {
+    ABOUT: "আমাদের কথা", STATS: "সংখ্যায় আমাদের সাফল্য", FEATURES: "কেন আমাদের বেছে নেবেন", COURSES: "কোর্সসমূহ", FACULTY: "আমাদের শিক্ষকবৃন্দ", ACHIEVERS: "আমাদের কৃতী শিক্ষার্থী",
+    NOTICES: "নোটিশ", GALLERY: "গ্যালারি", VIDEO: "ভিডিওতে আমরা", TESTIMONIALS: "শিক্ষার্থীরা যা বলে", FAQ: "সাধারণ জিজ্ঞাসা", ENQUIRY: "ভর্তি সংক্রান্ত জিজ্ঞাসা", CONTACT: "যোগাযোগ করুন",
+  },
+  subtitle: { COURSES: "আমাদের কোর্স, বিষয় ও ক্লাসের সময়।", ACHIEVERS: "যাদের সাফল্যে আমরা গর্বিত।" },
   aboutTitle: (name) => `${name} সম্পর্কে`,
   welcome: "স্বাগতম",
   enquire: "ভর্তির জন্য যোগাযোগ করুন",
@@ -134,6 +150,8 @@ const BN: SiteLabels = {
   sectionsNav: "বিভাগসমূহ",
   close: "বন্ধ করুন",
   more: "বিস্তারিত",
+  playVideo: "ভিডিও চালান",
+  menu: "মেনু",
   follow: "আমাদের অনুসরণ করুন",
   enquiry: {
     form: "ভর্তি সংক্রান্ত জিজ্ঞাসা",

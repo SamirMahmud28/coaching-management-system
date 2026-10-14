@@ -86,12 +86,16 @@ describe("website settings (D124, D126, D131)", () => {
     await expect(saveWebsiteSettings(db, s.actor, input({ aboutImageFileId: foreign.id }))).rejects.toMatchObject({ code: "VALIDATION_FILE_REFERENCE" });
   });
 
-  it("lists a section added to the product after the last save, switched on", async () => {
+  it("puts a section added to the product after the last save in its natural place, switched on", async () => {
     const s = await institute();
     await saveWebsiteSettings(db, s.actor, input());
-    await testDb.update(websiteSettings).set({ sections: DEFAULT_SECTIONS.filter((x) => x.key !== "GALLERY") }).where(eq(websiteSettings.tenantId, s.tenant.id));
+    // A row saved before Website Pro: the seven original sections, in the institute's own order.
+    const old = ["CONTACT", "ABOUT", "COURSES", "NOTICES", "GALLERY", "TESTIMONIALS", "ENQUIRY"].map((key) => ({ key, enabled: key !== "NOTICES" }));
+    await testDb.update(websiteSettings).set({ sections: old as WebsiteSectionSetting[] }).where(eq(websiteSettings.tenantId, s.tenant.id));
     const sections = (await getWebsiteSettings(db, s.tenant.id)).sections;
-    expect(sections.at(-1)).toEqual({ key: "GALLERY", enabled: true });
+    expect(sections.map((x) => x.key)).toEqual(["CONTACT", "ABOUT", "STATS", "FEATURES", "COURSES", "FACULTY", "ACHIEVERS", "NOTICES", "GALLERY", "VIDEO", "TESTIMONIALS", "FAQ", "ENQUIRY"]);
+    expect(sections.find((x) => x.key === "NOTICES")?.enabled).toBe(false);
+    expect(sections.find((x) => x.key === "FAQ")?.enabled).toBe(true);
     expect(sections).toHaveLength(DEFAULT_SECTIONS.length);
   });
 
@@ -167,6 +171,7 @@ describe("website layout, words and language (D135, D138, D140)", () => {
     }));
     expect(saved.design).toEqual(design);
     expect(saved.content).toEqual({
+      ...DEFAULT_CONTENT,
       sectionTitles: { COURSES: { title: "আমাদের কোর্স", subtitle: null } },
       announcement: { text: "Admission open", linkUrl: "#enquiry", linkLabel: "Enquire now", showUntil: "2026-12-31" },
       social: { ...DEFAULT_CONTENT.social, facebook: "https://facebook.com/alo.coaching", youtube: "https://www.youtube.com/@alo" },
@@ -212,6 +217,52 @@ describe("website layout, words and language (D135, D138, D140)", () => {
     const read = await getWebsiteSettings(db, s.tenant.id);
     expect(read.content).toEqual(DEFAULT_CONTENT);
     expect(read.design).toMatchObject({ palette: "OCEAN", headerStyle: "SOLID", heroLayout: "THEME", language: "EN" });
+  });
+});
+
+describe("Stats, Why choose us, FAQ and Video (D138)", () => {
+  const content = (o: Partial<WebsiteContent> = {}): WebsiteContent => ({ ...DEFAULT_CONTENT, ...o });
+
+  it("saves the lists and turns any YouTube address into its video id", async () => {
+    const s = await institute();
+    const saved = await saveWebsiteSettings(db, s.actor, input({
+      content: content({
+        stats: [{ value: 1200, suffix: "+", label: " Students taught " }, { value: 98, suffix: "%", label: "Pass rate" }],
+        features: [{ icon: "Users", title: "Small batches", text: "At most 25 students." }],
+        faqs: [{ question: "When does admission open?", answer: "In January." }],
+        video: { youtubeId: "https://www.youtube.com/watch?v=dQw4w9WgXcQ&t=10s", title: "Our classrooms" },
+      }),
+    }));
+    expect(saved.content).toMatchObject({
+      stats: [{ value: 1200, suffix: "+", label: "Students taught" }, { value: 98, suffix: "%", label: "Pass rate" }],
+      features: [{ icon: "Users", title: "Small batches", text: "At most 25 students." }],
+      faqs: [{ question: "When does admission open?", answer: "In January." }],
+      video: { youtubeId: "dQw4w9WgXcQ", title: "Our classrooms" },
+    });
+    for (const link of ["https://youtu.be/dQw4w9WgXcQ", "youtube.com/shorts/dQw4w9WgXcQ", "https://m.youtube.com/embed/dQw4w9WgXcQ"]) {
+      const again = await saveWebsiteSettings(db, s.actor, input({ content: content({ video: { youtubeId: link, title: null } }) }));
+      expect(again.content.video?.youtubeId).toBe("dQw4w9WgXcQ");
+    }
+    await setModules(db, s.tenant.id, ["website"]);
+    expect((await getPublicWebsite(db, s.tenant.id))?.settings.content.video?.youtubeId).toBe("dQw4w9WgXcQ");
+  });
+
+  it.each([
+    [{ stats: [{ value: -1, suffix: null, label: "x" }] }, "VALIDATION_NUMBER"],
+    [{ stats: [{ value: 1.5, suffix: null, label: "x" }] }, "VALIDATION_NUMBER"],
+    [{ stats: [{ value: 10_000_001, suffix: null, label: "x" }] }, "VALIDATION_NUMBER"],
+    [{ stats: [{ value: 1, suffix: "+++++", label: "x" }] }, "VALIDATION_TEXT"],
+    [{ stats: [{ value: 1, suffix: null, label: "" }] }, "VALIDATION_REQUIRED"],
+    [{ stats: Array.from({ length: 7 }, () => ({ value: 1, suffix: null, label: "x" })) }, "VALIDATION_TOO_MANY"],
+    [{ features: [{ icon: "Skull", title: "x", text: null }] }, "VALIDATION_CHOICE"],
+    [{ features: [{ icon: "Star", title: "", text: null }] }, "VALIDATION_REQUIRED"],
+    [{ faqs: [{ question: "Q?", answer: "" }] }, "VALIDATION_REQUIRED"],
+    [{ faqs: Array.from({ length: 21 }, () => ({ question: "Q", answer: "A" })) }, "VALIDATION_TOO_MANY"],
+    [{ video: { youtubeId: "https://vimeo.com/12345", title: null } }, "VALIDATION_LINK"],
+    [{ video: { youtubeId: "https://evil.example.com/watch?v=dQw4w9WgXcQ", title: null } }, "VALIDATION_LINK"],
+  ])("refuses %o", async (o, code) => {
+    const s = await institute();
+    await expect(saveWebsiteSettings(db, s.actor, input({ content: content(o as Partial<WebsiteContent>) }))).rejects.toMatchObject({ code });
   });
 });
 

@@ -1,8 +1,8 @@
 import type {
   Appearance, Background, BodyFont, ButtonStyle, CardStyle, CourseLayout, Density, GalleryLayout, GradientChoice, HeaderStyle, HeroLayout, HeroOverlay,
-  NoticeLayout, PaletteChoice, Radius, SiteLanguage, TestimonialLayout, TextSize, WebsiteFont, WebsiteTheme,
+  FaqLayout, NoticeLayout, PaletteChoice, Radius, SiteLanguage, TestimonialLayout, TextSize, WebsiteFont, WebsiteTheme,
 } from "@/server/modules/website/design";
-import type { SocialNetwork } from "@/server/modules/website/site-content";
+import type { FeatureIcon, SocialNetwork } from "@/server/modules/website/site-content";
 import { apiFetch } from "@/lib/api-client";
 import type { AuditLogRow } from "@/components/shared/audit-log-table";
 import type { ModuleKey } from "@/server/core/modules/registry";
@@ -1036,7 +1036,8 @@ export const lessonsApi = {
 
 // --- Website (paid module `website`) -----------------------------------------------------------------------------
 
-export type WebsiteSectionKey = "ABOUT" | "COURSES" | "NOTICES" | "GALLERY" | "TESTIMONIALS" | "ENQUIRY" | "CONTACT";
+export type { WebsiteSectionKey } from "@/server/modules/website/design";
+import type { WebsiteSectionKey } from "@/server/modules/website/design";
 
 /** The design settings on the wire (D135, D136); values are those of `src/server/modules/website/design.ts`. */
 export interface WebsiteDesignWire {
@@ -1059,6 +1060,7 @@ export interface WebsiteDesignWire {
   testimonial_layout: TestimonialLayout;
   course_layout: CourseLayout;
   notice_layout: NoticeLayout;
+  faq_layout: FaqLayout;
   language: SiteLanguage;
 }
 
@@ -1067,6 +1069,10 @@ export interface WebsiteContentWire {
   section_titles: Partial<Record<WebsiteSectionKey, { title: string | null; subtitle: string | null }>>;
   announcement: { text: string; link_url: string | null; link_label: string | null; show_until: string | null } | null;
   social: Record<SocialNetwork, string | null>;
+  stats: { value: number; suffix: string | null; label: string }[];
+  features: { icon: FeatureIcon; title: string; text: string | null }[];
+  faqs: { question: string; answer: string }[];
+  video: { youtube_id: string; title: string | null } | null;
 }
 
 export interface WebsiteSettingsBody {
@@ -1122,6 +1128,32 @@ export interface GalleryPhotoRow {
   caption: string | null;
 }
 
+/** An instructor shown on the website (D141). */
+export interface FacultyRow {
+  id: string;
+  instructor_id: string;
+  name: string;
+  photo_file_id: string | null;
+  status: "ACTIVE" | "INACTIVE";
+  line: string | null;
+  subjects: string[];
+}
+
+export interface AchieverRow {
+  id: string;
+  name: string;
+  result: string;
+  exam: string | null;
+  photo_file_id: string | null;
+}
+
+export interface AchieverBody {
+  name: string;
+  result: string;
+  exam: string | null;
+  photo_file_id: string | null;
+}
+
 export interface TestimonialRow {
   id: string;
   quote: string;
@@ -1153,6 +1185,16 @@ export const websiteContentApi = {
   updateTestimonial: (id: string, body: TestimonialBody) => apiFetch<TestimonialRow>(`/api/v1/website/testimonials/${id}`, { method: "PATCH", body }),
   removeTestimonial: (id: string) => apiFetch<void>(`/api/v1/website/testimonials/${id}`, { method: "DELETE" }),
   reorderTestimonials: (ids: string[]) => apiFetch<void>("/api/v1/website/testimonials/order", { method: "PUT", body: { ids } }),
+  faculty: () => apiFetch<{ items: FacultyRow[]; candidates: { id: string; name: string }[]; limit: number }>("/api/v1/website/faculty"),
+  addFaculty: (body: { instructor_id: string; line: string | null }) => apiFetch<FacultyRow>("/api/v1/website/faculty", { body }),
+  updateFaculty: (id: string, line: string | null) => apiFetch<FacultyRow>(`/api/v1/website/faculty/${id}`, { method: "PATCH", body: { line } }),
+  removeFaculty: (id: string) => apiFetch<void>(`/api/v1/website/faculty/${id}`, { method: "DELETE" }),
+  reorderFaculty: (ids: string[]) => apiFetch<void>("/api/v1/website/faculty/order", { method: "PUT", body: { ids } }),
+  achievers: () => apiFetch<{ items: AchieverRow[]; limit: number }>("/api/v1/website/achievers"),
+  createAchiever: (body: AchieverBody) => apiFetch<AchieverRow>("/api/v1/website/achievers", { body }),
+  updateAchiever: (id: string, body: AchieverBody) => apiFetch<AchieverRow>(`/api/v1/website/achievers/${id}`, { method: "PATCH", body }),
+  removeAchiever: (id: string) => apiFetch<void>(`/api/v1/website/achievers/${id}`, { method: "DELETE" }),
+  reorderAchievers: (ids: string[]) => apiFetch<void>("/api/v1/website/achievers/order", { method: "PUT", body: { ids } }),
 };
 
 export type EnquiryStatus = "NEW" | "CONTACTED" | "CONVERTED" | "CLOSED";

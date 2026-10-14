@@ -258,3 +258,54 @@ test("W6: the Owner sets the layout, writes an announcement, adds Facebook and s
   await form.getByRole("button", { name: "পাঠান" }).click();
   await expect(form.getByText("শিক্ষার্থীর নাম লিখুন।")).toBeVisible();
 });
+
+test("W7: the Owner adds stats, a reason, a question, a video, an instructor and an achiever (D138, D141)", async ({ page }) => {
+  await signInAsOwner(page);
+  await page.getByRole("link", { name: "Website", exact: true }).click();
+
+  await page.getByRole("tab", { name: "Content" }).click();
+  await page.getByRole("button", { name: "Add a number" }).click();
+  await page.getByLabel("Number", { exact: true }).fill("1200");
+  await page.getByLabel("What it counts").fill("Students taught");
+  await page.getByRole("button", { name: "Add a reason" }).click();
+  await page.locator("#feature-0-title").fill("Small batches");
+  await page.getByRole("button", { name: "Add a question" }).click();
+  await page.getByLabel("Question", { exact: true }).fill("When does admission open?");
+  await page.getByLabel("Answer", { exact: true }).fill("In January, for every batch.");
+  await page.getByLabel("YouTube address").fill("https://youtu.be/dQw4w9WgXcQ");
+  await page.getByRole("button", { name: "Save website" }).click();
+  await expect(page.getByText("Website saved. It's public now.")).toBeVisible();
+
+  await page.getByRole("link", { name: "Faculty", exact: true }).click();
+  await page.getByRole("button", { name: "Add instructor" }).click();
+  const facultyDialog = page.getByRole("dialog");
+  await facultyDialog.getByLabel("Instructor").click();
+  await page.getByRole("option", { name: "Kamal Uddin" }).click();
+  await facultyDialog.getByLabel("Line under the name").fill("Dhaka University, 10 years");
+  await facultyDialog.getByRole("button", { name: "Add to website" }).click();
+  await expect(page.getByTestId("faculty")).toContainText("Kamal Uddin");
+
+  await page.getByRole("link", { name: "Achievers", exact: true }).click();
+  await page.getByRole("button", { name: "Add achiever" }).click();
+  const achieverDialog = page.getByRole("dialog");
+  await achieverDialog.getByLabel("Student's name").fill("Nabila Hossain");
+  await achieverDialog.getByLabel("Result").fill("GPA 5.00");
+  await achieverDialog.getByLabel("Exam").fill("SSC 2026");
+  await achieverDialog.getByRole("button", { name: "Save achiever" }).click();
+  await expect(page.getByTestId("achievers")).toContainText("Nabila Hossain");
+
+  await page.goto(url("/"));
+  await expect(page.getByTestId("public-stat")).toContainText("১,২০০"); // the site is in Bangla since W6
+  await expect(page.getByTestId("public-feature")).toContainText("Small batches");
+  await expect(page.getByTestId("public-faculty")).toContainText("Kamal Uddin");
+  await expect(page.getByTestId("public-faculty")).toContainText("Dhaka University, 10 years");
+  await expect(page.getByTestId("public-faculty")).not.toContainText("kamal@prottasha.test");
+  await expect(page.getByTestId("public-achiever")).toContainText("GPA 5.00");
+  const faq = page.getByTestId("public-faq");
+  await faq.getByText("When does admission open?").click();
+  await expect(faq.getByText("In January, for every batch.")).toBeVisible();
+  // The video is a picture with a play button; the YouTube player loads only after a tap.
+  await expect(page.getByTestId("section-video").locator("iframe")).toHaveCount(0);
+  await page.getByTestId("section-video").getByRole("button").click();
+  await expect(page.getByTestId("section-video").locator("iframe")).toHaveAttribute("src", /youtube-nocookie\.com\/embed\/dQw4w9WgXcQ/);
+});

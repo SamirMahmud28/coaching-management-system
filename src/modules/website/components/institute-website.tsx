@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { Menu } from "lucide-react";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -12,12 +13,16 @@ import { AnnouncementBar } from "./announcement-bar";
 import { About, Courses, Gallery, Notices, Testimonials } from "./sections/content";
 import { Hero } from "./sections/hero";
 import { Contact, contactsOf, Enquiry } from "./sections/reach";
+import { Achievers, Faculty, Faqs, Features, Stats, Video } from "./sections/showcase";
 import { SocialLinks, type SectionProps, type Site } from "./sections/shared";
 import "../website.css";
 
 // The institute's public website (Website module, D20, D124–D141). Server-rendered; every section is filled from the
 // institute's own data and drawn in the theme's composition with the design settings as CSS variables, with the
 // built-in labels in the site's language. Sections without content are left out, together with their menu link.
+
+/** Sections that sit between others without a menu link of their own, so the menu stays short. */
+const NOT_IN_MENU: WebsiteSectionKey[] = ["STATS", "FEATURES", "VIDEO"];
 
 export function InstituteWebsite({ site }: { site: Site }) {
   const { settings, profile } = site;
@@ -34,6 +39,9 @@ export function InstituteWebsite({ site }: { site: Site }) {
     .map((s) => ({ key: s.key, node: renderSection(s.key, props) }))
     .filter((s): s is { key: WebsiteSectionKey; node: ReactNode } => s.node !== null);
   const has = (key: WebsiteSectionKey) => rendered.some((s) => s.key === key);
+  const menu = rendered.filter((s) => !NOT_IN_MENU.includes(s.key));
+  // A long menu needs the wider screens to fit beside the name.
+  const wide = menu.length > 7 ? "xl" : "lg";
   const name = profile.shortName ?? profile.name;
 
   const brand = (
@@ -47,15 +55,31 @@ export function InstituteWebsite({ site }: { site: Site }) {
   );
   const nav = (className?: string) => (
     <nav aria-label={t.sectionsNav} className={cn("items-center gap-5 text-sm text-muted-foreground", className)}>
-      {rendered.map((s) => (
+      {menu.map((s) => (
         <a key={s.key} href={`#${s.key.toLowerCase()}`} className="hover:text-[var(--site-primary-ink)]">
           {t.nav[s.key]}
         </a>
       ))}
     </nav>
   );
+  // Phones and tablets: the same links in a drop-down that works without any script.
+  const phoneMenu = menu.length > 0 && (
+    <details className={cn("group relative", wide === "xl" ? "xl:hidden" : "lg:hidden")}>
+      <summary aria-label={t.menu} className="flex size-9 cursor-pointer list-none items-center justify-center rounded-md hover:bg-muted [&::-webkit-details-marker]:hidden">
+        <Menu aria-hidden className="size-5" />
+      </summary>
+      <nav aria-label={t.menu} className="absolute right-0 z-30 mt-2 flex w-56 flex-col rounded-[var(--site-radius)] border bg-background p-2 text-sm shadow-xl">
+        {menu.map((s) => (
+          <a key={s.key} href={`#${s.key.toLowerCase()}`} className="rounded-md px-3 py-2 hover:bg-muted hover:text-[var(--site-primary-ink)]">
+            {t.nav[s.key]}
+          </a>
+        ))}
+      </nav>
+    </details>
+  );
   const actions = (
     <div className="flex shrink-0 items-center gap-2">
+      {phoneMenu}
       <SocialLinks site={site} className="hidden xl:flex" />
       {design.appearance === "VISITOR" && <ThemeToggle />}
       <Button asChild variant="outline">
@@ -106,7 +130,7 @@ export function InstituteWebsite({ site }: { site: Site }) {
         ) : (
           <div className="mx-auto flex w-full max-w-6xl items-center gap-3 px-4 py-3 sm:px-6">
             <div className="min-w-0 flex-1">{brand}</div>
-            {nav("hidden lg:flex")}
+            {nav(wide === "xl" ? "hidden xl:flex" : "hidden lg:flex")}
             {actions}
           </div>
         )}
@@ -153,5 +177,17 @@ function renderSection(key: WebsiteSectionKey, props: SectionProps): ReactNode |
       return s.testimonials.length ? <Testimonials {...props} /> : null;
     case "ENQUIRY":
       return <Enquiry {...props} />;
+    case "STATS":
+      return s.settings.content.stats.length ? <Stats {...props} /> : null;
+    case "FEATURES":
+      return s.settings.content.features.length ? <Features {...props} /> : null;
+    case "FACULTY":
+      return s.faculty.length ? <Faculty {...props} /> : null;
+    case "ACHIEVERS":
+      return s.achievers.length ? <Achievers {...props} /> : null;
+    case "VIDEO":
+      return s.settings.content.video ? <Video {...props} /> : null;
+    case "FAQ":
+      return s.settings.content.faqs.length ? <Faqs {...props} /> : null;
   }
 }

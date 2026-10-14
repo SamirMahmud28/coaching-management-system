@@ -15,13 +15,14 @@ import { cn } from "@/lib/utils";
 import { SocialIcon, SOCIAL_LABEL } from "@/modules/website/components/sections/shared";
 import { SITE_LABELS } from "@/modules/website/i18n";
 import {
-  COURSE_LAYOUT_OPTIONS, GALLERY_LAYOUT_OPTIONS, HEADER_STYLE_OPTIONS, HERO_BUTTON_OPTIONS, HERO_LAYOUT_OPTIONS, HERO_OVERLAY_OPTIONS, LANGUAGE_OPTIONS,
+  COURSE_LAYOUT_OPTIONS, FAQ_LAYOUT_OPTIONS, GALLERY_LAYOUT_OPTIONS, HEADER_STYLE_OPTIONS, HERO_BUTTON_OPTIONS, HERO_LAYOUT_OPTIONS, HERO_OVERLAY_OPTIONS, LANGUAGE_OPTIONS,
   NOTICE_LAYOUT_OPTIONS, SECTION_LABELS, TESTIMONIAL_LAYOUT_OPTIONS,
 } from "@/modules/website/options";
 import { THEMES } from "@/modules/website/themes";
 import type { WebsiteDesign } from "@/server/modules/website/design";
 import { ANNOUNCEMENT_MAX, SOCIAL_NETWORKS } from "@/server/modules/website/site-content";
 import type { WebsiteDesignWire } from "../../api";
+import { FaqCard, FeaturesCard, StatsCard, VideoCard } from "./content-lists";
 import { HeroThumb, Segmented } from "./design-controls";
 import type { EditorValues } from "./editor-schema";
 
@@ -46,6 +47,8 @@ const DRAW: Record<string, React.ReactNode> = {
   "gallery:CAROUSEL": <span className="flex w-14 gap-0.5 overflow-hidden">{[0, 1, 2].map((i) => <span key={i} className="h-6 w-6 shrink-0 rounded-[2px] bg-foreground/25" />)}</span>,
   "testimonials:GRID": <span className="grid w-14 grid-cols-3 gap-0.5">{[0, 1, 2].map((i) => <span key={i} className="h-5 rounded-sm border" />)}</span>,
   "testimonials:CAROUSEL": <span className="flex w-14 gap-0.5 overflow-hidden">{[0, 1, 2].map((i) => <span key={i} className="h-5 w-6 shrink-0 rounded-sm border" />)}</span>,
+  "faq:ACCORDION": <span className="flex w-14 flex-col gap-0.5">{[0, 1, 2].map((i) => <span key={i} className="h-1.5 rounded-sm border" />)}</span>,
+  "faq:TWO_COLUMN": <span className="grid w-14 grid-cols-2 gap-0.5">{[0, 1, 2, 3].map((i) => <span key={i} className="h-1.5 rounded-sm border" />)}</span>,
   "testimonials:SPOTLIGHT": <span className="flex w-14 flex-col items-center gap-0.5"><Bar className="h-1.5 w-12" /><Bar className="h-1.5 w-9" /><span className="mt-0.5 size-2 rounded-full bg-foreground/40" /></span>,
 };
 
@@ -104,6 +107,7 @@ export function LayoutTab({ designField, design, theme, headingFont, brand }: { 
               ["Notices", "notice_layout", NOTICE_LAYOUT_OPTIONS, "notices"],
               ["Gallery", "gallery_layout", GALLERY_LAYOUT_OPTIONS, "gallery"],
               ["Testimonials", "testimonial_layout", TESTIMONIAL_LAYOUT_OPTIONS, "testimonials"],
+              ["Questions & answers", "faq_layout", FAQ_LAYOUT_OPTIONS, "faq"],
             ] as const
           ).map(([label, key, options, draw]) => (
             <div key={key} className="space-y-2">
@@ -229,6 +233,11 @@ export function ContentTab({ form, designField, brandPhone }: { form: Form; desi
           </FormField>
         </CardContent>
       </Card>
+
+      <StatsCard form={form} />
+      <FeaturesCard form={form} />
+      <FaqCard form={form} />
+      <VideoCard form={form} />
 
       <Card>
         <CardHeader>
