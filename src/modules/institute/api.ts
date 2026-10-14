@@ -1,6 +1,6 @@
 import type {
   Appearance, Background, BodyFont, ButtonStyle, CardStyle, CourseLayout, Density, GalleryLayout, GradientChoice, HeaderStyle, HeroLayout, HeroOverlay,
-  FaqLayout, NoticeLayout, PaletteChoice, Radius, SiteLanguage, TestimonialLayout, TextSize, WebsiteFont, WebsiteTheme,
+  FaqLayout, MotionLevel, NoticeLayout, PaletteChoice, Radius, SiteLanguage, TestimonialLayout, TextSize, WebsiteFont, WebsiteTheme,
 } from "@/server/modules/website/design";
 import type { FeatureIcon, SocialNetwork } from "@/server/modules/website/site-content";
 import { apiFetch } from "@/lib/api-client";
@@ -1061,6 +1061,7 @@ export interface WebsiteDesignWire {
   course_layout: CourseLayout;
   notice_layout: NoticeLayout;
   faq_layout: FaqLayout;
+  motion: MotionLevel;
   language: SiteLanguage;
 }
 

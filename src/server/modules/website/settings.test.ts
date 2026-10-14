@@ -220,6 +220,16 @@ describe("website layout, words and language (D135, D138, D140)", () => {
   });
 });
 
+describe("motion strength (D145)", () => {
+  it("saves the motion level, refuses an unknown one, and defaults old rows to Normal", async () => {
+    const s = await institute();
+    expect((await saveWebsiteSettings(db, s.actor, input({ design: { ...DEFAULT_DESIGN, motion: "LIVELY" } }))).design.motion).toBe("LIVELY");
+    await expect(saveWebsiteSettings(db, s.actor, input({ design: { ...DEFAULT_DESIGN, motion: "WILD" as never } }))).rejects.toMatchObject({ code: "VALIDATION_CHOICE" });
+    await testDb.update(websiteSettings).set({ design: {} }).where(eq(websiteSettings.tenantId, s.tenant.id));
+    expect((await getWebsiteSettings(db, s.tenant.id)).design.motion).toBe("NORMAL");
+  });
+});
+
 describe("pages and the home page (D142, D143)", () => {
   it("saves which sections are on Home; rows saved before pages existed get the default Home set", async () => {
     const s = await institute();

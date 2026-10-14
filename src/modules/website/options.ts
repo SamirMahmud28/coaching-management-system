@@ -167,6 +167,13 @@ export const FAQ_LAYOUT_OPTIONS: { value: "ACCORDION" | "TWO_COLUMN"; label: str
   { value: "TWO_COLUMN", label: "Two columns" },
 ];
 
+export const MOTION_OPTIONS: { value: "OFF" | "SUBTLE" | "NORMAL" | "LIVELY"; label: string; description: string }[] = [
+  { value: "OFF", label: "Off", description: "Nothing moves." },
+  { value: "SUBTLE", label: "Subtle", description: "Sections fade in gently; no tilting or floating shapes." },
+  { value: "NORMAL", label: "Normal", description: "Sections glide in, numbers count up, cards tilt, 3D shapes float." },
+  { value: "LIVELY", label: "Lively", description: "Everything in Normal, with bigger movements and more shapes." },
+];
+
 export const LANGUAGE_OPTIONS: { value: SiteLanguage; label: string; sample: string }[] = [
   { value: "EN", label: "English", sample: "Courses · Notices · Admission enquiry · Contact us" },
   { value: "BN", label: "বাংলা", sample: "কোর্সসমূহ · নোটিশ · ভর্তি সংক্রান্ত জিজ্ঞাসা · যোগাযোগ করুন" },

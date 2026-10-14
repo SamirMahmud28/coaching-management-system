@@ -16,12 +16,13 @@ import { submitForm } from "@/lib/feedback";
 import { cn } from "@/lib/utils";
 import { HowThisWorks } from "@/modules/institute/help/how-this-works";
 import {
-  APPEARANCE_OPTIONS, BODY_FONT_OPTIONS, BUTTON_STYLE_OPTIONS, CARD_STYLE_OPTIONS, DENSITY_OPTIONS, FONT_OPTIONS, RADIUS_OPTIONS, TEXT_SIZE_OPTIONS, THEME_OPTIONS,
+  APPEARANCE_OPTIONS, BODY_FONT_OPTIONS, MOTION_OPTIONS, BUTTON_STYLE_OPTIONS, CARD_STYLE_OPTIONS, DENSITY_OPTIONS, FONT_OPTIONS, RADIUS_OPTIONS, TEXT_SIZE_OPTIONS, THEME_OPTIONS,
 } from "@/modules/website/options";
 import { siteColours } from "@/modules/website/tokens";
 import { websiteApi, type WebsiteDesignWire, type WebsiteSettingsRow } from "../../api";
 import { instituteKeys } from "../../keys";
-import { BackgroundPicker, FontSelect, fromWire, GradientPicker, PalettePicker, presetWire, Segmented, SiteScope, StyleSample, ThemePicker } from "./design-controls";
+import { BackgroundPicker, FontSelect, fromWire, GradientPicker, LookPicker, lookWire, PalettePicker, presetWire, Segmented, SiteScope, StyleSample, ThemePicker } from "./design-controls";
+import type { Look } from "@/modules/website/looks";
 import { editorSchema, toBody, toEditorValues, toPreviewSettings, type EditorValues } from "./editor-schema";
 import { ContentTab, LayoutTab, SectionsTab } from "./editor-tabs";
 import { PreviewPanel } from "./preview-panel";
@@ -55,7 +56,7 @@ function Editor({ settings }: { settings: WebsiteSettingsRow }) {
   const form = useForm<EditorValues>({ resolver: zodResolver(editorSchema), defaultValues: toEditorValues(settings) });
   const errors = form.formState.errors;
   const brand = settings.brand;
-  const [undo, setUndo] = useState<{ theme: EditorValues["theme"]; heading_font: EditorValues["heading_font"]; design: WebsiteDesignWire } | null>(null);
+  const [undo, setUndo] = useState<{ theme: EditorValues["theme"]; heading_font: EditorValues["heading_font"]; design: WebsiteDesignWire; note: string; from: "look" | "theme" } | null>(null);
 
   const theme = useWatch({ control: form.control, name: "theme" });
   const headingFont = useWatch({ control: form.control, name: "heading_font" });
@@ -70,11 +71,19 @@ function Editor({ settings }: { settings: WebsiteSettingsRow }) {
   /** Picking a theme also applies its fonts, shapes, background and layouts; the colours and language stay. One click undoes it. */
   function pickTheme(next: EditorValues["theme"]) {
     if (next === theme) return;
-    setUndo({ theme, heading_font: headingFont, design: form.getValues("design") });
+    setUndo({ theme, heading_font: headingFont, design: form.getValues("design"), from: "theme", note: `Fonts, shapes, background and motion now follow ${THEME_OPTIONS.find((o) => o.value === next)?.label}.` });
     const preset = presetWire(next, form.getValues("design"));
     form.setValue("theme", next, { shouldDirty: true });
     form.setValue("heading_font", preset.heading_font, { shouldDirty: true });
     form.setValue("design", preset.design, { shouldDirty: true });
+  }
+  /** A ready-made look changes the theme, colours, fonts and layouts together (D146); Undo brings everything back. */
+  function pickLook(look: Look) {
+    setUndo({ theme, heading_font: headingFont, design: form.getValues("design"), from: "look", note: `Now using the ${look.label} look: change anything you like below.` });
+    const next = lookWire(look, form.getValues("design"));
+    form.setValue("theme", next.theme, { shouldDirty: true });
+    form.setValue("heading_font", next.heading_font, { shouldDirty: true });
+    form.setValue("design", next.design, { shouldDirty: true });
   }
   function undoTheme() {
     if (!undo) return;
@@ -98,7 +107,6 @@ function Editor({ settings }: { settings: WebsiteSettingsRow }) {
     );
   }
 
-  const themeLabel = THEME_OPTIONS.find((o) => o.value === theme)?.label;
   const primary = siteColours(designValue, brand.primary_color).primary;
 
   return (
@@ -117,14 +125,32 @@ function Editor({ settings }: { settings: WebsiteSettingsRow }) {
             <div className="min-w-0 space-y-6">
               <Card>
                 <CardHeader>
+                  <CardTitle className="text-base">Ready-made looks</CardTitle>
+                  <CardDescription>A complete style in one click: theme, colours, fonts and layouts together. Then change anything you like. Your words and language stay.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <LookPicker onPick={pickLook} brand={brand.primary_color} />
+                  {undo?.from === "look" && (
+                    <p role="status" className="text-sm text-muted-foreground">
+                      {undo.note}{" "}
+                      <button type="button" onClick={undoTheme} className="font-medium text-foreground underline">
+                        Undo
+                      </button>
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
                   <CardTitle className="text-base">Theme</CardTitle>
                   <CardDescription>The theme sets the layout and its own fonts, shapes and background. Your colours stay; change anything below afterwards.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <ThemePicker value={theme} onChange={pickTheme} design={designValue} brand={brand.primary_color} />
-                  {undo && (
+                  {undo?.from === "theme" && (
                     <p role="status" className="text-sm text-muted-foreground">
-                      Fonts, shapes and background now follow {themeLabel}.{" "}
+                      {undo.note}{" "}
                       <button type="button" onClick={undoTheme} className="font-medium text-foreground underline">
                         Undo
                       </button>
@@ -249,6 +275,30 @@ function Editor({ settings }: { settings: WebsiteSettingsRow }) {
                         </button>
                       ))}
                     </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Motion</CardTitle>
+                  <CardDescription>How much the website moves. Visitors who ask their phone for less motion always get a still website.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div role="radiogroup" aria-label="Motion" className="grid gap-2 sm:grid-cols-4">
+                    {MOTION_OPTIONS.map((o) => (
+                      <button
+                        key={o.value}
+                        type="button"
+                        role="radio"
+                        aria-checked={design.motion === o.value}
+                        onClick={() => setDesign({ motion: o.value })}
+                        className={cn("rounded-md border p-3 text-left", design.motion === o.value ? "border-primary ring-1 ring-primary/40" : "hover:bg-muted/50")}
+                      >
+                        <span className="block text-sm font-medium">{o.label}</span>
+                        <span className="block text-xs text-muted-foreground">{o.description}</span>
+                      </button>
+                    ))}
                   </div>
                 </CardContent>
               </Card>

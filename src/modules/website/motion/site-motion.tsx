@@ -14,7 +14,8 @@ import { bnDigits } from "../i18n";
 const REVEAL_CHILDREN = ".site-section > div > *";
 const REVEAL_ITEMS = ".site-section :is(ul, ol) > li, .site-section .grid > article";
 const TILT = ".site-section :is(li, article).site-card, .site-section li > figure.site-card";
-const MAX_TILT = 7;
+/** The strongest tilt, in degrees, at Normal and Lively motion (D145). */
+const MAX_TILT = { NORMAL: 7, LIVELY: 12 } as const;
 
 export function SiteMotion() {
   useEffect(() => {
@@ -37,9 +38,10 @@ export function SiteMotion() {
     onScroll();
     on(window, "scroll", onScroll, { passive: true });
 
-    // Old browsers without these simply keep the page as it is.
+    // Old browsers without these simply keep the page as it is, as does the Off motion level (D145).
+    const level = root.dataset.siteMotion ?? "NORMAL";
     const capable = typeof window.matchMedia === "function" && "IntersectionObserver" in window;
-    if (!capable || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return () => cleanups.forEach((c) => c());
+    if (level === "OFF" || !capable || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return () => cleanups.forEach((c) => c());
 
     // Reveal: mark the pieces, show at once what is already on screen, then switch the effect on.
     // A list whose items rise one by one doesn't also fade in as a whole.
@@ -88,8 +90,9 @@ export function SiteMotion() {
     root.querySelectorAll<HTMLElement>("[data-count-to]").forEach((el) => observer.observe(el));
     cleanups.push(() => observer.disconnect());
 
-    // Tilt and the banner's shapes follow a mouse pointer; touch screens keep them still.
-    if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+    // Tilt and the banner's shapes follow a mouse pointer; touch screens keep them still, and so does Subtle motion.
+    const tilt = level === "LIVELY" ? MAX_TILT.LIVELY : MAX_TILT.NORMAL;
+    if (level !== "SUBTLE" && window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
       const cards = [...root.querySelectorAll<HTMLElement>(TILT)];
       for (const card of cards) {
         card.setAttribute("data-tilt", "");
@@ -99,7 +102,7 @@ export function SiteMotion() {
           const y = (e.clientY - r.top) / r.height;
           card.style.transition = "transform 0.12s ease-out";
           card.style.transitionDelay = "0s";
-          card.style.transform = `perspective(900px) rotateX(${((0.5 - y) * MAX_TILT * 2).toFixed(2)}deg) rotateY(${((x - 0.5) * MAX_TILT * 2).toFixed(2)}deg) translateZ(0)`;
+          card.style.transform = `perspective(900px) rotateX(${((0.5 - y) * tilt * 2).toFixed(2)}deg) rotateY(${((x - 0.5) * tilt * 2).toFixed(2)}deg) translateZ(0)`;
           card.style.setProperty("--gx", `${(x * 100).toFixed(1)}%`);
           card.style.setProperty("--gy", `${(y * 100).toFixed(1)}%`);
           card.setAttribute("data-tilting", "");

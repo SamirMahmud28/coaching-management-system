@@ -6,7 +6,7 @@ import { assertFileReference } from "../../core/files/service";
 import { ValidationError } from "../../core/errors";
 import { audit } from "../audit/service";
 import {
-  APPEARANCES, BACKGROUNDS, BODY_FONTS, BUTTON_STYLES, CARD_STYLES, COURSE_LAYOUTS, DENSITIES, FAQ_LAYOUTS, GALLERY_LAYOUTS, GRADIENT_CHOICES, HEADER_STYLES, HERO_LAYOUTS,
+  APPEARANCES, BACKGROUNDS, BODY_FONTS, BUTTON_STYLES, CARD_STYLES, COURSE_LAYOUTS, DENSITIES, FAQ_LAYOUTS, GALLERY_LAYOUTS, MOTION_LEVELS, GRADIENT_CHOICES, HEADER_STYLES, HERO_LAYOUTS,
   HERO_OVERLAYS, HEX_COLOUR, NOTICE_LAYOUTS, PALETTE_CHOICES, RADII, SITE_LANGUAGES, TESTIMONIAL_LAYOUTS, TEXT_SIZES, WEBSITE_FONTS, WEBSITE_THEMES,
   completeDesign, legacyDesign, type WebsiteDesign, type WebsiteFont, type WebsiteTheme,
   HOME_DEFAULT,
@@ -150,6 +150,7 @@ function cleanDesign(d: WebsiteDesign): WebsiteDesign {
     courseLayout: oneOf(d.courseLayout, COURSE_LAYOUTS, "design.courseLayout", choice),
     noticeLayout: oneOf(d.noticeLayout, NOTICE_LAYOUTS, "design.noticeLayout", choice),
     faqLayout: oneOf(d.faqLayout, FAQ_LAYOUTS, "design.faqLayout", choice),
+    motion: oneOf(d.motion, MOTION_LEVELS, "design.motion", choice),
     language: oneOf(d.language, SITE_LANGUAGES, "design.language", "Choose English or Bangla."),
   };
   if (design.palette === "CUSTOM" && !design.customPrimary) {

@@ -65,7 +65,7 @@ test("W1 + W5: the Owner designs the website and it is public at once (D124, D12
 
   // Look: a theme brings its own fonts and shapes; colours, background and appearance are then set by hand.
   await page.getByRole("radio", { name: /^Bold/ }).click();
-  await expect(page.getByText("Fonts, shapes and background now follow Bold.")).toBeVisible();
+  await expect(page.getByText("Fonts, shapes, background and motion now follow Bold.")).toBeVisible();
   await expect(page.getByLabel("Heading font")).toContainText("Montserrat");
   await page.getByLabel("Heading font").click();
   await page.getByRole("option", { name: /Poppins/ }).click();
@@ -412,4 +412,26 @@ test("W11: the live preview shows unsaved changes, page by page, and saves nothi
   await expect(visitor.getByTestId("website")).toHaveAttribute("data-site-theme", "bold"); // nothing saved
   expect(await visitor.evaluate(async (s) => (await fetch(s)).status, src)).toBe(404);
   await visitor.close();
+});
+
+test("W12: the Owner picks a ready-made look and switches motion off (D145, D146)", async ({ page }) => {
+  await signInAsOwner(page);
+  await page.goto(url("/app/website"));
+  await page.getByRole("button", { name: "Use the Lal-Sabuj Bold look" }).click();
+  await expect(page.getByText("Now using the Lal-Sabuj Bold look")).toBeVisible();
+  await expect(page.getByRole("radiogroup", { name: "Theme" }).getByRole("radio", { name: /^Bold/ })).toHaveAttribute("aria-checked", "true");
+  await page.getByRole("radiogroup", { name: "Motion" }).getByRole("radio", { name: /^Off/ }).click();
+  await page.getByRole("button", { name: "Save website" }).click();
+  await expect(page.getByText("Website saved. It's public now.")).toBeVisible();
+
+  await page.goto(url("/"));
+  const site = page.getByTestId("website");
+  await expect(site).toHaveAttribute("data-site-theme", "bold");
+  await expect(site).toHaveAttribute("data-site-motion", "OFF");
+  expect(await site.evaluate((el) => getComputedStyle(el).getPropertyValue("--site-primary").trim())).toBe("#006a4e");
+  await expect(site).toHaveAttribute("lang", "bn"); // a look never changes the language
+  await expect(page.getByTestId("scroll-progress")).toHaveCount(0);
+  await page.waitForTimeout(500);
+  await expect(site).not.toHaveAttribute("data-motion", "on");
+  expect(await page.locator("[data-reveal]").count()).toBe(0);
 });

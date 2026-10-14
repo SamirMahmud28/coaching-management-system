@@ -150,6 +150,8 @@ export const TESTIMONIAL_LAYOUTS = ["GRID", "CAROUSEL", "SPOTLIGHT"] as const;
 export const COURSE_LAYOUTS = ["CARDS", "LIST"] as const;
 export const NOTICE_LAYOUTS = ["CARDS", "TIMELINE"] as const;
 export const FAQ_LAYOUTS = ["ACCORDION", "TWO_COLUMN"] as const;
+/** How much the website moves (D145): Normal is the full set of effects of D137. "Reduce motion" always wins. */
+export const MOTION_LEVELS = ["OFF", "SUBTLE", "NORMAL", "LIVELY"] as const;
 /** The language of the site's built-in labels (D140); what the office writes is shown as written. */
 export const SITE_LANGUAGES = ["EN", "BN"] as const;
 
@@ -161,6 +163,7 @@ export type TestimonialLayout = (typeof TESTIMONIAL_LAYOUTS)[number];
 export type CourseLayout = (typeof COURSE_LAYOUTS)[number];
 export type NoticeLayout = (typeof NOTICE_LAYOUTS)[number];
 export type FaqLayout = (typeof FAQ_LAYOUTS)[number];
+export type MotionLevel = (typeof MOTION_LEVELS)[number];
 export type SiteLanguage = (typeof SITE_LANGUAGES)[number];
 
 /** Everything about the look except the theme and heading font, which have their own columns. */
@@ -185,6 +188,7 @@ export interface WebsiteDesign {
   courseLayout: CourseLayout;
   noticeLayout: NoticeLayout;
   faqLayout: FaqLayout;
+  motion: MotionLevel;
   language: SiteLanguage;
 }
 
@@ -210,21 +214,22 @@ const LOOK: Record<WebsiteTheme, LookPreset> = {
 };
 
 const layout = (o: Partial<LayoutPreset> = {}): LayoutPreset => ({
-  headerStyle: "SOLID", heroLayout: "THEME", heroOverlay: "MEDIUM", galleryLayout: "GRID", testimonialLayout: "GRID", courseLayout: "CARDS", noticeLayout: "CARDS", faqLayout: "ACCORDION", ...o,
+  headerStyle: "SOLID", heroLayout: "THEME", heroOverlay: "MEDIUM", galleryLayout: "GRID", testimonialLayout: "GRID", courseLayout: "CARDS", noticeLayout: "CARDS", faqLayout: "ACCORDION",
+  motion: "NORMAL", ...o,
 });
 
 const LAYOUT: Record<WebsiteTheme, LayoutPreset> = {
   CLASSIC: layout(),
   MODERN: layout({ testimonialLayout: "CAROUSEL" }),
   BOLD: layout({ heroOverlay: "STRONG" }),
-  ELEGANT: layout({ headerStyle: "CENTRED", heroOverlay: "LIGHT", noticeLayout: "TIMELINE", testimonialLayout: "SPOTLIGHT", faqLayout: "TWO_COLUMN" }),
-  PLAYFUL: layout({ galleryLayout: "CAROUSEL", testimonialLayout: "CAROUSEL" }),
-  MINIMAL: layout({ courseLayout: "LIST", noticeLayout: "TIMELINE" }),
-  VIBRANT: layout({ galleryLayout: "MASONRY", testimonialLayout: "CAROUSEL" }),
+  ELEGANT: layout({ headerStyle: "CENTRED", heroOverlay: "LIGHT", noticeLayout: "TIMELINE", testimonialLayout: "SPOTLIGHT", faqLayout: "TWO_COLUMN", motion: "SUBTLE" }),
+  PLAYFUL: layout({ galleryLayout: "CAROUSEL", testimonialLayout: "CAROUSEL", motion: "LIVELY" }),
+  MINIMAL: layout({ courseLayout: "LIST", noticeLayout: "TIMELINE", motion: "SUBTLE" }),
+  VIBRANT: layout({ galleryLayout: "MASONRY", testimonialLayout: "CAROUSEL", motion: "LIVELY" }),
   MIDNIGHT: layout({ headerStyle: "GLASS", galleryLayout: "MASONRY", testimonialLayout: "SPOTLIGHT" }),
   GLASS: layout({ headerStyle: "GLASS", testimonialLayout: "CAROUSEL" }),
   BENTO: layout({ galleryLayout: "MASONRY", faqLayout: "TWO_COLUMN" }),
-  AURORA: layout({ headerStyle: "GLASS", testimonialLayout: "SPOTLIGHT", galleryLayout: "CAROUSEL" }),
+  AURORA: layout({ headerStyle: "GLASS", testimonialLayout: "SPOTLIGHT", galleryLayout: "CAROUSEL", motion: "LIVELY" }),
   NEO_BRUTAL: layout({ heroOverlay: "STRONG", noticeLayout: "TIMELINE" }),
 };
 
@@ -255,6 +260,7 @@ export const DEFAULT_DESIGN: WebsiteDesign = {
   courseLayout: "CARDS",
   noticeLayout: "CARDS",
   faqLayout: "ACCORDION",
+  motion: "NORMAL",
   language: "EN",
 };
 
@@ -297,6 +303,7 @@ export function completeDesign(stored: unknown, base: WebsiteDesign = DEFAULT_DE
     courseLayout: pick(s.courseLayout, COURSE_LAYOUTS, base.courseLayout),
     noticeLayout: pick(s.noticeLayout, NOTICE_LAYOUTS, base.noticeLayout),
     faqLayout: pick(s.faqLayout, FAQ_LAYOUTS, base.faqLayout),
+    motion: pick(s.motion, MOTION_LEVELS, base.motion),
     language: pick(s.language, SITE_LANGUAGES, base.language),
   };
 }

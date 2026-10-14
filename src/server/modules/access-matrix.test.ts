@@ -223,7 +223,7 @@ const HANDLERS: Entry[] = [
       design: {
         palette: "BRAND", gradient: "AUTO", body_font: "INTER", text_size: "MEDIUM", radius: "MEDIUM", button_style: "SOLID", card_style: "BORDER", density: "COMFORTABLE", background: "PLAIN",
         appearance: "VISITOR", header_style: "SOLID", hero_layout: "THEME", hero_overlay: "MEDIUM", gallery_layout: "GRID", testimonial_layout: "GRID", course_layout: "CARDS",
-        notice_layout: "CARDS", language: "EN",
+        notice_layout: "CARDS", faq_layout: "ACCORDION", motion: "NORMAL", language: "EN",
       },
       content: { section_titles: {}, announcement: null, social: {} },
     } },

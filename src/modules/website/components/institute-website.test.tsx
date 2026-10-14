@@ -185,3 +185,28 @@ describe("pages (D142, D143)", () => {
     expect(screen.getByRole("link", { name: "Enquire about admission" })).toHaveAttribute("href", "/admission#enquiry");
   });
 });
+
+describe("motion strength (D145)", () => {
+  const banner = (motion: WebsiteDesign["motion"]) => {
+    const sample = site({ motion, heroLayout: "SPLIT" });
+    return sample;
+  };
+  it("draws the 3D shapes at Normal, more at Lively, and none at Subtle or Off", () => {
+    const count = (motion: WebsiteDesign["motion"]) => {
+      const { container, unmount } = render(<InstituteWebsite site={banner(motion)} />);
+      const n = container.querySelectorAll(".site-shape").length;
+      expect(container.querySelector("[data-website]")).toHaveAttribute("data-site-motion", motion);
+      unmount();
+      return n;
+    };
+    expect(count("NORMAL")).toBe(5);
+    expect(count("LIVELY")).toBe(7);
+    expect(count("SUBTLE")).toBe(0);
+    expect(count("OFF")).toBe(0);
+  });
+
+  it("has no scroll-progress bar when motion is Off", () => {
+    render(<InstituteWebsite site={banner("OFF")} />);
+    expect(screen.queryByTestId("scroll-progress")).toBeNull();
+  });
+});

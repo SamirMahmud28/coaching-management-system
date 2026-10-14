@@ -7,14 +7,19 @@ import { m, useMotionValue, useMotionValueEvent, useScroll, useSpring } from "mo
 // The server can't know whether the visitor asked for less motion, so both renders start without any offset and only
 // scrolling (in the browser, without "reduce motion") moves it: the markup always matches on hydration.
 
-const reducedMotion = () => typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+/** No parallax for visitors who ask for less motion, nor at the Off and Subtle motion levels (D145). */
+const reducedMotion = () => {
+  if (typeof window === "undefined") return true;
+  const level = document.querySelector<HTMLElement>("[data-website]")?.dataset.siteMotion;
+  return level === "OFF" || level === "SUBTLE" || !!window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+};
 
 export function Parallax({ children, className, distance = 60 }: { children: ReactNode; className?: string; distance?: number }) {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
   const y = useMotionValue(0);
   const follow = (progress: number) => {
-    if (!reducedMotion()) y.set((progress * 2 - 1) * distance);
+    y.set(reducedMotion() ? 0 : (progress * 2 - 1) * distance);
   };
   useMotionValueEvent(scrollYProgress, "change", follow);
   // eslint-disable-next-line react-hooks/exhaustive-deps -- place the picture once after loading; scrolling does the rest

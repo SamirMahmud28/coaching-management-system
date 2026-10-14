@@ -18,7 +18,7 @@ import * as enquiries from "./enquiries";
 import { isPublicWebsiteImage } from "./public";
 import { toCamelCaseKeys } from "../../core/http/case";
 import {
-  APPEARANCES, BACKGROUNDS, BODY_FONTS, BUTTON_STYLES, CARD_STYLES, COURSE_LAYOUTS, DENSITIES, FAQ_LAYOUTS, GALLERY_LAYOUTS, GRADIENT_CHOICES, HEADER_STYLES, HERO_LAYOUTS,
+  APPEARANCES, BACKGROUNDS, BODY_FONTS, BUTTON_STYLES, CARD_STYLES, COURSE_LAYOUTS, DENSITIES, FAQ_LAYOUTS, GALLERY_LAYOUTS, MOTION_LEVELS, GRADIENT_CHOICES, HEADER_STYLES, HERO_LAYOUTS,
   HERO_OVERLAYS, NOTICE_LAYOUTS, PALETTE_CHOICES, RADII, SITE_LANGUAGES, TESTIMONIAL_LAYOUTS, TEXT_SIZES, type WebsiteDesign,
 } from "./design";
 import { FEATURE_ICONS, SOCIAL_NETWORKS, type WebsiteContent } from "./site-content";
@@ -55,6 +55,7 @@ const designBody = z.object({
   course_layout: z.enum(COURSE_LAYOUTS),
   notice_layout: z.enum(NOTICE_LAYOUTS),
   faq_layout: z.enum(FAQ_LAYOUTS),
+  motion: z.enum(MOTION_LEVELS),
   language: z.enum(SITE_LANGUAGES),
 });
 const contentBody = z.object({

@@ -100,6 +100,7 @@ export function InstituteWebsite({ site, page = "home" }: { site: Site; page?: S
         data-testid="website"
         data-website=""
         data-site-page={page}
+        data-site-motion={design.motion}
         data-site-theme={settings.theme.toLowerCase()}
         data-site-button={design.buttonStyle}
         data-site-card={design.cardStyle}
@@ -109,8 +110,8 @@ export function InstituteWebsite({ site, page = "home" }: { site: Site; page?: S
         className={cn("relative isolate flex min-h-screen flex-1 flex-col bg-background text-foreground", design.appearance === "LIGHT" && "theme-light", design.appearance === "DARK" && "dark")}
       >
         {design.textSize !== "MEDIUM" && <style>{`html{font-size:${TEXT_SCALE[design.textSize]}}`}</style>}
-        <SiteMotion key={page} />
-        <ScrollProgress />
+        <SiteMotion key={`${page}-${design.motion}`} />
+        {design.motion !== "OFF" && <ScrollProgress />}
         {layer && <div aria-hidden data-testid="site-background" className={cn("pointer-events-none fixed inset-0 -z-10", layer.className)} style={layer.style} />}
         {announcement && (
           <AnnouncementBar

@@ -80,7 +80,7 @@ export function Hero(props: SectionProps & { enquiryHref: string | null }) {
     case "SPLIT":
       return (
         <section aria-label={label} className="site-tint relative isolate overflow-hidden">
-          <FloatingShapes tone="brand" />
+          <FloatingShapes tone="brand" motion={props.site.settings.design.motion} />
           <Wrap className={cn("grid items-center gap-10 py-16 sm:py-24", p.image && "md:grid-cols-2")}>
             <div className="space-y-6">
               <Title className={sig.heroTitle}>{p.heading}</Title>
@@ -112,7 +112,7 @@ export function Hero(props: SectionProps & { enquiryHref: string | null }) {
     case "GRADIENT":
       return (
         <section aria-label={label} className="site-gradient site-on-colour relative isolate overflow-hidden" style={onColour("var(--site-gradient-a)", "var(--site-on-gradient)")}>
-          <FloatingShapes tone="on-colour" />
+          <FloatingShapes tone="on-colour" motion={props.site.settings.design.motion} />
           <Wrap className={cn("grid items-center gap-10 py-20 sm:py-28", p.image && "md:grid-cols-[3fr_2fr]")}>
             <div className="space-y-6">
               <Title className={sig.heroTitle}>{p.heading}</Title>
@@ -141,7 +141,7 @@ export function Hero(props: SectionProps & { enquiryHref: string | null }) {
     case "AURORA":
       return (
         <section aria-label={label} className="relative isolate overflow-hidden">
-          <FloatingShapes tone="brand" />
+          <FloatingShapes tone="brand" motion={props.site.settings.design.motion} />
           <div aria-hidden className="absolute inset-0 -z-10 [mask-image:linear-gradient(to_bottom,black_60%,transparent)]">
             <div className="site-aurora-blob absolute -top-24 left-[8%] size-[26rem] rounded-full bg-[var(--site-gradient-a)] opacity-35 blur-3xl" />
             <div className="site-aurora-blob absolute top-10 right-[6%] size-[22rem] rounded-full bg-[var(--site-gradient-b)] opacity-30 blur-3xl [animation-delay:-6s]" />

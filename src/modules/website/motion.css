@@ -233,6 +233,29 @@
   animation: site-flip 12s ease-in-out infinite;
 }
 
+/* --- motion strength (D145): Off is like "reduce motion"; Subtle fades only; Lively moves further ---------------- */
+
+[data-website][data-site-motion="OFF"] .site-rise,
+[data-website][data-site-motion="OFF"] .site-kenburns,
+[data-website][data-site-motion="OFF"] .site-aurora-blob,
+[data-website][data-site-motion="SUBTLE"] .site-kenburns,
+[data-website][data-site-motion="SUBTLE"] .site-aurora-blob {
+  animation: none !important;
+}
+[data-website][data-site-motion="OFF"] .site-btn::after,
+[data-website][data-site-motion="SUBTLE"] .site-btn::after {
+  display: none;
+}
+[data-website][data-site-motion="SUBTLE"][data-motion="on"] [data-reveal]:not([data-shown]) {
+  transform: none;
+}
+[data-website][data-site-motion="LIVELY"][data-motion="on"] [data-reveal]:not([data-shown]) {
+  transform: translateY(56px) scale(0.94);
+}
+[data-website][data-site-motion="LIVELY"] .site-cube {
+  animation-duration: 14s;
+}
+
 /* --- a visitor who asks for less motion --------------------------------------------------------------------------- */
 
 @media (prefers-reduced-motion: reduce) {

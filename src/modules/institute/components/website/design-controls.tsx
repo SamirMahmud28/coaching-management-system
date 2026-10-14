@@ -11,8 +11,9 @@ import { backgroundLayer, backgroundSwatch } from "@/modules/website/patterns";
 import { THEMES, type HeroKind } from "@/modules/website/themes";
 import { contrast, siteColours, siteVariables } from "@/modules/website/tokens";
 import "@/modules/website/website.css";
+import { LOOKS, applyLook, type Look } from "@/modules/website/looks";
 import {
-  GRADIENTS, PALETTE_FAMILIES, PALETTES, THEME_PRESETS, type Background, type WebsiteDesign, type WebsiteFont, type WebsiteTheme,
+  DEFAULT_DESIGN, GRADIENTS, PALETTE_FAMILIES, PALETTES, THEME_PRESETS, type Background, type WebsiteDesign, type WebsiteFont, type WebsiteTheme,
 } from "@/server/modules/website/design";
 import type { WebsiteDesignWire } from "../../api";
 
@@ -24,6 +25,34 @@ const toSnake = (k: string) => k.replace(/[A-Z]/g, (c) => `_${c.toLowerCase()}`)
 
 /** The design settings as the server and the public site name them. */
 export const fromWire = (d: WebsiteDesignWire): WebsiteDesign => Object.fromEntries(Object.entries(d).map(([k, v]) => [toCamel(k), v])) as unknown as WebsiteDesign;
+
+/** A ready-made look on the wire (D146): theme, palette, fonts and the rest, keeping the language. */
+export function lookWire(look: Look, current: WebsiteDesignWire): { theme: WebsiteTheme; heading_font: WebsiteFont; design: WebsiteDesignWire } {
+  const applied = applyLook(look, fromWire(current));
+  return {
+    theme: applied.theme,
+    heading_font: applied.headingFont,
+    design: Object.fromEntries(Object.entries(applied.design).map(([k, v]) => [toSnake(k), v])) as unknown as WebsiteDesignWire,
+  };
+}
+
+/** The ready-made looks, each drawn as it will look in the institute's site. */
+export function LookPicker({ onPick, brand }: { onPick: (look: Look) => void; brand: string | null }) {
+  return (
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">
+      {LOOKS.map((look) => {
+        const applied = applyLook(look, DEFAULT_DESIGN);
+        return (
+          <button key={look.id} type="button" onClick={() => onPick(look)} aria-label={`Use the ${look.label} look`} className="space-y-1.5 rounded-lg border p-2 text-left transition-colors hover:bg-muted/50">
+            <StyleSample theme={applied.theme} headingFont={applied.headingFont} design={applied.design} brand={brand} size="thumb" />
+            <span className="block text-sm font-medium">{look.label}</span>
+            <span className="line-clamp-2 block text-xs text-muted-foreground">{look.description}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
 
 /** The theme's preset on the wire, keeping the colours (the institute's identity) and the language (its audience). */
 export function presetWire(theme: WebsiteTheme, current: WebsiteDesignWire): { heading_font: WebsiteFont; design: WebsiteDesignWire } {

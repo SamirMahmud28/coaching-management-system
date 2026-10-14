@@ -640,7 +640,8 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     permission: "website.manage",
     summary: "Your institute's public website at its own address. Make it your own: twelve themes, about thirty colour palettes or your own colours, gradients, eighteen fonts (Bangla ones too), button and card styles, backgrounds such as Nakshi Kantha and Alpana, and light or dark. Choose layouts, write your own words, switch the whole site to Bangla, and choose which sections appear and in what order.",
     steps: [
-      "Open Website. On the Look tab, pick a theme. A theme brings its own fonts, shapes and background; your colours stay. Changed your mind? Click Undo.",
+      "Open Website. The quickest start: on the Look tab, click one of the Ready-made looks (theme, colours, fonts and layouts together), then change anything you like. Undo brings back what you had.",
+      "Or pick a theme. A theme brings its own fonts, shapes and background; your colours stay. Changed your mind? Click Undo.",
       "Under Colours, pick a palette, your brand colour from Institute Settings, or Custom to choose your own two colours. Pick a gradient for gradient buttons and colourful banners.",
       "Under Fonts, Shapes & spacing and Background & appearance, adjust anything you like. The Style sample on the right shows your colours, fonts, buttons and cards as you change them.",
       "On the Layout tab, choose the header, the welcome banner's layout (the theme's own or another theme's), how dark the shade over its picture is, and how courses, notices, the gallery and testimonials are laid out.",
@@ -662,7 +663,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
       "A page with nothing to show (for example Teachers before you add any) is left out of the menu. Each page has its own address, such as /courses or /admission, which you can share on Facebook.",
       "On Home, list sections end with a 'See all' link to their page. Old links to a section (such as #enquiry in the announcement bar) still work: they open the section's page.",
       "The video loads from YouTube only when a visitor taps play, so the page stays fast on mobile data.",
-      "The moving effects are the same for every website and need no setting: the banner rises in, sections and cards glide into view as visitors scroll, numbers count up, cards tilt under the mouse, and 3D shapes float in the banner. They switch off for visitors whose phone or computer asks for less motion.",
+      "Motion (Look tab): Off, Subtle (gentle fades), Normal (sections glide in, numbers count up, cards tilt, 3D shapes float) or Lively (bigger movements, more shapes). Visitors whose phone asks for less motion always get a still website.",
       "Faculty and Achievers have their own tabs. Faculty shows only the instructors you add, with name, photo and subjects; never phone numbers or emails.",
       "Pictures can be JPG, PNG or WebP up to 5 MB; they are resized and compressed when uploaded.",
       "A section with nothing to show stays hidden, with its menu link: About without text or a picture, Courses with no active course, Notices, Gallery or Testimonials while empty, Contact without any contact details.",
