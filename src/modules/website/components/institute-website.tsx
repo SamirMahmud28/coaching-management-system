@@ -15,7 +15,11 @@ import { Hero } from "./sections/hero";
 import { Contact, contactsOf, Enquiry } from "./sections/reach";
 import { Achievers, Faculty, Faqs, Features, Stats, Video } from "./sections/showcase";
 import { SocialLinks, type SectionProps, type Site } from "./sections/shared";
+import { MotionRoot } from "../motion/motion-root";
+import { ScrollProgress } from "../motion/parallax";
+import { SiteMotion } from "../motion/site-motion";
 import "../website.css";
+import "../motion.css";
 
 // The institute's public website (Website module, D20, D124–D141). Server-rendered; every section is filled from the
 // institute's own data and drawn in the theme's composition with the design settings as CSS variables, with the
@@ -89,74 +93,78 @@ export function InstituteWebsite({ site }: { site: Site }) {
   );
 
   return (
-    <div
-      data-testid="website"
-      data-website=""
-      data-site-theme={settings.theme.toLowerCase()}
-      data-site-button={design.buttonStyle}
-      data-site-card={design.cardStyle}
-      data-site-header={design.headerStyle}
-      lang={t.lang}
-      style={style}
-      className={cn("relative isolate flex min-h-screen flex-1 flex-col bg-background text-foreground", design.appearance === "LIGHT" && "theme-light", design.appearance === "DARK" && "dark")}
-    >
-      {design.textSize !== "MEDIUM" && <style>{`html{font-size:${TEXT_SCALE[design.textSize]}}`}</style>}
-      {layer && <div aria-hidden data-testid="site-background" className={cn("pointer-events-none fixed inset-0 -z-10", layer.className)} style={layer.style} />}
-      {content.announcement && <AnnouncementBar text={content.announcement.text} linkUrl={content.announcement.linkUrl} linkLabel={content.announcement.linkLabel} closeLabel={t.close} moreLabel={t.more} />}
-
-      <header
-        className={cn(
-          "sticky top-0 z-20",
-          design.headerStyle === "GLASS" ? "border-b border-white/10 bg-background/55 backdrop-blur-xl backdrop-saturate-150" : "border-b bg-background/85 backdrop-blur",
-        )}
+    <MotionRoot>
+      <div
+          data-testid="website"
+        data-website=""
+        data-site-theme={settings.theme.toLowerCase()}
+        data-site-button={design.buttonStyle}
+        data-site-card={design.cardStyle}
+        data-site-header={design.headerStyle}
+        lang={t.lang}
+        style={style}
+        className={cn("relative isolate flex min-h-screen flex-1 flex-col bg-background text-foreground", design.appearance === "LIGHT" && "theme-light", design.appearance === "DARK" && "dark")}
       >
-        {design.headerStyle === "CENTRED" ? (
-          <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
-            <div className="flex items-center gap-3 py-3 lg:justify-center">
-              <div className="min-w-0 flex-1 lg:flex lg:flex-none lg:justify-center">{brand}</div>
-              <div className="lg:hidden">{actions}</div>
-            </div>
-            <div className="hidden items-center justify-between border-t py-2 lg:flex">
-              <SocialLinks site={site} />
-              {nav("flex")}
-              <div className="flex items-center gap-2">
-                {design.appearance === "VISITOR" && <ThemeToggle />}
-                <Button asChild variant="outline" size="sm">
-                  <a href="/login">{t.signIn}</a>
-                </Button>
+        {design.textSize !== "MEDIUM" && <style>{`html{font-size:${TEXT_SCALE[design.textSize]}}`}</style>}
+        <SiteMotion />
+        <ScrollProgress />
+        {layer && <div aria-hidden data-testid="site-background" className={cn("pointer-events-none fixed inset-0 -z-10", layer.className)} style={layer.style} />}
+        {content.announcement && <AnnouncementBar text={content.announcement.text} linkUrl={content.announcement.linkUrl} linkLabel={content.announcement.linkLabel} closeLabel={t.close} moreLabel={t.more} />}
+
+        <header
+          className={cn(
+            "sticky top-0 z-20",
+            design.headerStyle === "GLASS" ? "border-b border-white/10 bg-background/55 backdrop-blur-xl backdrop-saturate-150" : "border-b bg-background/85 backdrop-blur",
+          )}
+        >
+          {design.headerStyle === "CENTRED" ? (
+            <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
+              <div className="flex items-center gap-3 py-3 lg:justify-center">
+                <div className="min-w-0 flex-1 lg:flex lg:flex-none lg:justify-center">{brand}</div>
+                <div className="lg:hidden">{actions}</div>
+              </div>
+              <div className="hidden items-center justify-between border-t py-2 lg:flex">
+                <SocialLinks site={site} />
+                {nav("flex")}
+                <div className="flex items-center gap-2">
+                  {design.appearance === "VISITOR" && <ThemeToggle />}
+                  <Button asChild variant="outline" size="sm">
+                    <a href="/login">{t.signIn}</a>
+                  </Button>
+                </div>
               </div>
             </div>
-          </div>
-        ) : (
-          <div className="mx-auto flex w-full max-w-6xl items-center gap-3 px-4 py-3 sm:px-6">
-            <div className="min-w-0 flex-1">{brand}</div>
-            {nav(wide === "xl" ? "hidden xl:flex" : "hidden lg:flex")}
-            {actions}
-          </div>
-        )}
-      </header>
+          ) : (
+            <div className="mx-auto flex w-full max-w-6xl items-center gap-3 px-4 py-3 sm:px-6">
+              <div className="min-w-0 flex-1">{brand}</div>
+              {nav(wide === "xl" ? "hidden xl:flex" : "hidden lg:flex")}
+              {actions}
+            </div>
+          )}
+        </header>
 
-      <main id="top" className="flex-1">
-        <Hero {...props} enquiry={has("ENQUIRY")} />
-        {rendered.map((s, i) => (
-          <section key={s.key} id={s.key.toLowerCase()} aria-labelledby={`${s.key.toLowerCase()}-heading`} data-testid={`section-${s.key.toLowerCase()}`} className={cn("site-section scroll-mt-20", i % 2 === 1 && sig.band)}>
-            <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">{s.node}</div>
-          </section>
-        ))}
-      </main>
+        <main id="top" className="flex-1">
+          <Hero {...props} enquiry={has("ENQUIRY")} />
+          {rendered.map((s, i) => (
+            <section key={s.key} id={s.key.toLowerCase()} aria-labelledby={`${s.key.toLowerCase()}-heading`} data-testid={`section-${s.key.toLowerCase()}`} className={cn("site-section scroll-mt-20", i % 2 === 1 && sig.band)}>
+              <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">{s.node}</div>
+            </section>
+          ))}
+        </main>
 
-      <footer className="border-t py-8 text-sm text-muted-foreground">
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-          <p>
-            © {t.num(String(new Date().getFullYear()))} {profile.name}
-          </p>
-          <SocialLinks site={site} />
-          <a href="/login" className="hover:text-foreground hover:underline">
-            {t.staffSignIn}
-          </a>
-        </div>
-      </footer>
-    </div>
+        <footer className="border-t py-8 text-sm text-muted-foreground">
+          <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+            <p>
+              © {t.num(String(new Date().getFullYear()))} {profile.name}
+            </p>
+            <SocialLinks site={site} />
+            <a href="/login" className="hover:text-foreground hover:underline">
+              {t.staffSignIn}
+            </a>
+          </div>
+        </footer>
+      </div>
+    </MotionRoot>
   );
 }
 

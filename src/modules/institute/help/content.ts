@@ -659,6 +659,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
       "The announcement bar disappears by itself after its Show until day. A visitor who closes it doesn't see it again during that visit.",
       "Social links must point to that network (a Facebook link to facebook.com, and so on).",
       "The video loads from YouTube only when a visitor taps play, so the page stays fast on mobile data.",
+      "The moving effects are the same for every website and need no setting: the banner rises in, sections and cards glide into view as visitors scroll, numbers count up, cards tilt under the mouse, and 3D shapes float in the banner. They switch off for visitors whose phone or computer asks for less motion.",
       "Faculty and Achievers have their own tabs. Faculty shows only the instructors you add, with name, photo and subjects; never phone numbers or emails.",
       "Pictures can be JPG, PNG or WebP up to 5 MB; they are resized and compressed when uploaded.",
       "A section with nothing to show stays hidden, with its menu link: About without text or a picture, Courses with no active course, Notices, Gallery or Testimonials while empty, Contact without any contact details.",

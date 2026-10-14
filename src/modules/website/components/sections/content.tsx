@@ -1,18 +1,23 @@
 import type { ReactNode } from "react";
 import { Pin, Quote } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Parallax } from "../../motion/parallax";
+import { CarouselNav } from "../carousel-nav";
 import { imageUrl, mediaClass, SectionHeading, sectionWords, type SectionProps, type Site } from "./shared";
 
 // The sections filled from the institute's own lists: About (D131), Courses (Core), Notices (D128), Gallery (D125)
 // and Testimonials (D130), drawn with the site's tokens (D135, D136), in the layout chosen for each (D135) and with the
 // labels in the site's language (D140).
 
-/** A row that scrolls sideways and snaps to each item; swipeable on phones without any script. */
-function Carousel({ children, label }: { children: ReactNode; label: string }) {
+/** A row that scrolls sideways and snaps to each item; swipeable on phones without any script, with arrows for a mouse. */
+function Carousel({ children, label, id, t }: { children: ReactNode; label: string; id: string; t: SectionProps["t"] }) {
   return (
-    <ul aria-label={label} className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth px-4 pb-4 [scrollbar-width:thin] sm:mx-0 sm:px-0">
-      {children}
-    </ul>
+    <>
+      <CarouselNav targetId={id} previous={t.previous} next={t.next} />
+      <ul id={id} aria-label={label} className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth px-4 pb-4 [scrollbar-width:thin] sm:mx-0 sm:px-0">
+        {children}
+      </ul>
+    </>
   );
 }
 const slide = "w-[85%] shrink-0 snap-start sm:w-[46%] lg:w-[31.5%]";
@@ -29,8 +34,10 @@ export function About(props: SectionProps) {
         {aboutText && <p className="whitespace-pre-line leading-relaxed text-muted-foreground">{aboutText}</p>}
       </div>
       {aboutImageFileId && (
-        // eslint-disable-next-line @next/next/no-img-element -- served by the public website-image endpoint
-        <img src={imageUrl(aboutImageFileId)} alt="" className={cn("aspect-[4/3] w-full object-cover", mediaClass(sig.media), sig.hero === "SPLIT" && "md:order-first")} />
+        <Parallax distance={30} className={cn(sig.hero === "SPLIT" && "md:order-first")}>
+          {/* eslint-disable-next-line @next/next/no-img-element -- served by the public website-image endpoint */}
+          <img src={imageUrl(aboutImageFileId)} alt="" className={cn("aspect-[4/3] w-full object-cover", mediaClass(sig.media))} />
+        </Parallax>
       )}
     </div>
   );
@@ -230,7 +237,7 @@ export function Gallery(props: SectionProps) {
     return (
       <>
         {heading}
-        <Carousel label={words.title}>
+        <Carousel label={words.title} id="gallery-row" t={props.t}>
           {site.gallery.map((p) => (
             <li key={p.id} className={slide}>
               {photo(p, "aspect-[4/3]")}
@@ -314,7 +321,7 @@ export function Testimonials(props: SectionProps) {
     return (
       <>
         {heading}
-        <Carousel label={words.title}>
+        <Carousel label={words.title} id="testimonials-row" t={props.t}>
           {site.testimonials.map((q) => (
             <li key={q.id} data-testid="public-testimonial" className={slide}>
               <TestimonialCard q={q} />

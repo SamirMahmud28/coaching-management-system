@@ -1,5 +1,7 @@
 import type { CSSProperties, ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import { Parallax } from "../../motion/parallax";
+import { FloatingShapes } from "./shapes";
 import { imageUrl, mediaClass, telHref, type SectionProps } from "./shared";
 
 // The welcome banner (D131) in the composition of the theme (D136), or another composition chosen in Layout (D135).
@@ -32,22 +34,30 @@ function parts({ site, t }: SectionProps, enquiry: boolean): HeroParts {
 }
 
 const Title = ({ className, children }: { className: string; children: ReactNode }) => (
-  <h1 data-testid="hero-heading" className={cn("site-heading", className)}>
+  <h1 data-testid="hero-heading" className={cn("site-heading site-rise", className)}>
     {children}
   </h1>
 );
 
-const Sub = ({ text, className }: { text: string | null; className?: string }) => (text ? <p className={cn("max-w-2xl text-lg leading-relaxed", className)}>{text}</p> : null);
+const Sub = ({ text, className }: { text: string | null; className?: string }) =>
+  text ? <p className={cn("site-rise max-w-2xl text-lg leading-relaxed [--d:120ms]", className)}>{text}</p> : null;
 
 const Cta = ({ button }: { button: HeroParts["button"] }) =>
   button && (
-    <a href={button.href} className="site-btn">
+    <a href={button.href} className="site-btn site-rise [--d:240ms]">
       {button.label}
     </a>
   );
 
 // eslint-disable-next-line @next/next/no-img-element -- served by the public website-image endpoint
 const Img = ({ src, className }: { src: string; className: string }) => <img src={src} alt="" className={className} />;
+
+/** A full-bleed banner picture: it settles in slowly (Ken Burns) and drifts on scroll (D137). */
+const Backdrop = ({ src }: { src: string }) => (
+  <Parallax className="absolute inset-x-0 -top-[10%] -bottom-[10%] -z-20">
+    <Img src={src} className="site-kenburns absolute inset-0 size-full object-cover" />
+  </Parallax>
+);
 
 const Wrap = ({ className, children }: { className?: string; children: ReactNode }) => <div className={cn("mx-auto w-full max-w-6xl px-4 sm:px-6", className)}>{children}</div>;
 
@@ -67,14 +77,15 @@ export function Hero(props: SectionProps & { enquiry: boolean }) {
   switch (heroLayout === "THEME" ? sig.hero : heroLayout) {
     case "SPLIT":
       return (
-        <section aria-label={label} className="site-tint">
+        <section aria-label={label} className="site-tint relative isolate overflow-hidden">
+          <FloatingShapes tone="brand" />
           <Wrap className={cn("grid items-center gap-10 py-16 sm:py-24", p.image && "md:grid-cols-2")}>
             <div className="space-y-6">
               <Title className={sig.heroTitle}>{p.heading}</Title>
               <Sub text={p.sub} className="text-muted-foreground" />
               <Cta button={p.button} />
             </div>
-            {p.image && <Img src={p.image} className={cn("aspect-[4/3] w-full object-cover shadow-lg", media)} />}
+            {p.image && <Img src={p.image} className={cn("site-rise aspect-[4/3] w-full object-cover shadow-lg [--d:200ms]", media)} />}
           </Wrap>
         </section>
       );
@@ -84,7 +95,7 @@ export function Hero(props: SectionProps & { enquiry: boolean }) {
         <section aria-label={label} className="site-on-colour relative isolate overflow-hidden bg-[var(--site-primary)] text-[var(--site-on-primary)]" style={onColour("var(--site-primary)", "var(--site-on-primary)")}>
           {p.image && (
             <>
-              <Img src={p.image} className="absolute inset-0 -z-20 size-full object-cover" />
+              <Backdrop src={p.image} />
               <div aria-hidden className={cn("absolute inset-0 -z-10", tint)} />
             </>
           )}
@@ -98,14 +109,15 @@ export function Hero(props: SectionProps & { enquiry: boolean }) {
 
     case "GRADIENT":
       return (
-        <section aria-label={label} className="site-gradient site-on-colour relative overflow-hidden" style={onColour("var(--site-gradient-a)", "var(--site-on-gradient)")}>
+        <section aria-label={label} className="site-gradient site-on-colour relative isolate overflow-hidden" style={onColour("var(--site-gradient-a)", "var(--site-on-gradient)")}>
+          <FloatingShapes tone="on-colour" />
           <Wrap className={cn("grid items-center gap-10 py-20 sm:py-28", p.image && "md:grid-cols-[3fr_2fr]")}>
             <div className="space-y-6">
               <Title className={sig.heroTitle}>{p.heading}</Title>
               <Sub text={p.sub} className="opacity-90" />
               <Cta button={p.button} />
             </div>
-            {p.image && <Img src={p.image} className={cn("aspect-[4/3] w-full rotate-2 object-cover shadow-2xl", media)} />}
+            {p.image && <Img src={p.image} className={cn("site-rise aspect-[4/3] w-full rotate-2 object-cover shadow-2xl [--d:200ms]", media)} />}
           </Wrap>
         </section>
       );
@@ -127,6 +139,7 @@ export function Hero(props: SectionProps & { enquiry: boolean }) {
     case "AURORA":
       return (
         <section aria-label={label} className="relative isolate overflow-hidden">
+          <FloatingShapes tone="brand" />
           <div aria-hidden className="absolute inset-0 -z-10 [mask-image:linear-gradient(to_bottom,black_60%,transparent)]">
             <div className="site-aurora-blob absolute -top-24 left-[8%] size-[26rem] rounded-full bg-[var(--site-gradient-a)] opacity-35 blur-3xl" />
             <div className="site-aurora-blob absolute top-10 right-[6%] size-[22rem] rounded-full bg-[var(--site-gradient-b)] opacity-30 blur-3xl [animation-delay:-6s]" />
@@ -146,7 +159,7 @@ export function Hero(props: SectionProps & { enquiry: boolean }) {
         <section aria-label={label} className={cn("relative isolate overflow-hidden", !p.image && "site-gradient")}>
           {p.image && (
             <>
-              <Img src={p.image} className="absolute inset-0 -z-20 size-full object-cover" />
+              <Backdrop src={p.image} />
               <div aria-hidden className={cn("absolute inset-0 -z-10", shade)} />
             </>
           )}
@@ -208,7 +221,7 @@ export function Hero(props: SectionProps & { enquiry: boolean }) {
         <section aria-label={label} className={cn("relative isolate overflow-hidden", p.image ? "site-on-colour text-white" : "site-tint")} style={p.image ? onColour("#111827", "#ffffff") : undefined}>
           {p.image && (
             <>
-              <Img src={p.image} className="absolute inset-0 -z-20 size-full object-cover" />
+              <Backdrop src={p.image} />
               <div aria-hidden className={cn("absolute inset-0 -z-10", shade)} />
             </>
           )}

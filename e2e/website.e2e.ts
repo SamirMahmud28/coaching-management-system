@@ -309,3 +309,25 @@ test("W7: the Owner adds stats, a reason, a question, a video, an instructor and
   await page.getByTestId("section-video").getByRole("button").click();
   await expect(page.getByTestId("section-video").locator("iframe")).toHaveAttribute("src", /youtube-nocookie\.com\/embed\/dQw4w9WgXcQ/);
 });
+
+test("W8: sections rise into view, stats count up and cards tilt; with 'reduce motion' everything shows at once (D137)", async ({ page }) => {
+  await page.goto(url("/"));
+  const site = page.getByTestId("website");
+  await expect(site).toHaveAttribute("data-motion", "on");
+  await expect(page.getByTestId("scroll-progress")).toHaveCount(1);
+  const stat = page.getByTestId("public-stat");
+  await stat.scrollIntoViewIfNeeded();
+  await expect(stat).toHaveAttribute("data-shown", "");
+  await expect(stat.locator("[data-count-to]")).toHaveText("১,২০০"); // counted up to the full number, in Bangla digits
+  const card = page.getByTestId("public-feature");
+  await card.hover({ position: { x: 8, y: 8 } });
+  await expect.poll(() => card.evaluate((el) => el.style.transform)).toContain("rotateX");
+  await expect(site).toHaveAttribute("data-scrolled", "");
+
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.reload();
+  await expect(page.getByTestId("hero-heading")).toBeVisible();
+  await expect(site).not.toHaveAttribute("data-motion", "on");
+  expect(await page.locator("[data-reveal]").count()).toBe(0);
+  await expect(page.getByTestId("public-stat").locator("[data-count-to]")).toHaveText("১,২০০");
+});

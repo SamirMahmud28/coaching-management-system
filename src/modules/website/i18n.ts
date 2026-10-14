@@ -58,6 +58,8 @@ export interface SiteLabels {
   more: string;
   playVideo: string;
   menu: string;
+  previous: string;
+  next: string;
   follow: string;
   enquiry: EnquiryLabels;
 }
@@ -97,6 +99,8 @@ const EN: SiteLabels = {
   more: "Learn more",
   playVideo: "Play video",
   menu: "Menu",
+  previous: "Previous",
+  next: "Next",
   follow: "Follow us",
   enquiry: {
     form: "Admission enquiry",
@@ -152,6 +156,8 @@ const BN: SiteLabels = {
   more: "বিস্তারিত",
   playVideo: "ভিডিও চালান",
   menu: "মেনু",
+  previous: "আগের",
+  next: "পরের",
   follow: "আমাদের অনুসরণ করুন",
   enquiry: {
     form: "ভর্তি সংক্রান্ত জিজ্ঞাসা",
