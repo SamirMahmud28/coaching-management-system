@@ -14,6 +14,30 @@ export const BODY_FONTS = ["INTER", "POPPINS", "LATO", "NUNITO", "MONTSERRAT", "
 export const WEBSITE_SECTIONS = ["ABOUT", "STATS", "FEATURES", "COURSES", "FACULTY", "ACHIEVERS", "NOTICES", "GALLERY", "VIDEO", "TESTIMONIALS", "FAQ", "ENQUIRY", "CONTACT"] as const;
 export type WebsiteSectionKey = (typeof WEBSITE_SECTIONS)[number];
 
+/** The website's fixed pages (D142), as their addresses: `home` is `/`, every other is `/<slug>`. */
+export const SITE_PAGES = ["home", "about", "courses", "teachers", "results", "gallery", "notices", "admission", "contact"] as const;
+export type SitePage = (typeof SITE_PAGES)[number];
+
+/** The page each section lives on (D142). Home shows the banner and the sections marked "On Home" (D143). */
+export const SECTION_PAGE: Record<WebsiteSectionKey, Exclude<SitePage, "home">> = {
+  ABOUT: "about",
+  STATS: "about",
+  FEATURES: "about",
+  COURSES: "courses",
+  FACULTY: "teachers",
+  ACHIEVERS: "results",
+  TESTIMONIALS: "results",
+  GALLERY: "gallery",
+  VIDEO: "gallery",
+  NOTICES: "notices",
+  ENQUIRY: "admission",
+  FAQ: "admission",
+  CONTACT: "contact",
+};
+
+/** On Home by default, for new sites and sites saved before pages existed (D143). */
+export const HOME_DEFAULT: readonly WebsiteSectionKey[] = ["STATS", "FEATURES", "COURSES", "ACHIEVERS", "TESTIMONIALS", "ENQUIRY"];
+
 export type WebsiteTheme = (typeof WEBSITE_THEMES)[number];
 export type WebsiteFont = (typeof WEBSITE_FONTS)[number];
 export type BodyFont = (typeof BODY_FONTS)[number];

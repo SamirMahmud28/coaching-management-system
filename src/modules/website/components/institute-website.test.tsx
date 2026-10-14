@@ -21,7 +21,8 @@ function site(design: Partial<WebsiteDesign> = {}, content: Partial<WebsiteConte
       headingFont: "INTER",
       design: { ...DEFAULT_DESIGN, ...design },
       content: { ...DEFAULT_CONTENT, ...content },
-      sections: WEBSITE_SECTIONS.map((key) => ({ key, enabled: true })),
+      // Everything on Home, so one render shows every section; the page tests below narrow it down.
+      sections: WEBSITE_SECTIONS.map((key) => ({ key, enabled: true, onHome: true })),
       heroHeading: "Bright results",
       heroSubheading: null,
       heroImageFileId: null,
@@ -54,8 +55,8 @@ describe("the website's language (D140)", () => {
   it("shows the menu, headings, form, times and dates in Bangla, and the office's own words as written", () => {
     render(<InstituteWebsite site={site({ language: "BN" })} />);
     expect(screen.getByTestId("website")).toHaveAttribute("lang", "bn");
-    const nav = screen.getByRole("navigation", { name: "বিভাগসমূহ" });
-    expect(within(nav).getByRole("link", { name: "ভর্তি" })).toHaveAttribute("href", "#enquiry");
+    const nav = screen.getByRole("navigation", { name: "পাতাসমূহ" });
+    expect(within(nav).getByRole("link", { name: "ভর্তি" })).toHaveAttribute("href", "/admission");
     expect(screen.getByRole("heading", { name: "কোর্সসমূহ" })).toBeInTheDocument();
     expect(screen.getByText("শনি")).toBeInTheDocument();
     expect(screen.getByText(/১৬:০০–১৭:৩০/)).toBeInTheDocument();
@@ -123,9 +124,9 @@ describe("showcase sections (D138, D141)", () => {
     expect(screen.getByRole("button", { name: "Play video: Our classrooms" })).toBeInTheDocument();
     expect(screen.getByTestId("section-video").querySelector("iframe")).toBeNull();
     // Stats, reasons and the video sit between other sections without a menu link.
-    const nav = screen.getByRole("navigation", { name: "Sections" });
-    expect(within(nav).queryByRole("link", { name: "Results" })).toBeNull();
-    expect(within(nav).getByRole("link", { name: "Teachers" })).toHaveAttribute("href", "#faculty");
+    const nav = screen.getByRole("navigation", { name: "Pages" });
+    expect(within(nav).getByRole("link", { name: "Teachers" })).toHaveAttribute("href", "/teachers");
+    expect(within(nav).getByRole("link", { name: "Results" })).toHaveAttribute("href", "/results");
   });
 
   it("leaves the showcase sections out while they are empty", () => {
@@ -136,5 +137,51 @@ describe("showcase sections (D138, D141)", () => {
   it("writes the stats in Bangla digits on a Bangla site", () => {
     render(<InstituteWebsite site={site({ language: "BN" }, { stats: [{ value: 1200, suffix: "+", label: "শিক্ষার্থী" }] })} />);
     expect(screen.getByTestId("public-stat")).toHaveTextContent("১,২০০+");
+  });
+});
+
+describe("pages (D142, D143)", () => {
+  /** The default Home set, as a new site gets it. */
+  const homeDefault = (o: Partial<WebsiteDesign> = {}) => {
+    const sample = site(o, { stats: [{ value: 1200, suffix: "+", label: "Students" }], faqs: [{ question: "When?", answer: "January." }] });
+    sample.settings.sections = WEBSITE_SECTIONS.map((key) => ({ key, enabled: true, onHome: ["STATS", "FEATURES", "COURSES", "ACHIEVERS", "TESTIMONIALS", "ENQUIRY"].includes(key) }));
+    return sample;
+  };
+
+  it("shows the banner and only the On Home sections on Home, each list with a link to its page", () => {
+    render(<InstituteWebsite site={homeDefault()} page="home" />);
+    expect(screen.getByTestId("hero-heading")).toBeInTheDocument();
+    expect(screen.getByTestId("section-courses")).toBeInTheDocument();
+    expect(screen.getByTestId("section-enquiry")).toBeInTheDocument();
+    expect(screen.queryByTestId("section-gallery")).toBeNull();
+    expect(screen.queryByTestId("section-about")).toBeNull();
+    expect(screen.getByTestId("see-all-courses")).toHaveAttribute("href", "/courses");
+    expect(screen.getByTestId("see-all-testimonials")).toHaveAttribute("href", "/results");
+    expect(screen.queryByTestId("see-all-enquiry")).toBeNull();
+    // The banner's Enquire button stays on Home while the form is there.
+    expect(screen.getByRole("link", { name: "Enquire about admission" })).toHaveAttribute("href", "#enquiry");
+  });
+
+  it("shows a page's own sections under a heading strip, and marks it in the menu", () => {
+    render(<InstituteWebsite site={homeDefault()} page="admission" />);
+    expect(screen.queryByTestId("hero-heading")).toBeNull();
+    expect(screen.getByTestId("page-heading")).toHaveTextContent("Admission");
+    expect(screen.getByTestId("section-enquiry")).toBeInTheDocument();
+    expect(screen.getByTestId("section-faq")).toBeInTheDocument();
+    expect(screen.queryByTestId("section-courses")).toBeNull();
+    expect(screen.getByRole("navigation", { name: "Pages" }).querySelector("[aria-current=page]")).toHaveTextContent("Admission");
+  });
+
+  it("lists only pages with something to show, and points old in-page links at a section's page", () => {
+    const sample = homeDefault();
+    sample.settings.sections = sample.settings.sections.map((x) => (x.key === "ENQUIRY" ? { ...x, onHome: false } : x));
+    sample.settings.content.announcement = { text: "Admission open", linkUrl: "#enquiry", linkLabel: "Enquire", showUntil: null };
+    sample.faculty = [];
+    render(<InstituteWebsite site={sample} page="home" />);
+    const nav = screen.getByRole("navigation", { name: "Pages" });
+    expect(within(nav).queryByRole("link", { name: "Teachers" })).toBeNull(); // no faculty yet
+    expect(within(nav).getByRole("link", { name: "Gallery" })).toBeInTheDocument();
+    expect(within(screen.getByTestId("announcement")).getByRole("link", { name: /Enquire/ })).toHaveAttribute("href", "/admission#enquiry");
+    expect(screen.getByRole("link", { name: "Enquire about admission" })).toHaveAttribute("href", "/admission#enquiry");
   });
 });

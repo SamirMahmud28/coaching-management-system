@@ -220,6 +220,20 @@ describe("website layout, words and language (D135, D138, D140)", () => {
   });
 });
 
+describe("pages and the home page (D142, D143)", () => {
+  it("saves which sections are on Home; rows saved before pages existed get the default Home set", async () => {
+    const s = await institute();
+    expect(DEFAULT_SECTIONS.filter((x) => x.onHome).map((x) => x.key)).toEqual(["STATS", "FEATURES", "COURSES", "ACHIEVERS", "TESTIMONIALS", "ENQUIRY"]);
+    const mine = DEFAULT_SECTIONS.map((x) => ({ ...x, onHome: x.key === "GALLERY" }));
+    expect((await saveWebsiteSettings(db, s.actor, input({ sections: mine }))).sections.filter((x) => x.onHome).map((x) => x.key)).toEqual(["GALLERY"]);
+    expect((await getWebsiteSettings(db, s.tenant.id)).sections.find((x) => x.key === "GALLERY")?.onHome).toBe(true);
+
+    const beforePages = DEFAULT_SECTIONS.map(({ key, enabled }) => ({ key, enabled }));
+    await testDb.update(websiteSettings).set({ sections: beforePages as WebsiteSectionSetting[] }).where(eq(websiteSettings.tenantId, s.tenant.id));
+    expect((await getWebsiteSettings(db, s.tenant.id)).sections).toEqual(DEFAULT_SECTIONS);
+  });
+});
+
 describe("Stats, Why choose us, FAQ and Video (D138)", () => {
   const content = (o: Partial<WebsiteContent> = {}): WebsiteContent => ({ ...DEFAULT_CONTENT, ...o });
 

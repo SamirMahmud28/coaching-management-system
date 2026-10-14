@@ -9,6 +9,7 @@ import {
   APPEARANCES, BACKGROUNDS, BODY_FONTS, BUTTON_STYLES, CARD_STYLES, COURSE_LAYOUTS, DENSITIES, FAQ_LAYOUTS, GALLERY_LAYOUTS, GRADIENT_CHOICES, HEADER_STYLES, HERO_LAYOUTS,
   HERO_OVERLAYS, HEX_COLOUR, NOTICE_LAYOUTS, PALETTE_CHOICES, RADII, SITE_LANGUAGES, TESTIMONIAL_LAYOUTS, TEXT_SIZES, WEBSITE_FONTS, WEBSITE_THEMES,
   completeDesign, legacyDesign, type WebsiteDesign, type WebsiteFont, type WebsiteTheme,
+  HOME_DEFAULT,
 } from "./design";
 import {
   ANNOUNCEMENT_MAX, DEFAULT_CONTENT, FEATURE_ICONS, LINK_LABEL_MAX, MAX_FAQS, MAX_FEATURES, MAX_STAT_VALUE, MAX_STATS, SECTION_SUBTITLE_MAX, SECTION_TITLE_MAX,
@@ -49,7 +50,7 @@ export interface WebsiteSettings {
 
 export type WebsiteSettingsInput = Omit<WebsiteSettings, "isDefault" | "updatedAt">;
 
-export const DEFAULT_SECTIONS: WebsiteSectionSetting[] = WEBSITE_SECTIONS.map((key) => ({ key, enabled: true }));
+export const DEFAULT_SECTIONS: WebsiteSectionSetting[] = WEBSITE_SECTIONS.map((key) => ({ key, enabled: true, onHome: HOME_DEFAULT.includes(key) }));
 
 const DEFAULTS: WebsiteSettings = {
   theme: "CLASSIC",
@@ -76,11 +77,12 @@ const DEFAULTS: WebsiteSettings = {
 function completeSections(stored: WebsiteSectionSetting[]): WebsiteSectionSetting[] {
   const result = stored
     .filter((s, i) => WEBSITE_SECTIONS.includes(s.key) && stored.findIndex((o) => o.key === s.key) === i)
-    .map((s) => ({ key: s.key, enabled: !!s.enabled }));
+    // A row saved before pages existed has no Home choice: it gets the default Home set (D143).
+    .map((s) => ({ key: s.key, enabled: !!s.enabled, onHome: typeof s.onHome === "boolean" ? s.onHome : HOME_DEFAULT.includes(s.key) }));
   WEBSITE_SECTIONS.forEach((key, order) => {
     if (result.some((s) => s.key === key)) return;
     const before = WEBSITE_SECTIONS.slice(0, order).findLast((k) => result.some((s) => s.key === k));
-    result.splice(before ? result.findIndex((s) => s.key === before) + 1 : 0, 0, { key, enabled: true });
+    result.splice(before ? result.findIndex((s) => s.key === before) + 1 : 0, 0, { key, enabled: true, onHome: HOME_DEFAULT.includes(key) });
   });
   return result;
 }
@@ -231,7 +233,7 @@ function cleanSections(sections: WebsiteSectionSetting[]): WebsiteSectionSetting
   const keys = sections.map((s) => s.key);
   const valid = keys.length === WEBSITE_SECTIONS.length && WEBSITE_SECTIONS.every((k) => keys.includes(k));
   if (!valid) throw new ValidationError("VALIDATION_WEBSITE_SECTIONS", "List every section exactly once.", { field: "sections" });
-  return sections.map((s) => ({ key: s.key as WebsiteSectionKey, enabled: !!s.enabled }));
+  return sections.map((s) => ({ key: s.key as WebsiteSectionKey, enabled: !!s.enabled, onHome: !!s.onHome }));
 }
 
 const valuesOf = (s: WebsiteSettings): WebsiteSettingsInput => ({

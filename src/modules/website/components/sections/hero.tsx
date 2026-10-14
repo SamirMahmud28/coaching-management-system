@@ -1,7 +1,9 @@
 import type { CSSProperties, ReactNode } from "react";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Parallax } from "../../motion/parallax";
 import { FloatingShapes } from "./shapes";
+import type { SitePage } from "@/server/modules/website/design";
 import { imageUrl, mediaClass, telHref, type SectionProps } from "./shared";
 
 // The welcome banner (D131) in the composition of the theme (D136), or another composition chosen in Layout (D135).
@@ -18,15 +20,15 @@ interface HeroParts {
   button: { href: string; label: string } | null;
 }
 
-function parts({ site, t }: SectionProps, enquiry: boolean): HeroParts {
+function parts({ site, t }: SectionProps, enquiryHref: string | null): HeroParts {
   const { settings, profile } = site;
   return {
     heading: settings.heroHeading ?? profile.name,
     sub: settings.heroSubheading,
     image: settings.heroImageFileId ? imageUrl(settings.heroImageFileId) : null,
     button:
-      settings.heroButton === "ENQUIRE" && enquiry
-        ? { href: "#enquiry", label: t.enquire }
+      settings.heroButton === "ENQUIRE" && enquiryHref
+        ? { href: enquiryHref, label: t.enquire }
         : settings.heroButton === "CALL" && profile.phone
           ? { href: telHref(profile.phone), label: t.call(profile.phone) }
           : null,
@@ -64,9 +66,9 @@ const Wrap = ({ className, children }: { className?: string; children: ReactNode
 /** A coloured banner: its button takes the banner's text colour (website.css `.site-on-colour`). */
 const onColour = (bg: string, ink: string) => ({ "--site-banner-bg": bg, "--site-banner-ink": ink }) as CSSProperties;
 
-export function Hero(props: SectionProps & { enquiry: boolean }) {
+export function Hero(props: SectionProps & { enquiryHref: string | null }) {
   const { sig } = props;
-  const p = parts(props, props.enquiry);
+  const p = parts(props, props.enquiryHref);
   const media = mediaClass(sig.media);
   // The region keeps its English name "Welcome" for assistive technology and tests in either language.
   const label = "Welcome";
@@ -233,4 +235,29 @@ export function Hero(props: SectionProps & { enquiry: boolean }) {
         </section>
       );
   }
+}
+
+/**
+ * The top of every page except Home (D142): the page's name and a line about it, on a soft tint of the main colour,
+ * with a link back to Home. Lighter than the banner so visitors reach the content quickly.
+ */
+export function PageHeading({ sig, t, page }: SectionProps & { page: Exclude<SitePage, "home"> }) {
+  return (
+    <section aria-label={t.page[page]} className="site-tint relative isolate overflow-hidden">
+      <div aria-hidden className="absolute -top-24 -right-24 -z-10 size-72 rounded-full bg-[var(--site-accent)] opacity-15 blur-3xl" />
+      <Wrap className={cn("space-y-3 py-12 sm:py-16", sig.align === "center" && "text-center")}>
+        <nav aria-label="Breadcrumb" className="site-rise text-sm text-muted-foreground">
+          <Link href="/" prefetch={false} className="hover:underline">
+            {t.page.home}
+          </Link>
+          <span aria-hidden> / </span>
+          <span aria-current="page">{t.page[page]}</span>
+        </nav>
+        <h1 data-testid="page-heading" className={cn("site-heading site-rise [--d:80ms]", sig.title, "sm:text-5xl")}>
+          {t.page[page]}
+        </h1>
+        {t.pageLine[page] && <p className={cn("site-rise max-w-2xl text-lg text-muted-foreground [--d:160ms]", sig.align === "center" && "mx-auto")}>{t.pageLine[page]}</p>}
+      </Wrap>
+    </section>
+  );
 }

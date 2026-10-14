@@ -74,7 +74,7 @@ const settingsBody = z.object({
   heading_font: z.enum(WEBSITE_FONTS),
   design: designBody,
   content: contentBody,
-  sections: z.array(z.object({ key: z.enum(WEBSITE_SECTIONS), enabled: z.boolean() })).max(WEBSITE_SECTIONS.length),
+  sections: z.array(z.object({ key: z.enum(WEBSITE_SECTIONS), enabled: z.boolean(), on_home: z.boolean() })).max(WEBSITE_SECTIONS.length),
   hero_heading: optionalText(200),
   hero_subheading: optionalText(400),
   hero_image_file_id: z.uuid().nullable().optional(),
@@ -140,7 +140,7 @@ export function createWebsiteHandlers({ db, auth, host, storage }: WebsiteHttpDe
         const actor = await authorize(request, "website.manage");
         const b = await parseBody(request, settingsBody);
         const saved = await saveWebsiteSettings(db, actor, {
-          theme: b.theme, headingFont: b.heading_font, sections: b.sections, heroHeading: b.hero_heading ?? null, heroSubheading: b.hero_subheading ?? null,
+          theme: b.theme, headingFont: b.heading_font, sections: b.sections.map((s) => ({ key: s.key, enabled: s.enabled, onHome: s.on_home })), heroHeading: b.hero_heading ?? null, heroSubheading: b.hero_subheading ?? null,
           heroImageFileId: b.hero_image_file_id ?? null, heroButton: b.hero_button, aboutHeading: b.about_heading ?? null, aboutText: b.about_text ?? null,
           aboutImageFileId: b.about_image_file_id ?? null,
           design: toCamelCaseKeys<WebsiteDesign>({ ...b.design, custom_primary: b.design.custom_primary ?? null, custom_accent: b.design.custom_accent ?? null }),

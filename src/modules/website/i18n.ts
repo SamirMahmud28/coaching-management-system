@@ -1,4 +1,4 @@
-import type { SiteLanguage, WebsiteSectionKey } from "@/server/modules/website/design";
+import type { SiteLanguage, SitePage, WebsiteSectionKey } from "@/server/modules/website/design";
 import type { Weekday } from "@/server/modules/academic/service";
 
 // Every built-in label on the public website, in English and Bangla (D140). What the office writes (headings, notices,
@@ -34,6 +34,11 @@ export interface SiteLabels {
   num: (text: string) => string;
   date: (iso: string) => string;
   nav: Record<WebsiteSectionKey, string>;
+  /** Each page's name in the menu and as its heading (D142). */
+  page: Record<SitePage, string>;
+  /** The line under a page's heading. */
+  pageLine: Partial<Record<SitePage, string>>;
+  seeAll: string;
   title: Record<WebsiteSectionKey, string>;
   subtitle: Partial<Record<WebsiteSectionKey, string>>;
   aboutTitle: (name: string) => string;
@@ -72,6 +77,18 @@ const EN: SiteLabels = {
     ABOUT: "About", STATS: "Results", FEATURES: "Why us", COURSES: "Courses", FACULTY: "Teachers", ACHIEVERS: "Achievers", NOTICES: "Notices", GALLERY: "Gallery", VIDEO: "Video",
     TESTIMONIALS: "Testimonials", FAQ: "FAQ", ENQUIRY: "Admission", CONTACT: "Contact",
   },
+  page: { home: "Home", about: "About us", courses: "Courses", teachers: "Teachers", results: "Results", gallery: "Gallery", notices: "Notices", admission: "Admission", contact: "Contact" },
+  pageLine: {
+    about: "Who we are and why families choose us.",
+    courses: "Our courses, subjects, batches and class times.",
+    teachers: "The teachers who will guide your child.",
+    results: "Our students' results, in their own words too.",
+    gallery: "Moments from our classrooms and events.",
+    notices: "News, dates and announcements.",
+    admission: "Ask us about admission; we'll call you back.",
+    contact: "Visit us, call us or write to us.",
+  },
+  seeAll: "See all",
   title: {
     ABOUT: "About", STATS: "Our results in numbers", FEATURES: "Why choose us", COURSES: "Courses", FACULTY: "Our teachers", ACHIEVERS: "Our achievers", NOTICES: "Notices",
     GALLERY: "Gallery", VIDEO: "See us in action", TESTIMONIALS: "What our students say", FAQ: "Frequently asked questions", ENQUIRY: "Admission enquiry", CONTACT: "Contact us",
@@ -94,7 +111,7 @@ const EN: SiteLabels = {
   mapOf: (name) => `Map of ${name}`,
   signIn: "Sign in",
   staffSignIn: "Students and staff: sign in",
-  sectionsNav: "Sections",
+  sectionsNav: "Pages",
   close: "Close",
   more: "Learn more",
   playVideo: "Play video",
@@ -129,6 +146,18 @@ const BN: SiteLabels = {
     ABOUT: "আমাদের কথা", STATS: "ফলাফল", FEATURES: "কেন আমরা", COURSES: "কোর্স", FACULTY: "শিক্ষক", ACHIEVERS: "কৃতী শিক্ষার্থী", NOTICES: "নোটিশ", GALLERY: "গ্যালারি", VIDEO: "ভিডিও",
     TESTIMONIALS: "মতামত", FAQ: "জিজ্ঞাসা", ENQUIRY: "ভর্তি", CONTACT: "যোগাযোগ",
   },
+  page: { home: "হোম", about: "আমাদের কথা", courses: "কোর্স", teachers: "শিক্ষক", results: "ফলাফল", gallery: "গ্যালারি", notices: "নোটিশ", admission: "ভর্তি", contact: "যোগাযোগ" },
+  pageLine: {
+    about: "আমরা কারা এবং অভিভাবকেরা কেন আমাদের বেছে নেন।",
+    courses: "আমাদের কোর্স, বিষয়, ব্যাচ ও ক্লাসের সময়।",
+    teachers: "যে শিক্ষকেরা আপনার সন্তানকে পথ দেখাবেন।",
+    results: "আমাদের শিক্ষার্থীদের ফলাফল ও তাদের কথা।",
+    gallery: "ক্লাস ও অনুষ্ঠানের কিছু মুহূর্ত।",
+    notices: "খবর, তারিখ ও ঘোষণা।",
+    admission: "ভর্তি নিয়ে জানতে চান? আমরা আপনাকে ফোন করব।",
+    contact: "আমাদের ঠিকানা, ফোন ও ইমেইল।",
+  },
+  seeAll: "সব দেখুন",
   title: {
     ABOUT: "আমাদের কথা", STATS: "সংখ্যায় আমাদের সাফল্য", FEATURES: "কেন আমাদের বেছে নেবেন", COURSES: "কোর্সসমূহ", FACULTY: "আমাদের শিক্ষকবৃন্দ", ACHIEVERS: "আমাদের কৃতী শিক্ষার্থী",
     NOTICES: "নোটিশ", GALLERY: "গ্যালারি", VIDEO: "ভিডিওতে আমরা", TESTIMONIALS: "শিক্ষার্থীরা যা বলে", FAQ: "সাধারণ জিজ্ঞাসা", ENQUIRY: "ভর্তি সংক্রান্ত জিজ্ঞাসা", CONTACT: "যোগাযোগ করুন",
@@ -151,7 +180,7 @@ const BN: SiteLabels = {
   mapOf: (name) => `${name}-এর ম্যাপ`,
   signIn: "সাইন ইন",
   staffSignIn: "শিক্ষার্থী ও শিক্ষক: সাইন ইন",
-  sectionsNav: "বিভাগসমূহ",
+  sectionsNav: "পাতাসমূহ",
   close: "বন্ধ করুন",
   more: "বিস্তারিত",
   playVideo: "ভিডিও চালান",

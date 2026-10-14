@@ -1,83 +1,84 @@
 import type { ReactNode } from "react";
-import { Menu } from "lucide-react";
+import { ArrowRight, Menu } from "lucide-react";
+import Link from "next/link";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import type { WebsiteSectionKey } from "@/server/core/db/schema/website";
+import { SECTION_PAGE, type SitePage, type WebsiteSectionKey } from "@/server/modules/website/design";
 import { FONT_FAMILY } from "../fonts";
 import { SITE_LABELS } from "../i18n";
+import { MotionRoot } from "../motion/motion-root";
+import { ScrollProgress } from "../motion/parallax";
+import { SiteMotion } from "../motion/site-motion";
+import { pageHref, pagesOf, resolveLink, sectionHref, sectionsOn } from "../pages";
 import { backgroundLayer } from "../patterns";
 import { THEMES } from "../themes";
 import { siteColours, siteVariables, TEXT_SCALE } from "../tokens";
 import { AnnouncementBar } from "./announcement-bar";
 import { About, Courses, Gallery, Notices, Testimonials } from "./sections/content";
-import { Hero } from "./sections/hero";
-import { Contact, contactsOf, Enquiry } from "./sections/reach";
+import { Hero, PageHeading } from "./sections/hero";
+import { Contact, Enquiry } from "./sections/reach";
 import { Achievers, Faculty, Faqs, Features, Stats, Video } from "./sections/showcase";
 import { SocialLinks, type SectionProps, type Site } from "./sections/shared";
-import { MotionRoot } from "../motion/motion-root";
-import { ScrollProgress } from "../motion/parallax";
-import { SiteMotion } from "../motion/site-motion";
 import "../website.css";
 import "../motion.css";
 
-// The institute's public website (Website module, D20, D124–D141). Server-rendered; every section is filled from the
-// institute's own data and drawn in the theme's composition with the design settings as CSS variables, with the
-// built-in labels in the site's language. Sections without content are left out, together with their menu link.
+// The institute's public website (Website module, D20, D124–D147): fixed pages (D142), each server-rendered from the
+// institute's own data and drawn in the theme's composition with the design settings as CSS variables, and the
+// built-in labels in the site's language. Home shows the banner and the sections marked "On Home" (D143); every other
+// page shows its own sections under a heading strip. Sections and pages with nothing to show are left out.
 
-/** Sections that sit between others without a menu link of their own, so the menu stays short. */
-const NOT_IN_MENU: WebsiteSectionKey[] = ["STATS", "FEATURES", "VIDEO"];
+/** Home sections that end with a link to their page; the others are complete where they are. */
+const NO_SEE_ALL: WebsiteSectionKey[] = ["STATS", "FEATURES", "ENQUIRY", "CONTACT"];
 
-export function InstituteWebsite({ site }: { site: Site }) {
+export function InstituteWebsite({ site, page = "home" }: { site: Site; page?: SitePage }) {
   const { settings, profile } = site;
-  const { content } = settings;
-  const { design } = settings;
+  const { content, design } = settings;
   const sig = THEMES[settings.theme];
   const t = SITE_LABELS[design.language];
   const style = siteVariables(design, profile.primaryColor, FONT_FAMILY[settings.headingFont], FONT_FAMILY[design.bodyFont]);
   const layer = backgroundLayer(design.background, siteColours(design, profile.primaryColor).primary);
   const props: SectionProps = { site, sig, t };
 
-  const rendered = settings.sections
-    .filter((s) => s.enabled)
-    .map((s) => ({ key: s.key, node: renderSection(s.key, props) }))
-    .filter((s): s is { key: WebsiteSectionKey; node: ReactNode } => s.node !== null);
-  const has = (key: WebsiteSectionKey) => rendered.some((s) => s.key === key);
-  const menu = rendered.filter((s) => !NOT_IN_MENU.includes(s.key));
+  const shown = sectionsOn(site, page);
+  const pages = pagesOf(site);
   // A long menu needs the wider screens to fit beside the name.
-  const wide = menu.length > 7 ? "xl" : "lg";
+  const wide = pages.length > 7 ? "xl" : "lg";
   const name = profile.shortName ?? profile.name;
 
   const brand = (
-    <a href="#top" className="site-heading flex min-w-0 items-center gap-3 text-lg font-semibold">
+    <Link href="/" prefetch={false} className="site-heading flex min-w-0 items-center gap-3 text-lg font-semibold">
       {profile.hasLogo && (
         // eslint-disable-next-line @next/next/no-img-element -- served by the public logo endpoint
         <img src="/api/public/logo" alt="" className="size-10 shrink-0 rounded-md object-contain" />
       )}
       <span className="truncate">{name}</span>
-    </a>
+    </Link>
+  );
+  const link = (p: SitePage, className: string) => (
+    <Link
+      key={p}
+      href={pageHref(p)}
+      prefetch={false}
+      aria-current={p === page ? "page" : undefined}
+      className={cn(className, "hover:text-[var(--site-primary-ink)] aria-[current=page]:font-semibold aria-[current=page]:text-[var(--site-primary-ink)]")}
+    >
+      {t.page[p]}
+    </Link>
   );
   const nav = (className?: string) => (
     <nav aria-label={t.sectionsNav} className={cn("items-center gap-5 text-sm text-muted-foreground", className)}>
-      {menu.map((s) => (
-        <a key={s.key} href={`#${s.key.toLowerCase()}`} className="hover:text-[var(--site-primary-ink)]">
-          {t.nav[s.key]}
-        </a>
-      ))}
+      {pages.map((p) => link(p, ""))}
     </nav>
   );
   // Phones and tablets: the same links in a drop-down that works without any script.
-  const phoneMenu = menu.length > 0 && (
+  const phoneMenu = (
     <details className={cn("group relative", wide === "xl" ? "xl:hidden" : "lg:hidden")}>
       <summary aria-label={t.menu} className="flex size-9 cursor-pointer list-none items-center justify-center rounded-md hover:bg-muted [&::-webkit-details-marker]:hidden">
         <Menu aria-hidden className="size-5" />
       </summary>
       <nav aria-label={t.menu} className="absolute right-0 z-30 mt-2 flex w-56 flex-col rounded-[var(--site-radius)] border bg-background p-2 text-sm shadow-xl">
-        {menu.map((s) => (
-          <a key={s.key} href={`#${s.key.toLowerCase()}`} className="rounded-md px-3 py-2 hover:bg-muted hover:text-[var(--site-primary-ink)]">
-            {t.nav[s.key]}
-          </a>
-        ))}
+        {pages.map((p) => link(p, "rounded-md px-3 py-2 hover:bg-muted"))}
       </nav>
     </details>
   );
@@ -91,12 +92,14 @@ export function InstituteWebsite({ site }: { site: Site }) {
       </Button>
     </div>
   );
+  const announcement = content.announcement;
 
   return (
     <MotionRoot>
       <div
-          data-testid="website"
+        data-testid="website"
         data-website=""
+        data-site-page={page}
         data-site-theme={settings.theme.toLowerCase()}
         data-site-button={design.buttonStyle}
         data-site-card={design.cardStyle}
@@ -106,10 +109,18 @@ export function InstituteWebsite({ site }: { site: Site }) {
         className={cn("relative isolate flex min-h-screen flex-1 flex-col bg-background text-foreground", design.appearance === "LIGHT" && "theme-light", design.appearance === "DARK" && "dark")}
       >
         {design.textSize !== "MEDIUM" && <style>{`html{font-size:${TEXT_SCALE[design.textSize]}}`}</style>}
-        <SiteMotion />
+        <SiteMotion key={page} />
         <ScrollProgress />
         {layer && <div aria-hidden data-testid="site-background" className={cn("pointer-events-none fixed inset-0 -z-10", layer.className)} style={layer.style} />}
-        {content.announcement && <AnnouncementBar text={content.announcement.text} linkUrl={content.announcement.linkUrl} linkLabel={content.announcement.linkLabel} closeLabel={t.close} moreLabel={t.more} />}
+        {announcement && (
+          <AnnouncementBar
+            text={announcement.text}
+            linkUrl={announcement.linkUrl && resolveLink(site, page, announcement.linkUrl)}
+            linkLabel={announcement.linkLabel}
+            closeLabel={t.close}
+            moreLabel={t.more}
+          />
+        )}
 
         <header
           className={cn(
@@ -144,10 +155,19 @@ export function InstituteWebsite({ site }: { site: Site }) {
         </header>
 
         <main id="top" className="flex-1">
-          <Hero {...props} enquiry={has("ENQUIRY")} />
-          {rendered.map((s, i) => (
-            <section key={s.key} id={s.key.toLowerCase()} aria-labelledby={`${s.key.toLowerCase()}-heading`} data-testid={`section-${s.key.toLowerCase()}`} className={cn("site-section scroll-mt-20", i % 2 === 1 && sig.band)}>
-              <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">{s.node}</div>
+          {page === "home" ? <Hero {...props} enquiryHref={sectionHref(site, page, "ENQUIRY")} /> : <PageHeading {...props} page={page} />}
+          {shown.map((key, i) => (
+            <section key={key} id={key.toLowerCase()} aria-labelledby={`${key.toLowerCase()}-heading`} data-testid={`section-${key.toLowerCase()}`} className={cn("site-section scroll-mt-20", i % 2 === 1 && sig.band)}>
+              <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
+                {renderSection(key, props)}
+                {page === "home" && !NO_SEE_ALL.includes(key) && (
+                  <p className={cn("mt-8", sig.align === "center" ? "text-center" : "text-left")}>
+                    <Link href={pageHref(SECTION_PAGE[key])} prefetch={false} data-testid={`see-all-${key.toLowerCase()}`} className="inline-flex items-center gap-1.5 font-semibold text-[var(--site-primary-ink)] hover:underline">
+                      {t.seeAll} <ArrowRight aria-hidden className="size-4" />
+                    </Link>
+                  </p>
+                )}
+              </div>
             </section>
           ))}
         </main>
@@ -168,34 +188,33 @@ export function InstituteWebsite({ site }: { site: Site }) {
   );
 }
 
-function renderSection(key: WebsiteSectionKey, props: SectionProps): ReactNode | null {
-  const s = props.site;
+function renderSection(key: WebsiteSectionKey, props: SectionProps): ReactNode {
   switch (key) {
     case "ABOUT":
-      return s.settings.aboutText || s.settings.aboutImageFileId ? <About {...props} /> : null;
+      return <About {...props} />;
     case "COURSES":
-      return s.courses.length ? <Courses {...props} /> : null;
+      return <Courses {...props} />;
     case "CONTACT":
-      return contactsOf(s).length ? <Contact {...props} /> : null;
+      return <Contact {...props} />;
     case "NOTICES":
-      return s.notices.length ? <Notices {...props} /> : null;
+      return <Notices {...props} />;
     case "GALLERY":
-      return s.gallery.length ? <Gallery {...props} /> : null;
+      return <Gallery {...props} />;
     case "TESTIMONIALS":
-      return s.testimonials.length ? <Testimonials {...props} /> : null;
+      return <Testimonials {...props} />;
     case "ENQUIRY":
       return <Enquiry {...props} />;
     case "STATS":
-      return s.settings.content.stats.length ? <Stats {...props} /> : null;
+      return <Stats {...props} />;
     case "FEATURES":
-      return s.settings.content.features.length ? <Features {...props} /> : null;
+      return <Features {...props} />;
     case "FACULTY":
-      return s.faculty.length ? <Faculty {...props} /> : null;
+      return <Faculty {...props} />;
     case "ACHIEVERS":
-      return s.achievers.length ? <Achievers {...props} /> : null;
+      return <Achievers {...props} />;
     case "VIDEO":
-      return s.settings.content.video ? <Video {...props} /> : null;
+      return <Video {...props} />;
     case "FAQ":
-      return s.settings.content.faqs.length ? <Faqs {...props} /> : null;
+      return <Faqs {...props} />;
   }
 }

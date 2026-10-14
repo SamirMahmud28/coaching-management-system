@@ -16,7 +16,8 @@ export const heroButtonEnum = pgEnum("website_hero_button", ["ENQUIRE", "CALL", 
 export const enquiryStatusEnum = pgEnum("enquiry_status", ["NEW", "CONTACTED", "CONVERTED", "CLOSED"]);
 
 export { WEBSITE_SECTIONS, type WebsiteSectionKey } from "../../../modules/website/design";
-export type WebsiteSectionSetting = { key: WebsiteSectionKey; enabled: boolean };
+/** A section's settings: shown on its page while `enabled` (D20, D142), and on Home too while `onHome` (D143). */
+export type WebsiteSectionSetting = { key: WebsiteSectionKey; enabled: boolean; onHome: boolean };
 
 /** One row per institute, created on first save; until then the defaults in `website/settings.ts` apply. */
 export const websiteSettings = pgTable("website_settings", {

@@ -56,7 +56,7 @@ export const editorSchema = z
     features: z.array(z.object({ icon: z.enum(FEATURE_ICONS), title: max(60).min(1, "Give the reason a title."), text: max(200) })).max(MAX_FEATURES),
     faqs: z.array(z.object({ question: max(150).min(1, "Write the question."), answer: max(1000).min(1, "Write the answer.") })).max(MAX_FAQS),
     video: z.object({ url: z.string().trim().refine((v) => v === "" || !!youtubeIdOf(v), "Paste a YouTube video's address."), title: max(100) }),
-    sections: z.array(z.object({ key: z.enum(WEBSITE_SECTIONS), enabled: z.boolean() })),
+    sections: z.array(z.object({ key: z.enum(WEBSITE_SECTIONS), enabled: z.boolean(), on_home: z.boolean() })),
     hero_heading: max(120),
     hero_subheading: max(250),
     hero_image_file_id: z.string(),

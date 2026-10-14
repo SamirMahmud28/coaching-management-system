@@ -1080,7 +1080,7 @@ export interface WebsiteSettingsBody {
   heading_font: WebsiteFont;
   design: WebsiteDesignWire;
   content: WebsiteContentWire;
-  sections: { key: WebsiteSectionKey; enabled: boolean }[];
+  sections: { key: WebsiteSectionKey; enabled: boolean; on_home: boolean }[];
   hero_heading: string | null;
   hero_subheading: string | null;
   hero_image_file_id: string | null;

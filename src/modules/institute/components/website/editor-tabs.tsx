@@ -19,7 +19,7 @@ import {
   NOTICE_LAYOUT_OPTIONS, SECTION_LABELS, TESTIMONIAL_LAYOUT_OPTIONS,
 } from "@/modules/website/options";
 import { THEMES } from "@/modules/website/themes";
-import type { WebsiteDesign } from "@/server/modules/website/design";
+import { SECTION_PAGE, type WebsiteDesign } from "@/server/modules/website/design";
 import { ANNOUNCEMENT_MAX, SOCIAL_NETWORKS } from "@/server/modules/website/site-content";
 import type { WebsiteDesignWire } from "../../api";
 import { FaqCard, FeaturesCard, StatsCard, VideoCard } from "./content-lists";
@@ -263,7 +263,10 @@ export function SectionsTab({ form, language }: { form: Form; language: WebsiteD
     <Card>
       <CardHeader>
         <CardTitle className="text-base">Sections</CardTitle>
-        <CardDescription>Switch sections on or off, set their order, and rename any heading. A section with nothing to show stays hidden.</CardDescription>
+        <CardDescription>
+          Each section has its own page (shown under its name). Switch a section off to hide it everywhere; switch <strong>On Home</strong> to show it on the home page too. The order
+          applies on Home and on every page. A section with nothing to show stays hidden, and so does a page with nothing on it.
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <Controller
@@ -291,7 +294,18 @@ export function SectionsTab({ form, language }: { form: Form; language: WebsiteD
                         />
                         <label htmlFor={`section-${s.key}`} className="min-w-0 flex-1">
                           <span className={cn("block text-sm font-medium", !s.enabled && "text-muted-foreground")}>{meta.label}</span>
-                          <span className="block text-xs text-muted-foreground">{meta.source}</span>
+                          <span className="block text-xs text-muted-foreground">
+                            Page: {SITE_LABELS.EN.page[SECTION_PAGE[s.key]]} · {meta.source}
+                          </span>
+                        </label>
+                        <label className={cn("flex shrink-0 items-center gap-2 text-xs", !s.enabled && "opacity-50")}>
+                          <Switch
+                            checked={s.on_home}
+                            disabled={!s.enabled}
+                            aria-label={`Show ${meta.label} on Home`}
+                            onCheckedChange={(on) => field.onChange(field.value.map((x) => (x.key === s.key ? { ...x, on_home: on } : x)))}
+                          />
+                          <span className="hidden sm:inline">On Home</span>
                         </label>
                         {s.key !== "ABOUT" && (
                           <Button type="button" variant="ghost" size="icon" aria-label={`Rename ${meta.label}`} aria-expanded={open} onClick={() => setRenaming(open ? null : s.key)}>

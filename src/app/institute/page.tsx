@@ -8,14 +8,17 @@ import { db } from "@/server/core/db/client";
 import { getCurrentInstitute } from "@/server/modules/institute/current-user";
 import { InstituteWebsite } from "@/modules/website/components/institute-website";
 import { getPublicCatalog, publicPageVisible } from "@/server/modules/portal/service";
-import { getPublicWebsite } from "@/server/modules/website/public";
+import { websiteMetadata } from "@/modules/website/metadata";
+import { loadPublicWebsite } from "@/server/modules/website/load";
 
 export async function generateMetadata(): Promise<Metadata> {
   const institute = await getCurrentInstitute();
-  return { title: publicPageVisible(institute.status) ? institute.name : "Not available" };
+  if (!publicPageVisible(institute.status)) return { title: "Not available" };
+  const site = await loadPublicWebsite(institute.id);
+  return site ? websiteMetadata(site, "home") : { title: institute.name };
 }
 
-// The institute's public page. With the Website module on, its themed website (D20, D124–D133); otherwise the basic
+// The institute's public page. With the Website module on, its themed website's Home (D20, D124–D147); otherwise the basic
 // Core page (D21): default theme, profile and contact details, and active courses with their batches' class times (D59).
 export default async function InstitutePublicPage() {
   const institute = await getCurrentInstitute();
@@ -27,8 +30,8 @@ export default async function InstitutePublicPage() {
       </main>
     );
   }
-  const site = await getPublicWebsite(db, institute.id);
-  if (site) return <InstituteWebsite site={site} />;
+  const site = await loadPublicWebsite(institute.id);
+  if (site) return <InstituteWebsite site={site} page="home" />;
 
   const { profile, courses } = await getPublicCatalog(db, institute.id);
   const contacts = [
