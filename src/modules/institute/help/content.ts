@@ -653,7 +653,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
       "Click Save. The website changes straight away; click View website to see it.",
     ],
     rules: [
-      "Every save is public at once. There is no draft; the Style sample and View website show the result.",
+      "Click Live preview (at the bottom, next to Save) to see your website beside the editor while you change it: on a phone, tablet or computer width, page by page. Unsaved changes show only there. Every save is public at once; there is no draft.",
       "Text in your colours is darkened or lightened automatically so it always reads clearly, in light and dark, whatever colours you choose.",
       "Light or dark: Visitor's choice follows each visitor's phone and shows a switch; Always light or Always dark fixes it.",
       "Language: বাংলা changes every built-in label (menu, headings, the enquiry form, the footer) and shows numbers, class times and dates in Bangla digits. What you write yourself (notices, course names, your own headings) is shown as you wrote it.",
@@ -675,6 +675,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     faqs: [
       { q: "How do I change the colours?", a: "On the Look tab, under Colours: pick a palette, Brand colour (the primary colour from Institute Settings), or Custom for your own." },
       { q: "I picked a theme and my fonts changed.", a: "A theme brings its own fonts, shapes and background. Click Undo right below the themes, or change them again under Fonts and Shapes & spacing." },
+      { q: "Will visitors see my changes before I save?", a: "No. The live preview shows them only to you. Visitors see them after you click Save website." },
       { q: "How do I choose what is on the home page?", a: "On the Sections tab, switch On Home for each section you want there. Every section still has its own page, so nothing is lost when it isn't on Home." },
       { q: "Can my website be fully in Bangla?", a: "Yes. On the Content tab choose বাংলা: the menu, headings, enquiry form and footer switch to Bangla. Write your own texts in Bangla too, and pick a Bangla font under Look." },
       { q: "Will the Bangla text look right?", a: "Yes. Every font shows Bangla correctly, and the Bangla fonts (Hind Siliguri, Anek Bangla, Baloo Da 2, Noto Serif Bengali, Tiro Bangla) are designed for it." },

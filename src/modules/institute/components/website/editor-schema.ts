@@ -7,6 +7,8 @@ import {
   ANNOUNCEMENT_MAX, FEATURE_ICONS, LINK_LABEL_MAX, MAX_FAQS, MAX_FEATURES, MAX_STAT_VALUE, MAX_STATS, SECTION_SUBTITLE_MAX, SECTION_TITLE_MAX, SOCIAL_NETWORKS,
   youtubeIdOf,
 } from "@/server/modules/website/site-content";
+import { toCamelCaseKeys } from "@/server/core/http/case";
+import type { PublicWebsite } from "@/server/modules/website/public";
 import type { WebsiteSettingsBody, WebsiteSettingsRow } from "../../api";
 
 // The website editor's form (D124–D141): the settings as text fields, and their conversion to and from the wire.
@@ -124,5 +126,21 @@ export function toBody(v: EditorValues): WebsiteSettingsBody {
     about_heading: orNull(v.about_heading),
     about_text: orNull(v.about_text),
     about_image_file_id: v.about_image_file_id || null,
+  };
+}
+
+/** The unsaved values as the public site reads its settings, for the live preview (D144). Nothing here is saved. */
+export function toPreviewSettings(v: EditorValues): PublicWebsite["settings"] {
+  const settings = toCamelCaseKeys<PublicWebsite["settings"]>(toBody(v));
+  const youtubeId = v.video.url ? youtubeIdOf(v.video.url) : null;
+  return {
+    ...settings,
+    content: {
+      ...settings.content,
+      stats: settings.content.stats.filter((s) => Number.isFinite(s.value) && s.label),
+      features: settings.content.features.filter((f) => f.title),
+      faqs: settings.content.faqs.filter((f) => f.question && f.answer),
+      video: youtubeId ? { youtubeId, title: orNull(v.video.title) } : null,
+    },
   };
 }

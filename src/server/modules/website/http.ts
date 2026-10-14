@@ -126,6 +126,15 @@ export function createWebsiteHandlers({ db, auth, host, storage }: WebsiteHttpDe
 
   const noContent = () => new Response(null, { status: 204 });
 
+  /** Whether the request comes from a signed-in website editor of this institute (the live preview, D144). */
+  const canPreview = async (request: Request, tenantId: string) => {
+    try {
+      return (await authorize(request, "website.manage")).tenantId === tenantId;
+    } catch {
+      return false;
+    }
+  };
+
   return {
     // GET /api/v1/website/settings
     getSettings: (request: Request) =>
@@ -409,15 +418,20 @@ export function createWebsiteHandlers({ db, auth, host, storage }: WebsiteHttpDe
         if (resolved.kind !== "tenant" || !publicPageVisible(resolved.tenant.status)) throw new NotFoundError("FILE");
         const tenantId = resolved.tenant.id;
         const id = pathId(params.id, "FILE");
-        if (!(await isModuleActive(db, tenantId, "website")) || !(await isPublicWebsiteImage(db, tenantId, id))) throw new NotFoundError("FILE");
-        const row = await getFileInTenant(db, tenantId, id);
+        if (!(await isModuleActive(db, tenantId, "website"))) throw new NotFoundError("FILE");
+        // A picture not yet on the website is shown only to the institute's own website editors, for the live preview
+        // (D144), and never cached; everyone else gets 404, as before.
+        const inUse = await isPublicWebsiteImage(db, tenantId, id);
+        const preview = !inUse && (await canPreview(request, tenantId));
+        const row = inUse || preview ? await getFileInTenant(db, tenantId, id) : null;
+        if (!row || (preview && row.category !== "WEBSITE_IMAGE" && row.category !== "INSTRUCTOR_PHOTO")) throw new NotFoundError("FILE");
         const bytes = await readFileBytes(storage, row);
         return new Response(new Uint8Array(bytes), {
           headers: {
             "content-type": row.mimeType,
             "content-length": String(bytes.length),
             // A file's bytes never change (a new upload is a new id); an hour keeps removals reasonably prompt.
-            "cache-control": "public, max-age=3600",
+            "cache-control": preview ? "private, no-store" : "public, max-age=3600",
             "x-content-type-options": "nosniff",
           },
         });

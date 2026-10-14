@@ -379,3 +379,37 @@ test("W10: the website has pages; the Owner chooses what is on Home (D142, D143)
   await page.goto(url("/results"));
   await expect(page.getByTestId("section-testimonials")).toBeVisible(); // still on its own page
 });
+
+test("W11: the live preview shows unsaved changes, page by page, and saves nothing (D144)", async ({ page, browser }) => {
+  await signInAsOwner(page);
+  await page.goto(url("/app/website"));
+  await page.getByRole("button", { name: "Live preview" }).click();
+  const frame = page.frameLocator("iframe[title='Website preview']");
+  await expect(frame.getByTestId("website")).toHaveAttribute("data-site-theme", "bold");
+  await page.getByRole("radio", { name: /^Elegant/ }).click();
+  await expect(frame.getByTestId("website")).toHaveAttribute("data-site-theme", "elegant");
+
+  await page.getByLabel("Preview page").click();
+  await page.getByRole("option", { name: "Teachers" }).click();
+  await expect(frame.getByTestId("website")).toHaveAttribute("data-site-page", "teachers");
+  await frame.getByRole("navigation", { name: "পাতাসমূহ" }).getByRole("link", { name: "নোটিশ" }).click();
+  await expect(frame.getByTestId("website")).toHaveAttribute("data-site-page", "notices");
+  await expect(page.getByLabel("Preview page")).toContainText("Notices");
+
+  // A new banner picture shows in the preview before it is saved, but not to visitors.
+  await page.getByLabel("Preview page").click();
+  await page.getByRole("option", { name: "Home" }).click();
+  await page.getByRole("tab", { name: "Content" }).click();
+  const img = frame.locator("section[aria-label='Welcome'] img").first();
+  const saved = await img.getAttribute("src");
+  await page.locator("#hero_image").setInputFiles({ ...(await picture()), name: "new-banner.jpg" });
+  await expect.poll(() => img.getAttribute("src")).not.toBe(saved);
+  await expect.poll(() => img.evaluate((i: HTMLImageElement) => i.complete && i.naturalWidth > 0)).toBe(true);
+  const src = (await img.getAttribute("src"))!;
+
+  const visitor = await browser.newPage();
+  await visitor.goto(url("/"));
+  await expect(visitor.getByTestId("website")).toHaveAttribute("data-site-theme", "bold"); // nothing saved
+  expect(await visitor.evaluate(async (s) => (await fetch(s)).status, src)).toBe(404);
+  await visitor.close();
+});

@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ExternalLink, Loader2 } from "lucide-react";
+import { Eye, ExternalLink, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useForm, useWatch } from "react-hook-form";
 import { FormField } from "@/components/shared/form-field";
@@ -22,8 +22,9 @@ import { siteColours } from "@/modules/website/tokens";
 import { websiteApi, type WebsiteDesignWire, type WebsiteSettingsRow } from "../../api";
 import { instituteKeys } from "../../keys";
 import { BackgroundPicker, FontSelect, fromWire, GradientPicker, PalettePicker, presetWire, Segmented, SiteScope, StyleSample, ThemePicker } from "./design-controls";
-import { editorSchema, toBody, toEditorValues, type EditorValues } from "./editor-schema";
+import { editorSchema, toBody, toEditorValues, toPreviewSettings, type EditorValues } from "./editor-schema";
 import { ContentTab, LayoutTab, SectionsTab } from "./editor-tabs";
+import { PreviewPanel } from "./preview-panel";
 import { WebsiteTabs } from "./website-tabs";
 
 /** The website's look, layout, words and sections (`website.manage`, D124–D141). Saves are public at once (D126, D139). */
@@ -59,6 +60,9 @@ function Editor({ settings }: { settings: WebsiteSettingsRow }) {
   const theme = useWatch({ control: form.control, name: "theme" });
   const headingFont = useWatch({ control: form.control, name: "heading_font" });
   const design = useWatch({ control: form.control, name: "design" });
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const all = useWatch({ control: form.control });
+  const previewSettings = useMemo(() => (previewOpen ? toPreviewSettings(all as EditorValues) : null), [previewOpen, all]);
   const designValue = fromWire(design);
   const setDesign = (patch: Partial<WebsiteDesignWire>) => form.setValue("design", { ...form.getValues("design"), ...patch }, { shouldDirty: true });
   const designField = <K extends keyof WebsiteDesignWire>(key: K) => ({ value: design[key], onChange: (v: WebsiteDesignWire[K]) => setDesign({ [key]: v } as Partial<WebsiteDesignWire>) });
@@ -99,7 +103,8 @@ function Editor({ settings }: { settings: WebsiteSettingsRow }) {
 
   return (
     <form onSubmit={form.handleSubmit(save)} className="space-y-6">
-      <Tabs defaultValue="look">
+      <div className={cn(previewOpen && "xl:grid xl:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] xl:gap-6")}>
+      <Tabs defaultValue="look" className="min-w-0">
         <TabsList>
           <TabsTrigger value="look">Look</TabsTrigger>
           <TabsTrigger value="layout">Layout</TabsTrigger>
@@ -108,7 +113,7 @@ function Editor({ settings }: { settings: WebsiteSettingsRow }) {
         </TabsList>
 
         <TabsContent value="look" className="mt-4">
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+          <div className={cn("grid gap-6", !previewOpen && "lg:grid-cols-[minmax(0,1fr)_20rem]")}>
             <div className="min-w-0 space-y-6">
               <Card>
                 <CardHeader>
@@ -249,7 +254,7 @@ function Editor({ settings }: { settings: WebsiteSettingsRow }) {
               </Card>
             </div>
 
-            <aside className="lg:sticky lg:top-4 lg:self-start">
+            <aside className={cn("lg:sticky lg:top-4 lg:self-start", previewOpen && "hidden")}>
               <Card>
                 <CardHeader>
                   <CardTitle className="text-base">Style sample</CardTitle>
@@ -275,10 +280,21 @@ function Editor({ settings }: { settings: WebsiteSettingsRow }) {
           <SectionsTab form={form} language={design.language} />
         </TabsContent>
       </Tabs>
+      {previewOpen && previewSettings && (
+        <PreviewPanel
+          settings={previewSettings}
+          onClose={() => setPreviewOpen(false)}
+          className="fixed inset-2 z-50 bg-background shadow-2xl xl:sticky xl:inset-auto xl:top-4 xl:z-auto xl:mt-0 xl:h-[calc(100vh-7rem)] xl:shadow-none"
+        />
+      )}
+      </div>
 
       <div className="sticky bottom-0 z-10 -mx-1 flex items-center justify-end gap-3 border-t bg-background/95 px-1 py-3 backdrop-blur">
         {Object.keys(errors).length > 0 && <span className="text-sm text-destructive">Check the highlighted fields.</span>}
         {form.formState.isDirty && <span className="text-sm text-muted-foreground">Unsaved changes</span>}
+        <Button type="button" variant="outline" onClick={() => setPreviewOpen((o) => !o)} aria-pressed={previewOpen}>
+          <Eye /> {previewOpen ? "Hide preview" : "Live preview"}
+        </Button>
         <Button type="submit" disabled={form.formState.isSubmitting}>
           {form.formState.isSubmitting && <Loader2 className="animate-spin" />} Save website
         </Button>
