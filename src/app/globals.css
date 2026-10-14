@@ -6,7 +6,8 @@
 @custom-variant dark (&:is(.dark *):not(.theme-light, .theme-light *));
 
 /*
- * Design tokens (copied from the EMS). Brand colours are PROVISIONAL (O15); institutes set their own colours in Settings.
+ * Design tokens, v2 (D149, D152; docs/05-frontend/DESIGN-SYSTEM.md). Brand colours are PROVISIONAL (O15); institutes set
+ * their own colours for their websites and documents.
  * Primary is the V1 logo amber (#FEAC00); text on it uses the dark
  * --primary-foreground. Amber text on white fails contrast, so text/links
  * use --primary-strong instead of --primary.
@@ -15,7 +16,29 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-inter), var(--font-noto-bengali), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-jakarta), var(--font-noto-bengali), ui-sans-serif, system-ui, sans-serif;
+  /* Type scale (D152): page titles, section headings and big numbers. */
+  --text-display: 2.25rem;
+  --text-display--line-height: 2.6rem;
+  --text-display--letter-spacing: -0.025em;
+  --text-display--font-weight: 700;
+  --text-title: 1.625rem;
+  --text-title--line-height: 2rem;
+  --text-title--letter-spacing: -0.02em;
+  --text-title--font-weight: 700;
+  --text-heading: 1.125rem;
+  --text-heading--line-height: 1.6rem;
+  --text-heading--letter-spacing: -0.01em;
+  --text-heading--font-weight: 600;
+  --text-metric: 1.875rem;
+  --text-metric--line-height: 2.25rem;
+  --text-metric--letter-spacing: -0.02em;
+  --text-metric--font-weight: 700;
+  /* Motion tokens: quick feedback, standard and slow; all disabled under reduced motion by tw-animate/our components. */
+  --ease-out-soft: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --default-transition-duration: 180ms;
+  --default-transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -57,91 +80,122 @@
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
   --shadow-soft: var(--elevation-soft);
+  --shadow-xs: var(--elevation-xs);
+  --shadow-sm: var(--elevation-sm);
+  --shadow-md: var(--elevation-md);
+  --shadow-lg: var(--elevation-lg);
+  --shadow-xl: var(--elevation-xl);
 }
 
 :root,
 .theme-light {
   --radius: 0.75rem;
-  --background: #f8fafc;
-  --foreground: #0f172a;
+  /* Warm stone neutrals around the brand amber (D149). Text pairs are AA-checked in design-tokens.test.ts. */
+  --background: #fafaf9;
+  --foreground: #1c1917;
   --card: #ffffff;
-  --card-foreground: #0f172a;
+  --card-foreground: #1c1917;
   --popover: #ffffff;
-  --popover-foreground: #0f172a;
+  --popover-foreground: #1c1917;
   --primary: #feac00;
   --primary-foreground: #1c1204;
   --primary-strong: #b45309;
-  --secondary: #eff6ff;
-  --secondary-foreground: #1d4ed8;
-  --muted: #f1f5f9;
-  --muted-foreground: #64748b;
-  --accent: #fff7e0;
+  --secondary: #f5f5f4;
+  --secondary-foreground: #292524;
+  --muted: #f2f0ee;
+  --muted-foreground: #6b635c;
+  --accent: #fff4d6;
   --accent-foreground: #7c4a03;
-  --destructive: #ef4444;
+  --destructive: #dc2626;
   --success: #10b981;
   --warning: #f59e0b;
   --info: #2563eb;
-  --border: #e2e8f0;
-  --input: #e2e8f0;
-  --ring: #feac00;
+  --border: #e7e5e4;
+  --input: #d6d3d1;
+  --ring: #d97706;
   --chart-1: #feac00;
-  --chart-2: #3b82f6;
+  --chart-2: #0ea5e9;
   --chart-3: #8b5cf6;
-  --chart-4: #22c55e;
+  --chart-4: #10b981;
   --chart-5: #f43f5e;
   --sidebar: #ffffff;
-  --sidebar-foreground: #334155;
+  --sidebar-foreground: #44403c;
   --sidebar-primary: #feac00;
   --sidebar-primary-foreground: #1c1204;
-  --sidebar-accent: #fff7e0;
+  --sidebar-accent: #fff4d6;
   --sidebar-accent-foreground: #7c4a03;
-  --sidebar-border: #e2e8f0;
-  --sidebar-ring: #feac00;
+  --sidebar-border: #e7e5e4;
+  --sidebar-ring: #d97706;
   --brand-gradient: linear-gradient(135deg, #feac00, #f97316);
-  --elevation-soft: 0 10px 35px rgb(15 23 42 / 0.08);
+  --brand-glow: radial-gradient(60rem 30rem at 0% 0%, rgb(254 172 0 / 0.14), transparent 60%), radial-gradient(50rem 26rem at 100% 0%, rgb(249 115 22 / 0.08), transparent 60%);
+  /* Elevation scale, tinted warm so it sits naturally on the stone neutrals. */
+  --elevation-xs: 0 1px 2px rgb(28 25 23 / 0.06);
+  --elevation-sm: 0 1px 3px rgb(28 25 23 / 0.08), 0 1px 2px rgb(28 25 23 / 0.04);
+  --elevation-md: 0 6px 16px -4px rgb(28 25 23 / 0.1), 0 2px 4px rgb(28 25 23 / 0.04);
+  --elevation-lg: 0 16px 40px -12px rgb(28 25 23 / 0.18);
+  --elevation-xl: 0 28px 60px -16px rgb(28 25 23 / 0.25);
+  --elevation-soft: 0 10px 35px rgb(28 25 23 / 0.07);
 }
 
 .dark {
-  --background: #020617;
-  --foreground: #f1f5f9;
-  --card: #0f172a;
-  --card-foreground: #f1f5f9;
-  --popover: #0f172a;
-  --popover-foreground: #f1f5f9;
+  --background: #0c0a09;
+  --foreground: #fafaf9;
+  --card: #1c1917;
+  --card-foreground: #fafaf9;
+  --popover: #1c1917;
+  --popover-foreground: #fafaf9;
   --primary: #feac00;
   --primary-foreground: #1c1204;
   --primary-strong: #fbbf24;
-  --secondary: #172554;
-  --secondary-foreground: #bfdbfe;
-  --muted: #1e293b;
-  --muted-foreground: #94a3b8;
-  --accent: #292524;
+  --secondary: #292524;
+  --secondary-foreground: #e7e5e4;
+  --muted: #292524;
+  --muted-foreground: #a8a29e;
+  --accent: #2a1f0a;
   --accent-foreground: #fcd34d;
   --destructive: #f87171;
   --success: #34d399;
   --warning: #fbbf24;
   --info: #60a5fa;
-  --border: rgb(255 255 255 / 0.1);
-  --input: rgb(255 255 255 / 0.15);
-  --ring: #feac00;
-  --chart-1: #feac00;
-  --chart-2: #60a5fa;
+  --border: rgb(255 255 255 / 0.08);
+  --input: rgb(255 255 255 / 0.14);
+  --ring: #fbbf24;
+  --chart-1: #fbbf24;
+  --chart-2: #38bdf8;
   --chart-3: #a78bfa;
-  --chart-4: #4ade80;
+  --chart-4: #34d399;
   --chart-5: #fb7185;
-  --sidebar: #0f172a;
-  --sidebar-foreground: #cbd5e1;
+  --sidebar: #110f0e;
+  --sidebar-foreground: #d6d3d1;
   --sidebar-primary: #feac00;
   --sidebar-primary-foreground: #1c1204;
-  --sidebar-accent: #1e293b;
+  --sidebar-accent: #2a1f0a;
   --sidebar-accent-foreground: #fcd34d;
-  --sidebar-border: rgb(255 255 255 / 0.1);
-  --sidebar-ring: #feac00;
+  --sidebar-border: rgb(255 255 255 / 0.08);
+  --sidebar-ring: #fbbf24;
+  --brand-glow: radial-gradient(60rem 30rem at 0% 0%, rgb(254 172 0 / 0.1), transparent 60%), radial-gradient(50rem 26rem at 100% 0%, rgb(249 115 22 / 0.06), transparent 60%);
+  --elevation-xs: 0 1px 2px rgb(0 0 0 / 0.4);
+  --elevation-sm: 0 1px 3px rgb(0 0 0 / 0.45);
+  --elevation-md: 0 6px 16px -4px rgb(0 0 0 / 0.5);
+  --elevation-lg: 0 16px 40px -12px rgb(0 0 0 / 0.6);
+  --elevation-xl: 0 28px 60px -16px rgb(0 0 0 / 0.7);
   --elevation-soft: 0 10px 35px rgb(0 0 0 / 0.35);
 }
 
 @utility bg-brand-gradient {
   background-image: var(--brand-gradient);
+}
+
+/* A soft amber glow behind page headers and the sign-in screen. */
+@utility bg-brand-glow {
+  background-image: var(--brand-glow);
+}
+
+/* Frosted surfaces for the top bar and floating bars. */
+@utility glass {
+  background-color: color-mix(in srgb, var(--background) 78%, transparent);
+  backdrop-filter: blur(14px) saturate(1.5);
+  -webkit-backdrop-filter: blur(14px) saturate(1.5);
 }
 
 /* Letter-spacing splits Bangla conjuncts apart: spaced-out labels keep it for Latin text only. */

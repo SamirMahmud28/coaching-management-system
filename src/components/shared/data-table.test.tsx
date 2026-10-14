@@ -58,4 +58,35 @@ describe("DataTable", () => {
     rerender(<DataTable columns={columns} rows={[]} getRowId={(r) => r.id} empty={<p>No tenants yet</p>} />);
     expect(screen.getByText("No tenants yet")).toBeInTheDocument();
   });
+
+  it('sorts by a sortable column: ascending, then descending, then back to the original order', async () => {
+    const cols: Column<Row>[] = [{ key: 'name', header: 'Name', cell: (r) => r.name, sortValue: (r) => r.name }];
+    const data: Row[] = [{ id: '1', name: 'Beta' }, { id: '2', name: 'Alpha' }, { id: '3', name: 'Gamma' }];
+    render(<DataTable columns={cols} rows={data} getRowId={(r) => r.id} />);
+    const names = () => screen.getAllByRole('row').slice(1).map((r) => r.textContent);
+    const header = screen.getByRole('columnheader', { name: /Name/ });
+    expect(header).toHaveAttribute('aria-sort', 'none');
+    await userEvent.click(screen.getByRole('button', { name: /Name/ }));
+    expect(names()).toEqual(['Alpha', 'Beta', 'Gamma']);
+    expect(header).toHaveAttribute('aria-sort', 'ascending');
+    await userEvent.click(screen.getByRole('button', { name: /Name/ }));
+    expect(names()).toEqual(['Gamma', 'Beta', 'Alpha']);
+    await userEvent.click(screen.getByRole('button', { name: /Name/ }));
+    expect(names()).toEqual(['Beta', 'Alpha', 'Gamma']);
+  });
+
+  it('shows cards instead of the table on a phone when a card layout is given', async () => {
+    const original = window.matchMedia;
+    window.matchMedia = ((query: string) => ({ matches: true, media: query, addEventListener() {}, removeEventListener() {} })) as unknown as typeof window.matchMedia;
+    try {
+      const onRowClick = vi.fn();
+      render(<DataTable columns={columns} rows={rows} getRowId={(r) => r.id} onRowClick={onRowClick} card={(r) => <span>Card {r.name}</span>} caption='People' />);
+      expect(screen.queryByRole('table')).not.toBeInTheDocument();
+      expect(screen.getByRole('list', { name: 'People' })).toBeInTheDocument();
+      await userEvent.click(screen.getByRole('button', { name: 'Card Beta' }));
+      expect(onRowClick).toHaveBeenCalledWith(rows[1]);
+    } finally {
+      window.matchMedia = original;
+    }
+  });
 });
