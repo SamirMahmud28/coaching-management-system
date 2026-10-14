@@ -1073,7 +1073,9 @@ export interface WebsiteContentWire {
   stats: { value: number; suffix: string | null; label: string }[];
   features: { icon: FeatureIcon; title: string; text: string | null }[];
   faqs: { question: string; answer: string }[];
-  video: { youtube_id: string; title: string | null } | null;
+  videos: { youtube_id: string; title: string | null }[];
+  hero_slides: { image_file_id: string; heading: string | null; subheading: string | null }[];
+  show_ticker: boolean;
 }
 
 export interface WebsiteSettingsBody {

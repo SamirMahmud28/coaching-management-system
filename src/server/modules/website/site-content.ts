@@ -24,6 +24,9 @@ export const LINK_LABEL_MAX = 30;
 export const MAX_STATS = 6;
 export const MAX_FEATURES = 8;
 export const MAX_FAQS = 20;
+/** Banner slides besides the main banner (D147): the main banner is always the first slide. */
+export const MAX_EXTRA_SLIDES = 4;
+export const MAX_VIDEOS = 12;
 /** The largest number a counter shows (e.g. students taught). */
 export const MAX_STAT_VALUE = 10_000_000;
 
@@ -58,6 +61,12 @@ export interface Video {
   title: string | null;
 }
 
+export interface HeroSlide {
+  imageFileId: string;
+  heading: string | null;
+  subheading: string | null;
+}
+
 export interface SectionTitle {
   title: string | null;
   subtitle: string | null;
@@ -79,7 +88,12 @@ export interface WebsiteContent {
   stats: Stat[];
   features: Feature[];
   faqs: Faq[];
-  video: Video | null;
+  /** The video gallery (D147), in order. */
+  videos: Video[];
+  /** Extra banner slides (D147); with any, the banner becomes a photo slider. */
+  heroSlides: HeroSlide[];
+  /** The moving strip of achievers under the Home banner (D147). */
+  showTicker: boolean;
 }
 
 export const DEFAULT_CONTENT: WebsiteContent = {
@@ -89,7 +103,9 @@ export const DEFAULT_CONTENT: WebsiteContent = {
   stats: [],
   features: [],
   faqs: [],
-  video: null,
+  videos: [],
+  heroSlides: [],
+  showTicker: false,
 };
 
 const YOUTUBE_ID = /^[A-Za-z0-9_-]{11}$/;
@@ -144,8 +160,14 @@ export function completeContent(stored: unknown): WebsiteContent {
     .filter((x) => str(x.question) && str(x.answer))
     .slice(0, MAX_FAQS)
     .map((x) => ({ question: x.question as string, answer: x.answer as string }));
-  const v = obj(s.video);
-  const video = typeof v.youtubeId === "string" && YOUTUBE_ID.test(v.youtubeId) ? { youtubeId: v.youtubeId, title: str(v.title) } : null;
+  const asVideo = (v: Record<string, unknown>) => (typeof v.youtubeId === "string" && YOUTUBE_ID.test(v.youtubeId) ? { youtubeId: v.youtubeId, title: str(v.title) } : null);
+  // A site saved before the video gallery had one video: it becomes the first.
+  const storedVideos = Array.isArray(s.videos) ? list(s.videos) : s.video ? [obj(s.video)] : [];
+  const videos = storedVideos.map(asVideo).filter((v): v is Video => !!v).slice(0, MAX_VIDEOS);
+  const heroSlides = list(s.heroSlides)
+    .filter((x) => typeof x.imageFileId === "string" && x.imageFileId)
+    .slice(0, MAX_EXTRA_SLIDES)
+    .map((x) => ({ imageFileId: x.imageFileId as string, heading: str(x.heading), subheading: str(x.subheading) }));
   return {
     sectionTitles,
     announcement,
@@ -153,7 +175,9 @@ export function completeContent(stored: unknown): WebsiteContent {
     stats,
     features,
     faqs,
-    video,
+    videos,
+    heroSlides,
+    showTicker: s.showTicker === true,
   };
 }
 

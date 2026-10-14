@@ -285,6 +285,7 @@ test("W7: the Owner adds stats, a reason, a question, a video, an instructor and
   await page.getByRole("button", { name: "Add a question" }).click();
   await page.getByLabel("Question", { exact: true }).fill("When does admission open?");
   await page.getByLabel("Answer", { exact: true }).fill("In January, for every batch.");
+  await page.getByRole("button", { name: "Add a video" }).click();
   await page.getByLabel("YouTube address").fill("https://youtu.be/dQw4w9WgXcQ");
   await page.getByRole("button", { name: "Save website" }).click();
   await expect(page.getByText("Website saved. It's public now.")).toBeVisible();
@@ -434,4 +435,33 @@ test("W12: the Owner picks a ready-made look and switches motion off (D145, D146
   await page.waitForTimeout(500);
   await expect(site).not.toHaveAttribute("data-motion", "on");
   expect(await page.locator("[data-reveal]").count()).toBe(0);
+});
+
+test("W13: a banner slider, a toppers ticker and a second video (D147)", async ({ page }) => {
+  await signInAsOwner(page);
+  await page.goto(url("/app/website"));
+  await page.getByRole("tab", { name: "Content" }).click();
+  await page.getByRole("button", { name: "Add a slide" }).click();
+  await page.locator("#slide-0-image").setInputFiles({ ...(await picture()), name: "slide.jpg" });
+  await expect(page.getByRole("img", { name: "Slide 2 picture" })).toBeVisible();
+  await page.locator("#slide-0-heading").fill("ভর্তি চলছে");
+  await page.getByLabel("Show the toppers ticker").click();
+  await page.getByRole("button", { name: "Add a video" }).click();
+  await page.locator("#video-1-url").fill("https://www.youtube.com/watch?v=aqz-KE-bpKQ");
+  await page.locator("#video-1-title").fill("Prize-giving");
+  await page.getByRole("button", { name: "Save website" }).click();
+  await expect(page.getByText("Website saved. It's public now.")).toBeVisible();
+
+  await page.goto(url("/"));
+  const slider = page.getByTestId("hero-slider");
+  await expect(slider).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
+  await slider.getByRole("button", { name: "পরের" }).click();
+  await expect(slider.locator("[data-active=true]")).toContainText("ভর্তি চলছে");
+  const slidePicture = slider.locator("[data-active=true] img");
+  await expect.poll(() => slidePicture.evaluate((i: HTMLImageElement) => i.complete && i.naturalWidth > 0)).toBe(true);
+  await expect(page.getByTestId("toppers-ticker")).toContainText("Nabila Hossain");
+  await page.goto(url("/gallery"));
+  await expect(page.getByTestId("public-video")).toHaveCount(2);
+  await expect(page.getByTestId("section-video").locator("iframe")).toHaveCount(0);
 });

@@ -4,7 +4,7 @@ import {
   HERO_OVERLAYS, NOTICE_LAYOUTS, PALETTE_CHOICES, RADII, SITE_LANGUAGES, TESTIMONIAL_LAYOUTS, TEXT_SIZES, WEBSITE_FONTS, WEBSITE_SECTIONS, WEBSITE_THEMES,
 } from "@/server/modules/website/design";
 import {
-  ANNOUNCEMENT_MAX, FEATURE_ICONS, LINK_LABEL_MAX, MAX_FAQS, MAX_FEATURES, MAX_STAT_VALUE, MAX_STATS, SECTION_SUBTITLE_MAX, SECTION_TITLE_MAX, SOCIAL_NETWORKS,
+  ANNOUNCEMENT_MAX, FEATURE_ICONS, LINK_LABEL_MAX, MAX_EXTRA_SLIDES, MAX_FAQS, MAX_FEATURES, MAX_STAT_VALUE, MAX_STATS, MAX_VIDEOS, SECTION_SUBTITLE_MAX, SECTION_TITLE_MAX, SOCIAL_NETWORKS,
   youtubeIdOf,
 } from "@/server/modules/website/site-content";
 import { toCamelCaseKeys } from "@/server/core/http/case";
@@ -58,7 +58,9 @@ export const editorSchema = z
       .max(MAX_STATS),
     features: z.array(z.object({ icon: z.enum(FEATURE_ICONS), title: max(60).min(1, "Give the reason a title."), text: max(200) })).max(MAX_FEATURES),
     faqs: z.array(z.object({ question: max(150).min(1, "Write the question."), answer: max(1000).min(1, "Write the answer.") })).max(MAX_FAQS),
-    video: z.object({ url: z.string().trim().refine((v) => v === "" || !!youtubeIdOf(v), "Paste a YouTube video's address."), title: max(100) }),
+    videos: z.array(z.object({ url: z.string().trim().refine((v) => !!youtubeIdOf(v), "Paste a YouTube video's address."), title: max(100) })).max(MAX_VIDEOS),
+    hero_slides: z.array(z.object({ image_file_id: z.string().min(1, "Choose a picture for this slide."), heading: max(120), subheading: max(250) })).max(MAX_EXTRA_SLIDES),
+    show_ticker: z.boolean(),
     sections: z.array(z.object({ key: z.enum(WEBSITE_SECTIONS), enabled: z.boolean(), on_home: z.boolean() })),
     hero_heading: max(120),
     hero_subheading: max(250),
@@ -86,7 +88,9 @@ export function toEditorValues(s: WebsiteSettingsRow): EditorValues {
     stats: s.content.stats.map((x) => ({ value: String(x.value), suffix: x.suffix ?? "", label: x.label })),
     features: s.content.features.map((x) => ({ icon: x.icon, title: x.title, text: x.text ?? "" })),
     faqs: s.content.faqs,
-    video: { url: s.content.video ? `https://youtu.be/${s.content.video.youtube_id}` : "", title: s.content.video?.title ?? "" },
+    videos: s.content.videos.map((v) => ({ url: `https://youtu.be/${v.youtube_id}`, title: v.title ?? "" })),
+    hero_slides: s.content.hero_slides.map((x) => ({ image_file_id: x.image_file_id, heading: x.heading ?? "", subheading: x.subheading ?? "" })),
+    show_ticker: s.content.show_ticker,
     sections: s.sections,
     hero_heading: s.hero_heading ?? "",
     hero_subheading: s.hero_subheading ?? "",
@@ -117,7 +121,9 @@ export function toBody(v: EditorValues): WebsiteSettingsBody {
       stats: v.stats.map((x) => ({ value: Number(x.value), suffix: orNull(x.suffix), label: x.label.trim() })),
       features: v.features.map((x) => ({ icon: x.icon, title: x.title.trim(), text: orNull(x.text) })),
       faqs: v.faqs.map((x) => ({ question: x.question.trim(), answer: x.answer.trim() })),
-      video: orNull(v.video.url) ? { youtube_id: v.video.url.trim(), title: orNull(v.video.title) } : null,
+      videos: v.videos.map((x) => ({ youtube_id: x.url.trim(), title: orNull(x.title) })),
+      hero_slides: v.hero_slides.map((x) => ({ image_file_id: x.image_file_id, heading: orNull(x.heading), subheading: orNull(x.subheading) })),
+      show_ticker: v.show_ticker,
     },
     sections: v.sections,
     hero_heading: orNull(v.hero_heading),
@@ -133,7 +139,6 @@ export function toBody(v: EditorValues): WebsiteSettingsBody {
 /** The unsaved values as the public site reads its settings, for the live preview (D144). Nothing here is saved. */
 export function toPreviewSettings(v: EditorValues): PublicWebsite["settings"] {
   const settings = toCamelCaseKeys<PublicWebsite["settings"]>(toBody(v));
-  const youtubeId = v.video.url ? youtubeIdOf(v.video.url) : null;
   return {
     ...settings,
     content: {
@@ -141,7 +146,11 @@ export function toPreviewSettings(v: EditorValues): PublicWebsite["settings"] {
       stats: settings.content.stats.filter((s) => Number.isFinite(s.value) && s.label),
       features: settings.content.features.filter((f) => f.title),
       faqs: settings.content.faqs.filter((f) => f.question && f.answer),
-      video: youtubeId ? { youtubeId, title: orNull(v.video.title) } : null,
+      videos: v.videos.flatMap((x) => {
+        const youtubeId = youtubeIdOf(x.url);
+        return youtubeId ? [{ youtubeId, title: orNull(x.title) }] : [];
+      }),
+      heroSlides: settings.content.heroSlides.filter((x) => x.imageFileId),
     },
   };
 }

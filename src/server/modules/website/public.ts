@@ -1,4 +1,4 @@
-import { and, asc, eq, or } from "drizzle-orm";
+import { and, asc, eq, or, sql } from "drizzle-orm";
 import { courses, files, galleryPhotos, instructors, testimonials, websiteAchievers, websiteFaculty, websiteSettings } from "../../core/db/schema";
 import type { DbOrTx } from "../../core/db/types";
 import { isModuleActive } from "../entitlements/service";
@@ -77,6 +77,12 @@ export async function isPublicWebsiteImage(db: DbOrTx, tenantId: string, fileId:
     .from(websiteSettings)
     .where(and(eq(websiteSettings.tenantId, tenantId), or(eq(websiteSettings.heroImageFileId, fileId), eq(websiteSettings.aboutImageFileId, fileId))));
   if (inSettings) return true;
+  // A banner slide's picture (D147).
+  const [inSlides] = await db
+    .select({ id: websiteSettings.tenantId })
+    .from(websiteSettings)
+    .where(and(eq(websiteSettings.tenantId, tenantId), sql`${websiteSettings.content} -> 'heroSlides' @> ${JSON.stringify([{ imageFileId: fileId }])}::jsonb`));
+  if (inSlides) return true;
   const [inGallery] = await db.select({ id: galleryPhotos.id }).from(galleryPhotos).where(and(eq(galleryPhotos.tenantId, tenantId), eq(galleryPhotos.fileId, fileId))).limit(1);
   if (inGallery) return true;
   const [inTestimonial] = await db.select({ id: testimonials.id }).from(testimonials).where(and(eq(testimonials.tenantId, tenantId), eq(testimonials.photoFileId, fileId))).limit(1);

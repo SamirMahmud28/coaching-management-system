@@ -3,16 +3,18 @@
 import { ArrowDown, ArrowUp, Plus, Trash2 } from "lucide-react";
 import { Controller, useFieldArray, type UseFormReturn } from "react-hook-form";
 import { FormField } from "@/components/shared/form-field";
+import { ImageField } from "@/components/shared/image-field";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { FEATURE_ICON } from "@/modules/website/components/sections/showcase";
-import { FEATURE_ICONS, MAX_FAQS, MAX_FEATURES, MAX_STATS } from "@/server/modules/website/site-content";
+import { FEATURE_ICONS, MAX_EXTRA_SLIDES, MAX_FAQS, MAX_FEATURES, MAX_STATS, MAX_VIDEOS } from "@/server/modules/website/site-content";
 import type { EditorValues } from "./editor-schema";
 
-// The Content tab's lists (D138): Stats, Why choose us, FAQ, and the video. Each list section stays hidden on the
+// The Content tab's lists (D138, D147): Stats, Why choose us, FAQ, videos, banner slides and the toppers ticker. Each list section stays hidden on the
 // website while its list is empty.
 
 type Form = UseFormReturn<EditorValues>;
@@ -164,21 +166,103 @@ export function FaqCard({ form }: { form: Form }) {
   );
 }
 
-export function VideoCard({ form }: { form: Form }) {
-  const errors = form.formState.errors.video;
+export function VideosCard({ form }: { form: Form }) {
+  const list = useFieldArray({ control: form.control, name: "videos" });
+  const errors = form.formState.errors.videos;
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Video</CardTitle>
-        <CardDescription>One YouTube video, e.g. a tour of your classrooms or a prize-giving. It loads only when a visitor taps play, so the page stays fast.</CardDescription>
+        <CardTitle className="text-base">Videos</CardTitle>
+        <CardDescription>
+          YouTube videos for the Gallery page, e.g. a classroom tour or a prize-giving. Each loads only when a visitor taps play, so the page stays fast. Up to {MAX_VIDEOS}.
+        </CardDescription>
       </CardHeader>
-      <CardContent className="grid gap-4 sm:grid-cols-2">
-        <FormField id="video_url" label="YouTube address" hint="Paste the link from YouTube's Share button. Leave empty for no video." error={errors?.url?.message}>
-          <Input id="video_url" inputMode="url" placeholder="https://youtu.be/…" {...form.register("video.url")} />
-        </FormField>
-        <FormField id="video_title" label="Title" hint="Optional." error={errors?.title?.message}>
-          <Input id="video_title" maxLength={100} {...form.register("video.title")} />
-        </FormField>
+      <CardContent className="space-y-3">
+        {list.fields.map((f, i) => (
+          <div key={f.id} data-testid="video-row" className="flex flex-wrap items-start gap-3 rounded-md border p-3">
+            <FormField id={`video-${i}-url`} label="YouTube address" hint="From YouTube's Share button." error={errors?.[i]?.url?.message} className="min-w-64 flex-1">
+              <Input id={`video-${i}-url`} inputMode="url" placeholder="https://youtu.be/…" {...form.register(`videos.${i}.url`)} />
+            </FormField>
+            <FormField id={`video-${i}-title`} label="Title" hint="Optional." error={errors?.[i]?.title?.message} className="min-w-48 flex-1">
+              <Input id={`video-${i}-title`} maxLength={100} {...form.register(`videos.${i}.title`)} />
+            </FormField>
+            <div className="pt-6">
+              <RowTools index={i} count={list.fields.length} onMove={list.move} onRemove={() => list.remove(i)} what="video" />
+            </div>
+          </div>
+        ))}
+        <Button type="button" variant="outline" disabled={list.fields.length >= MAX_VIDEOS} onClick={() => list.append({ url: "", title: "" })}>
+          <Plus /> Add a video
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
+
+/** Extra banner slides (D147): the main banner above is the first slide; with any extra, the banner becomes a slider. */
+export function SlidesCard({ form }: { form: Form }) {
+  const list = useFieldArray({ control: form.control, name: "hero_slides" });
+  const errors = form.formState.errors.hero_slides;
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">Banner slides</CardTitle>
+        <CardDescription>
+          Add up to {MAX_EXTRA_SLIDES} more pictures, each with its own heading, and the welcome banner becomes a photo slider. The banner above is the first slide. The button stays the same on every slide.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {list.fields.map((f, i) => (
+          <div key={f.id} data-testid="slide-row" className="grid gap-3 rounded-md border p-3 sm:grid-cols-[10rem_1fr_auto]">
+            <FormField id={`slide-${i}-image`} label={`Slide ${i + 2} picture`} error={errors?.[i]?.image_file_id?.message}>
+              <Controller
+                control={form.control}
+                name={`hero_slides.${i}.image_file_id`}
+                render={({ field }) => (
+                  <ImageField id={`slide-${i}-image`} category="WEBSITE_IMAGE" label={`Slide ${i + 2} picture`} value={field.value || null} onChange={(id) => field.onChange(id ?? "")} />
+                )}
+              />
+            </FormField>
+            <div className="space-y-3">
+              <FormField id={`slide-${i}-heading`} label="Heading" error={errors?.[i]?.heading?.message}>
+                <Input id={`slide-${i}-heading`} maxLength={120} {...form.register(`hero_slides.${i}.heading`)} />
+              </FormField>
+              <FormField id={`slide-${i}-subheading`} label="Line under the heading" hint="Optional." error={errors?.[i]?.subheading?.message}>
+                <Input id={`slide-${i}-subheading`} maxLength={250} {...form.register(`hero_slides.${i}.subheading`)} />
+              </FormField>
+            </div>
+            <div className="sm:pt-6">
+              <RowTools index={i} count={list.fields.length} onMove={list.move} onRemove={() => list.remove(i)} what="slide" />
+            </div>
+          </div>
+        ))}
+        <Button type="button" variant="outline" disabled={list.fields.length >= MAX_EXTRA_SLIDES} onClick={() => list.append({ image_file_id: "", heading: "", subheading: "" })}>
+          <Plus /> Add a slide
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
+
+/** The toppers ticker (D147): a switch; its content comes from the Achievers tab. */
+export function TickerCard({ form }: { form: Form }) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">Toppers ticker</CardTitle>
+        <CardDescription>A slowly moving strip of your achievers (name, result, exam) right under the Home banner. Its names come from the Achievers tab.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Controller
+          control={form.control}
+          name="show_ticker"
+          render={({ field }) => (
+            <label className="flex items-center gap-3 text-sm">
+              <Switch checked={field.value} onCheckedChange={field.onChange} aria-label="Show the toppers ticker" />
+              Show the toppers ticker on Home
+            </label>
+          )}
+        />
       </CardContent>
     </Card>
   );

@@ -22,7 +22,7 @@ import { THEMES } from "@/modules/website/themes";
 import { SECTION_PAGE, type WebsiteDesign } from "@/server/modules/website/design";
 import { ANNOUNCEMENT_MAX, SOCIAL_NETWORKS } from "@/server/modules/website/site-content";
 import type { WebsiteDesignWire } from "../../api";
-import { FaqCard, FeaturesCard, StatsCard, VideoCard } from "./content-lists";
+import { FaqCard, FeaturesCard, SlidesCard, StatsCard, TickerCard, VideosCard } from "./content-lists";
 import { HeroThumb, Segmented } from "./design-controls";
 import type { EditorValues } from "./editor-schema";
 
@@ -193,6 +193,9 @@ export function ContentTab({ form, designField, brandPhone }: { form: Form; desi
         </CardContent>
       </Card>
 
+      <SlidesCard form={form} />
+      <TickerCard form={form} />
+
       <Card>
         <CardHeader>
           <CardTitle className="text-base">About</CardTitle>
@@ -237,7 +240,7 @@ export function ContentTab({ form, designField, brandPhone }: { form: Form; desi
       <StatsCard form={form} />
       <FeaturesCard form={form} />
       <FaqCard form={form} />
-      <VideoCard form={form} />
+      <VideosCard form={form} />
 
       <Card>
         <CardHeader>

@@ -220,6 +220,39 @@ describe("website layout, words and language (D135, D138, D140)", () => {
   });
 });
 
+describe("banner slides, ticker and video gallery (D147)", () => {
+  const content = (o: Partial<WebsiteContent> = {}): WebsiteContent => ({ ...DEFAULT_CONTENT, ...o });
+
+  it("saves extra slides of this institute's website pictures; their pictures are public while used", async () => {
+    const s = await institute();
+    const [one, two] = [await s.upload(), await s.upload()];
+    const saved = await saveWebsiteSettings(db, s.actor, input({ content: content({ showTicker: true, heroSlides: [{ imageFileId: one.id, heading: " Admission open ", subheading: null }, { imageFileId: two.id, heading: null, subheading: "Weekly tests" }] }) }));
+    expect(saved.content).toMatchObject({ showTicker: true, heroSlides: [{ imageFileId: one.id, heading: "Admission open", subheading: null }, { imageFileId: two.id, heading: null, subheading: "Weekly tests" }] });
+    expect(await isPublicWebsiteImage(db, s.tenant.id, two.id)).toBe(true);
+    await saveWebsiteSettings(db, s.actor, input({ content: content({ heroSlides: [{ imageFileId: one.id, heading: null, subheading: null }] }) }));
+    expect(await isPublicWebsiteImage(db, s.tenant.id, two.id)).toBe(false);
+  });
+
+  it("refuses another institute's picture, a non-website picture, and more than four extra slides", async () => {
+    const s = await institute();
+    const other = await institute();
+    const foreign = await other.upload();
+    const logo = await s.upload("LOGO");
+    const mine = await s.upload();
+    await expect(saveWebsiteSettings(db, s.actor, input({ content: content({ heroSlides: [{ imageFileId: foreign.id, heading: null, subheading: null }] }) }))).rejects.toMatchObject({ code: "VALIDATION_FILE_REFERENCE" });
+    await expect(saveWebsiteSettings(db, s.actor, input({ content: content({ heroSlides: [{ imageFileId: logo.id, heading: null, subheading: null }] }) }))).rejects.toMatchObject({ code: "VALIDATION_FILE_REFERENCE" });
+    const five = Array.from({ length: 5 }, () => ({ imageFileId: mine.id, heading: null, subheading: null }));
+    await expect(saveWebsiteSettings(db, s.actor, input({ content: content({ heroSlides: five }) }))).rejects.toMatchObject({ code: "VALIDATION_TOO_MANY" });
+  });
+
+  it("turns a site's single video from before the gallery into the first of its videos", async () => {
+    const s = await institute();
+    await saveWebsiteSettings(db, s.actor, input());
+    await testDb.update(websiteSettings).set({ content: { video: { youtubeId: "dQw4w9WgXcQ", title: "Tour" } } }).where(eq(websiteSettings.tenantId, s.tenant.id));
+    expect((await getWebsiteSettings(db, s.tenant.id)).content).toMatchObject({ videos: [{ youtubeId: "dQw4w9WgXcQ", title: "Tour" }], heroSlides: [], showTicker: false });
+  });
+});
+
 describe("motion strength (D145)", () => {
   it("saves the motion level, refuses an unknown one, and defaults old rows to Normal", async () => {
     const s = await institute();
@@ -254,21 +287,21 @@ describe("Stats, Why choose us, FAQ and Video (D138)", () => {
         stats: [{ value: 1200, suffix: "+", label: " Students taught " }, { value: 98, suffix: "%", label: "Pass rate" }],
         features: [{ icon: "Users", title: "Small batches", text: "At most 25 students." }],
         faqs: [{ question: "When does admission open?", answer: "In January." }],
-        video: { youtubeId: "https://www.youtube.com/watch?v=dQw4w9WgXcQ&t=10s", title: "Our classrooms" },
+        videos: [{ youtubeId: "https://www.youtube.com/watch?v=dQw4w9WgXcQ&t=10s", title: "Our classrooms" }],
       }),
     }));
     expect(saved.content).toMatchObject({
       stats: [{ value: 1200, suffix: "+", label: "Students taught" }, { value: 98, suffix: "%", label: "Pass rate" }],
       features: [{ icon: "Users", title: "Small batches", text: "At most 25 students." }],
       faqs: [{ question: "When does admission open?", answer: "In January." }],
-      video: { youtubeId: "dQw4w9WgXcQ", title: "Our classrooms" },
+      videos: [{ youtubeId: "dQw4w9WgXcQ", title: "Our classrooms" }],
     });
     for (const link of ["https://youtu.be/dQw4w9WgXcQ", "youtube.com/shorts/dQw4w9WgXcQ", "https://m.youtube.com/embed/dQw4w9WgXcQ"]) {
-      const again = await saveWebsiteSettings(db, s.actor, input({ content: content({ video: { youtubeId: link, title: null } }) }));
-      expect(again.content.video?.youtubeId).toBe("dQw4w9WgXcQ");
+      const again = await saveWebsiteSettings(db, s.actor, input({ content: content({ videos: [{ youtubeId: link, title: null }] }) }));
+      expect(again.content.videos[0]?.youtubeId).toBe("dQw4w9WgXcQ");
     }
     await setModules(db, s.tenant.id, ["website"]);
-    expect((await getPublicWebsite(db, s.tenant.id))?.settings.content.video?.youtubeId).toBe("dQw4w9WgXcQ");
+    expect((await getPublicWebsite(db, s.tenant.id))?.settings.content.videos[0]?.youtubeId).toBe("dQw4w9WgXcQ");
   });
 
   it.each([
@@ -282,8 +315,10 @@ describe("Stats, Why choose us, FAQ and Video (D138)", () => {
     [{ features: [{ icon: "Star", title: "", text: null }] }, "VALIDATION_REQUIRED"],
     [{ faqs: [{ question: "Q?", answer: "" }] }, "VALIDATION_REQUIRED"],
     [{ faqs: Array.from({ length: 21 }, () => ({ question: "Q", answer: "A" })) }, "VALIDATION_TOO_MANY"],
-    [{ video: { youtubeId: "https://vimeo.com/12345", title: null } }, "VALIDATION_LINK"],
-    [{ video: { youtubeId: "https://evil.example.com/watch?v=dQw4w9WgXcQ", title: null } }, "VALIDATION_LINK"],
+    [{ videos: [{ youtubeId: "https://vimeo.com/12345", title: null }] }, "VALIDATION_LINK"],
+    [{ videos: [{ youtubeId: "https://evil.example.com/watch?v=dQw4w9WgXcQ", title: null }] }, "VALIDATION_LINK"],
+    [{ videos: Array.from({ length: 13 }, () => ({ youtubeId: "dQw4w9WgXcQ", title: null })) }, "VALIDATION_TOO_MANY"],
+    [{ heroSlides: [{ imageFileId: "", heading: null, subheading: null }] }, "VALIDATION_REQUIRED"],
   ])("refuses %o", async (o, code) => {
     const s = await institute();
     await expect(saveWebsiteSettings(db, s.actor, input({ content: content(o as Partial<WebsiteContent>) }))).rejects.toMatchObject({ code });

@@ -128,19 +128,37 @@ export function Achievers(props: SectionProps) {
   );
 }
 
-/** The institute's YouTube video (D138), loaded only when played. */
+/** The institute's YouTube videos (D138, D147), each loaded only when played: one large, or several in a grid. */
 export function Video(props: SectionProps) {
   const { site, sig, t } = props;
   const words = sectionWords(props, "VIDEO");
-  const video = site.settings.content.video!;
+  const videos = site.settings.content.videos;
+  if (videos.length === 1) {
+    const [video] = videos;
+    return (
+      <>
+        <SectionHeading id="VIDEO" sig={sig} sub={words.subtitle ?? video.title ?? undefined}>
+          {words.title}
+        </SectionHeading>
+        <div className="mx-auto max-w-4xl">
+          <VideoPlayer youtubeId={video.youtubeId} title={video.title ?? words.title} playLabel={t.playVideo} />
+        </div>
+      </>
+    );
+  }
   return (
     <>
-      <SectionHeading id="VIDEO" sig={sig} sub={words.subtitle ?? video.title ?? undefined}>
+      <SectionHeading id="VIDEO" sig={sig} sub={words.subtitle}>
         {words.title}
       </SectionHeading>
-      <div className="mx-auto max-w-4xl">
-        <VideoPlayer youtubeId={video.youtubeId} title={video.title ?? words.title} playLabel={t.playVideo} />
-      </div>
+      <ul className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {videos.map((v, i) => (
+          <li key={`${v.youtubeId}-${i}`} data-testid="public-video" className="space-y-2">
+            <VideoPlayer youtubeId={v.youtubeId} title={v.title ?? `${words.title} ${i + 1}`} playLabel={t.playVideo} />
+            {v.title && <p className="site-heading font-semibold">{v.title}</p>}
+          </li>
+        ))}
+      </ul>
     </>
   );
 }

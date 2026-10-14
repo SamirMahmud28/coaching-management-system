@@ -19,6 +19,7 @@ import { About, Courses, Gallery, Notices, Testimonials } from "./sections/conte
 import { Hero, PageHeading } from "./sections/hero";
 import { Contact, Enquiry } from "./sections/reach";
 import { Achievers, Faculty, Faqs, Features, Stats, Video } from "./sections/showcase";
+import { Ticker } from "./sections/ticker";
 import { SocialLinks, type SectionProps, type Site } from "./sections/shared";
 import "../website.css";
 import "../motion.css";
@@ -157,6 +158,7 @@ export function InstituteWebsite({ site, page = "home" }: { site: Site; page?: S
 
         <main id="top" className="flex-1">
           {page === "home" ? <Hero {...props} enquiryHref={sectionHref(site, page, "ENQUIRY")} /> : <PageHeading {...props} page={page} />}
+          {page === "home" && content.showTicker && site.achievers.length > 0 && <Ticker {...props} />}
           {shown.map((key, i) => (
             <section key={key} id={key.toLowerCase()} aria-labelledby={`${key.toLowerCase()}-heading`} data-testid={`section-${key.toLowerCase()}`} className={cn("site-section scroll-mt-20", i % 2 === 1 && sig.band)}>
               <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">

@@ -2,6 +2,7 @@ import type { CSSProperties, ReactNode } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Parallax } from "../../motion/parallax";
+import { SlideRotator } from "../slide-rotator";
 import { FloatingShapes } from "./shapes";
 import type { SitePage } from "@/server/modules/website/design";
 import { imageUrl, mediaClass, telHref, type SectionProps } from "./shared";
@@ -75,6 +76,7 @@ export function Hero(props: SectionProps & { enquiryHref: string | null }) {
   const { heroLayout, heroOverlay } = props.site.settings.design;
   const shade = SHADE[heroOverlay];
   const tint = TINT[heroOverlay];
+  if (props.site.settings.content.heroSlides.length > 0) return <SliderBanner {...props} p={p} shade={shade} />;
 
   switch (heroLayout === "THEME" ? sig.hero : heroLayout) {
     case "SPLIT":
@@ -259,5 +261,41 @@ export function PageHeading({ sig, t, page }: SectionProps & { page: Exclude<Sit
         {t.pageLine[page] && <p className={cn("site-rise max-w-2xl text-lg text-muted-foreground [--d:160ms]", sig.align === "center" && "mx-auto")}>{t.pageLine[page]}</p>}
       </Wrap>
     </section>
+  );
+}
+
+/**
+ * The banner as a photo slider (D147): the main banner is the first slide and the extra slides follow, each a full
+ * picture with its heading and line, and the banner's button on all of them. Only the first heading is the page's
+ * main heading.
+ */
+function SliderBanner({ site, sig, t, p, shade }: SectionProps & { p: HeroParts; shade: string }) {
+  const slides = [
+    { image: p.image, heading: p.heading, sub: p.sub },
+    ...site.settings.content.heroSlides.map((x) => ({ image: imageUrl(x.imageFileId), heading: x.heading ?? p.heading, sub: x.subheading })),
+  ];
+  return (
+    <SlideRotator motion={site.settings.design.motion} labels={{ slides: slides.map((_, i) => t.slideOf(i + 1, slides.length)), previous: t.previous, next: t.next }}>
+      {slides.map((slide, i) => (
+        <div key={i} className={cn("site-on-colour relative isolate flex min-h-[26rem] items-center text-white sm:min-h-[34rem]", !slide.image && "site-gradient")} style={onColour("#111827", "#ffffff")}>
+          {slide.image && (
+            <>
+              {/* eslint-disable-next-line @next/next/no-img-element -- served by the public website-image endpoint */}
+              <img src={slide.image} alt="" loading={i === 0 ? "eager" : "lazy"} className={cn("absolute inset-0 -z-20 size-full object-cover", i === 0 && "site-kenburns")} />
+              <div aria-hidden className={cn("absolute inset-0 -z-10", shade)} />
+            </>
+          )}
+          <Wrap className={cn("space-y-6 py-20 sm:py-28", sig.align === "center" && "text-center")}>
+            {i === 0 ? (
+              <Title className={sig.heroTitle}>{slide.heading}</Title>
+            ) : (
+              <p className={cn("site-heading", sig.heroTitle)}>{slide.heading}</p>
+            )}
+            {slide.sub && <p className={cn("max-w-2xl text-lg leading-relaxed opacity-90", sig.align === "center" && "mx-auto")}>{slide.sub}</p>}
+            <Cta button={p.button} />
+          </Wrap>
+        </div>
+      ))}
+    </SlideRotator>
   );
 }

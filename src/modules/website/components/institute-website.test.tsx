@@ -108,7 +108,7 @@ describe("showcase sections (D138, D141)", () => {
         stats: [{ value: 1200, suffix: "+", label: "Students taught" }],
         features: [{ icon: "Users", title: "Small batches", text: "At most 25." }],
         faqs: [{ question: "When does admission open?", answer: "In January." }],
-        video: { youtubeId: "dQw4w9WgXcQ", title: "Our classrooms" },
+        videos: [{ youtubeId: "dQw4w9WgXcQ", title: "Our classrooms" }],
       },
     );
     filled.faculty = [{ id: "f1", name: "Rahim Uddin", photoFileId: null, line: "BUET", subjects: ["Physics"] }];
@@ -208,5 +208,39 @@ describe("motion strength (D145)", () => {
   it("has no scroll-progress bar when motion is Off", () => {
     render(<InstituteWebsite site={banner("OFF")} />);
     expect(screen.queryByTestId("scroll-progress")).toBeNull();
+  });
+});
+
+describe("banner slider, toppers ticker and video gallery (D147)", () => {
+  it("turns the banner into a slider with one main heading, dots and arrows", () => {
+    const sample = site({}, { heroSlides: [{ imageFileId: "s1", heading: "Admission open", subheading: null }, { imageFileId: "s2", heading: null, subheading: "Weekly tests" }] });
+    render(<InstituteWebsite site={sample} />);
+    const slider = screen.getByTestId("hero-slider");
+    expect(within(slider).getAllByRole("group", { hidden: true })).toHaveLength(3);
+    expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
+    expect(screen.getByTestId("hero-heading")).toHaveTextContent("Bright results");
+    expect(within(slider).getByRole("button", { name: "Slide 2 of 3" })).toBeInTheDocument();
+    expect(within(slider).getByRole("button", { name: "Next" })).toBeInTheDocument();
+    expect(within(slider).getAllByRole("group", { hidden: true })[1]).toHaveAttribute("aria-hidden", "true");
+  });
+
+  it("shows the toppers ticker on Home only when switched on and there are achievers", () => {
+    const sample = site({}, { showTicker: true });
+    render(<InstituteWebsite site={sample} />);
+    expect(screen.queryByTestId("toppers-ticker")).toBeNull(); // no achievers yet
+    cleanup();
+    sample.achievers = [{ id: "a1", name: "Nusrat", result: "GPA 5.00", exam: "SSC 2025", photoFileId: null }];
+    render(<InstituteWebsite site={sample} />);
+    expect(screen.getByTestId("toppers-ticker")).toHaveTextContent("NusratGPA 5.00SSC 2025");
+    cleanup();
+    render(<InstituteWebsite site={sample} page="results" />);
+    expect(screen.queryByTestId("toppers-ticker")).toBeNull();
+  });
+
+  it("shows several videos as a grid of players that load on tap", () => {
+    const sample = site({}, { videos: [{ youtubeId: "dQw4w9WgXcQ", title: "Tour" }, { youtubeId: "aaaaaaaaaaa", title: null }] });
+    render(<InstituteWebsite site={sample} page="gallery" />);
+    expect(screen.getAllByTestId("public-video")).toHaveLength(2);
+    expect(screen.getByTestId("section-video").querySelector("iframe")).toBeNull();
   });
 });

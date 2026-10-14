@@ -276,3 +276,30 @@
     transition: none;
   }
 }
+
+/* --- the toppers ticker (D147) ------------------------------------------------------------------------------------ */
+
+@keyframes site-ticker {
+  to {
+    transform: translateX(-50%);
+  }
+}
+[data-website] .site-ticker-track {
+  animation: site-ticker 45s linear infinite;
+}
+[data-website] .site-ticker:hover .site-ticker-track {
+  animation-play-state: paused;
+}
+[data-website][data-site-motion="OFF"] .site-ticker,
+[data-website][data-site-motion="OFF"] .site-ticker-track {
+  overflow-x: auto;
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-website] .site-ticker {
+    overflow-x: auto;
+  }
+  [data-website] .site-ticker-track {
+    animation: none;
+  }
+}

@@ -31,7 +31,7 @@ export function hasContent(key: WebsiteSectionKey, site: PublicWebsite): boolean
     case "ACHIEVERS":
       return site.achievers.length > 0;
     case "VIDEO":
-      return !!s.content.video;
+      return s.content.videos.length > 0;
     case "FAQ":
       return s.content.faqs.length > 0;
   }

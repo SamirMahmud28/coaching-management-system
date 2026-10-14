@@ -65,7 +65,9 @@ const contentBody = z.object({
   stats: z.array(z.object({ value: z.number(), suffix: optionalText(20), label: z.string().max(200) })).max(50).optional(),
   features: z.array(z.object({ icon: z.enum(FEATURE_ICONS), title: z.string().max(200), text: optionalText(600) })).max(50).optional(),
   faqs: z.array(z.object({ question: z.string().max(600), answer: z.string().max(3000) })).max(100).optional(),
-  video: z.object({ youtube_id: z.string().max(400), title: optionalText(300) }).nullable().optional(),
+  videos: z.array(z.object({ youtube_id: z.string().max(400), title: optionalText(300) })).max(50).optional(),
+  hero_slides: z.array(z.object({ image_file_id: z.uuid(), heading: optionalText(400), subheading: optionalText(600) })).max(20).optional(),
+  show_ticker: z.boolean().optional(),
 });
 const facultyBody = z.object({ instructor_id: z.uuid(), line: optionalText(240) });
 const facultyLineBody = z.object({ line: optionalText(240) });

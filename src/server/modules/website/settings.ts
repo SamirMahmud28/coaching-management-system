@@ -12,7 +12,7 @@ import {
   HOME_DEFAULT,
 } from "./design";
 import {
-  ANNOUNCEMENT_MAX, DEFAULT_CONTENT, FEATURE_ICONS, LINK_LABEL_MAX, MAX_FAQS, MAX_FEATURES, MAX_STAT_VALUE, MAX_STATS, SECTION_SUBTITLE_MAX, SECTION_TITLE_MAX,
+  ANNOUNCEMENT_MAX, DEFAULT_CONTENT, FEATURE_ICONS, LINK_LABEL_MAX, MAX_EXTRA_SLIDES, MAX_FAQS, MAX_FEATURES, MAX_STAT_VALUE, MAX_STATS, MAX_VIDEOS, SECTION_SUBTITLE_MAX, SECTION_TITLE_MAX,
   SOCIAL_HOSTS, SOCIAL_NETWORKS, completeContent, normaliseLink, youtubeIdOf, type WebsiteContent,
 } from "./site-content";
 
@@ -214,13 +214,17 @@ function cleanContent(c: WebsiteContent): WebsiteContent {
     question: required(x.question, 150, `content.faqs.${i}.question`, "The question"),
     answer: required(x.answer, 1000, `content.faqs.${i}.answer`, "The answer"),
   }));
-  let video: WebsiteContent["video"] = null;
-  if (c.video?.youtubeId?.trim()) {
-    const youtubeId = youtubeIdOf(c.video.youtubeId);
-    if (!youtubeId) throw new ValidationError("VALIDATION_LINK", "Paste a YouTube video's address, e.g. https://youtu.be/…", { field: "content.video.youtubeId" });
-    video = { youtubeId, title: text(c.video.title, 100, "content.video.title", "The video's title") };
-  }
-  return { sectionTitles, announcement, social, stats, features, faqs, video };
+  const videos = most(c.videos, MAX_VIDEOS, "content.videos", "videos").map((v, i) => {
+    const youtubeId = youtubeIdOf(v.youtubeId ?? "");
+    if (!youtubeId) throw new ValidationError("VALIDATION_LINK", "Paste a YouTube video's address, e.g. https://youtu.be/…", { field: `content.videos.${i}.youtubeId` });
+    return { youtubeId, title: text(v.title, 100, `content.videos.${i}.title`, "The video's title") };
+  });
+  // The pictures are checked against the institute's files when saving (saveWebsiteSettings).
+  const heroSlides = most(c.heroSlides, MAX_EXTRA_SLIDES, "content.heroSlides", "extra slides").map((x, i) => {
+    if (!x.imageFileId) throw new ValidationError("VALIDATION_REQUIRED", "Each slide needs a picture.", { field: `content.heroSlides.${i}.imageFileId` });
+    return { imageFileId: x.imageFileId, heading: text(x.heading, 120, `content.heroSlides.${i}.heading`, "A slide's heading"), subheading: text(x.subheading, 250, `content.heroSlides.${i}.subheading`, "A slide's line") };
+  });
+  return { sectionTitles, announcement, social, stats, features, faqs, videos, heroSlides, showTicker: c.showTicker === true };
 }
 
 function required(value: string | null | undefined, max: number, field: string, label: string): string {
@@ -261,6 +265,9 @@ export async function saveWebsiteSettings(db: DbOrTx, actor: Actor, input: Websi
   return inTransaction(db, async (tx) => {
     if (values.heroImageFileId) await assertFileReference(tx, actor.tenantId, values.heroImageFileId, "WEBSITE_IMAGE", "heroImageFileId");
     if (values.aboutImageFileId) await assertFileReference(tx, actor.tenantId, values.aboutImageFileId, "WEBSITE_IMAGE", "aboutImageFileId");
+    for (const [i, slide] of values.content.heroSlides.entries()) {
+      await assertFileReference(tx, actor.tenantId, slide.imageFileId, "WEBSITE_IMAGE", `content.heroSlides.${i}.imageFileId`);
+    }
     const before = await getWebsiteSettings(tx, actor.tenantId);
     const now = new Date();
     await tx

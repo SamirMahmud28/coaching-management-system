@@ -65,6 +65,8 @@ export interface SiteLabels {
   menu: string;
   previous: string;
   next: string;
+  slideOf: (n: number, total: number) => string;
+  toppers: string;
   follow: string;
   enquiry: EnquiryLabels;
 }
@@ -118,6 +120,8 @@ const EN: SiteLabels = {
   menu: "Menu",
   previous: "Previous",
   next: "Next",
+  slideOf: (n, total) => `Slide ${n} of ${total}`,
+  toppers: "Our toppers",
   follow: "Follow us",
   enquiry: {
     form: "Admission enquiry",
@@ -187,6 +191,8 @@ const BN: SiteLabels = {
   menu: "মেনু",
   previous: "আগের",
   next: "পরের",
+  slideOf: (n, total) => `স্লাইড ${bnDigits(String(n))} / ${bnDigits(String(total))}`,
+  toppers: "আমাদের কৃতী শিক্ষার্থী",
   follow: "আমাদের অনুসরণ করুন",
   enquiry: {
     form: "ভর্তি সংক্রান্ত জিজ্ঞাসা",
