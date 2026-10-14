@@ -30,9 +30,20 @@ describe("page guards", () => {
     expect(unguarded).toEqual([]);
   });
 
-  it("institute pages outside /app are only the public page and the sign-in pages", async () => {
+  it("institute pages outside /app are only the public pages and the sign-in pages", async () => {
     const files = (await pages(path.join(process.cwd(), "src/app/institute"))).map(rel).filter((f) => !f.startsWith("src/app/institute/app/"));
-    expect(files.sort()).toEqual(["src/app/institute/(auth)/change-password/page.tsx", "src/app/institute/(auth)/login/page.tsx", "src/app/institute/page.tsx"]);
+    expect(files.sort()).toEqual([
+      "src/app/institute/(auth)/change-password/page.tsx",
+      "src/app/institute/(auth)/login/page.tsx",
+      "src/app/institute/[page]/page.tsx",
+      "src/app/institute/page.tsx",
+    ]);
+    // The website's other pages (D142) show only what the public page may: the institute must be visible (D58), and the
+    // data comes only from the public website, which is empty while the Website module is off (D21).
+    const websitePage = await readFile(path.join(process.cwd(), "src/app/institute/[page]/page.tsx"), "utf8");
+    expect(websitePage).toMatch(/\bpublicPageVisible\(/);
+    expect(websitePage).toMatch(/\bloadPublicWebsite\(/);
+    expect(websitePage).not.toMatch(/from "@\/server\/core\/db/);
   });
 
   it("every Super Admin page is under the guarded layout and loads data only through the platform API", async () => {

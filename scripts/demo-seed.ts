@@ -226,6 +226,12 @@ async function main() {
           { icon: "HeartHandshake", title: "Guardians kept informed", text: "A call when a student misses class." },
           { icon: "FlaskConical", title: "Practical science", text: "Lab demonstrations for Physics and Chemistry." },
         ],
+        // D147: two more banner slides (a photo slider) and the toppers ticker under the banner.
+        heroSlides: [
+          { imageFileId: await upload("Admission 2027", "#b45309", "#be123c"), heading: "Admission open for HSC 2027", subheading: "Morning and evening batches, at most 25 students each." },
+          { imageFileId: await upload("312 GPA 5", "#1e3a8a", "#7c3aed"), heading: "312 GPA 5 holders since 2012", subheading: null },
+        ],
+        showTicker: true,
         faqs: [
           { question: "When does admission open?", answer: "SSC batches start in January and HSC batches in July. Seats are limited to 25 per batch." },
           { question: "Can my child attend a trial class?", answer: "Yes. The first week is free, so your child can decide before you pay." },
