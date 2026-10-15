@@ -1,3 +1,5 @@
+import { DEFAULT_APP_THEME, isAppTheme, type AppTheme } from "@/lib/app-themes";
+import { getAppearance, setAppTheme } from "../settings/service";
 import { and, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
 import { ConflictError, NotFoundError, ValidationError, mapDatabaseError } from "../../core/errors";
 import {
@@ -185,7 +187,7 @@ export async function getTenant(db: DbOrTx, id: string) {
     ? await db.select({ id: users.id, name: users.name, email: users.email }).from(users).where(eq(users.id, tenant.ownerUserId)).limit(1)
     : [];
 
-  return { ...tenant, owner: owner ?? null, modules: await moduleStatusList(db, id) };
+  return { ...tenant, owner: owner ?? null, modules: await moduleStatusList(db, id), ...(await getAppearance(db, id)) };
 }
 
 export async function checkSubdomainAvailability(
@@ -279,6 +281,24 @@ export async function setTenantPaidUntil(db: DbOrTx, params: { tenantId: string;
     });
     return updated;
   });
+}
+
+/** Sets an institute's app theme from its page (D157); audited as the platform admin. The institute can change it later. */
+export async function setTenantAppTheme(db: DbOrTx, params: { tenantId: string; theme: AppTheme; paper?: boolean | null; platformUserId: string }) {
+  return setAppTheme(db, { tenantId: params.tenantId, theme: params.theme, paper: params.paper, actor: { type: "PLATFORM_USER", platformUserId: params.platformUserId } });
+}
+
+/** A platform admin's own panel theme (D157): a personal preference, so not audited. */
+export async function setPlatformAdminTheme(db: DbOrTx, params: { platformUserId: string; theme: AppTheme }): Promise<{ appTheme: AppTheme }> {
+  if (!isAppTheme(params.theme)) throw new ValidationError("VALIDATION_FAILED", "Choose one of the listed themes.", { field: "appTheme" });
+  const [row] = await db.update(platformUsers).set({ appTheme: params.theme, updatedAt: new Date() }).where(eq(platformUsers.id, params.platformUserId)).returning({ appTheme: platformUsers.appTheme });
+  if (!row) throw new NotFoundError("PLATFORM_USER");
+  return row;
+}
+
+export async function getPlatformAdminTheme(db: DbOrTx, platformUserId: string): Promise<AppTheme> {
+  const [row] = await db.select({ appTheme: platformUsers.appTheme }).from(platformUsers).where(eq(platformUsers.id, platformUserId));
+  return row?.appTheme ?? DEFAULT_APP_THEME;
 }
 
 /** Changes who is designated Owner; the previous Owner keeps their roles. */

@@ -11,4 +11,7 @@ export const moduleRequestStatusEnum = pgEnum("module_request_status", ["PENDING
 export const actorTypeEnum = pgEnum("actor_type", ["TENANT_USER", "PLATFORM_USER"]);
 
 // What an uploaded file is for: limits, processing and viewing rules follow it.
+// The app colour themes (D155–D157); keep in step with src/lib/app-themes.ts.
+export const appThemeEnum = pgEnum("app_theme", ["MIDNIGHT", "AMBER", "INDIGO", "EMERALD", "PLUM"]);
+
 export const fileCategoryEnum = pgEnum("file_category", ["STUDENT_PHOTO", "INSTRUCTOR_PHOTO", "LOGO", "SIGNATURE", "WEBSITE_IMAGE"]);

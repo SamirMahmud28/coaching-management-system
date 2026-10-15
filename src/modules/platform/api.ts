@@ -1,3 +1,4 @@
+import type { AppTheme } from "@/lib/app-themes";
 import { apiFetch } from "@/lib/api-client";
 import type { ModuleKey } from "@/server/core/modules/registry";
 
@@ -46,6 +47,10 @@ export interface TenantDetail {
   created_at: string;
   owner: { id: string; name: string; email: string | null } | null;
   modules: TenantModule[];
+  /** The institute's app theme (D157); returned by the detail read. */
+  app_theme?: AppTheme;
+  /** null = automatic (on with Classic Amber) (D158). */
+  paper_background?: boolean | null;
 }
 
 export interface TenantUser {
@@ -124,6 +129,12 @@ export const platformApi = {
     apiFetch<TenantDetail>(`${base}/tenants/${id}/status`, { method: "PATCH", body: { status, reason } }),
   setTenantModules: (id: string, changes: { module_key: ModuleKey; enabled: boolean }[]) =>
     apiFetch<TenantDetail>(`${base}/tenants/${id}/modules`, { method: "PATCH", body: { changes } }),
+  setTenantAppTheme: (id: string, theme: AppTheme, paper: boolean | null) =>
+    apiFetch<{ app_theme: AppTheme; paper_background: boolean | null }>(`${base}/tenants/${id}/app-theme`, {
+      method: "PATCH",
+      body: { app_theme: theme, paper_background: paper },
+    }),
+  setMyAppTheme: (theme: AppTheme) => apiFetch<{ app_theme: AppTheme }>(`${base}/me/app-theme`, { method: "PATCH", body: { app_theme: theme } }),
   setTenantPaidUntil: (id: string, paidUntil: string | null) =>
     apiFetch<TenantDetail>(`${base}/tenants/${id}/paid-until`, { method: "PATCH", body: { paid_until: paidUntil } }),
   transferOwnership: (id: string, newOwnerUserId: string) =>

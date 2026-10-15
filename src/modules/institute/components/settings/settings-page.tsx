@@ -10,7 +10,8 @@ import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { FormField } from "@/components/shared/form-field";
 import { ImageField } from "@/components/shared/image-field";
 import { PageHeader } from "@/components/shared/page-header";
-import { EmptyState, ErrorState, LoadingState } from "@/components/shared/states";
+import { CardSkeleton, EmptyState, ErrorState, LoadingState } from "@/components/shared/states";
+import { ThemePicker } from "@/components/shared/theme-picker";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -53,7 +54,7 @@ export function InstituteSettingsPage() {
 
   return (
     <>
-      <PageHeader title="Institute Settings" description="Your institute's name, contact details and branding, and the people who sign documents. These appear on receipts, marksheets and other printed documents." />
+      <PageHeader title="Institute Settings" description="Your institute's name, contact details, branding and app theme, and the people who sign documents. These appear on receipts, marksheets and other printed documents." />
       <HowThisWorks topic="settings" />
       {profile.isPending ? (
         <LoadingState />
@@ -62,9 +63,43 @@ export function InstituteSettingsPage() {
       ) : (
         <ProfileCard key={JSON.stringify(profile.data)} profile={profile.data} />
       )}
+      <AppearanceCard />
       <StudentIdCard />
       <SignaturesCard />
     </>
+  );
+}
+
+/** The office and portals' colour theme for everyone in the institute (D156); a click previews it across the app. */
+function AppearanceCard() {
+  const queryClient = useQueryClient();
+  const appearance = useQuery({ queryKey: instituteKeys.appearance(), queryFn: settingsApi.appearance });
+  return (
+    <Card id="appearance" className="scroll-mt-24">
+      <CardHeader>
+        <CardTitle className="text-base">App theme</CardTitle>
+        <CardDescription>The colours of your office app and the student and instructor portals, for everyone in your institute.</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <HowThisWorks topic="settings-appearance" />
+        {appearance.isPending ? (
+          <CardSkeleton height={160} />
+        ) : appearance.error ? (
+          <ErrorState onRetry={() => appearance.refetch()} />
+        ) : (
+          <ThemePicker
+            value={appearance.data.app_theme}
+            paper={appearance.data.paper_background}
+            livePreview
+            savedMessage="Theme saved. Everyone in your institute will see it."
+            onSave={async (theme, paper) => {
+              const saved = await settingsApi.saveAppearance(theme, paper);
+              queryClient.setQueryData(instituteKeys.appearance(), saved);
+            }}
+          />
+        )}
+      </CardContent>
+    </Card>
   );
 }
 

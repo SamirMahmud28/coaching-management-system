@@ -1,0 +1,1 @@
+ALTER TABLE "institution_profiles" ADD COLUMN "paper_background" boolean;

@@ -5,6 +5,8 @@ import { Building2, Inbox, ScrollText, ShieldCheck, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { createContext, useContext } from "react";
 import { AppShell, type NavItem } from "@/components/shell/app-shell";
+import type { PaletteSearch } from "@/components/shell/command-palette";
+import type { AppTheme } from "@/lib/app-themes";
 import { Badge } from "@/components/ui/badge";
 import { platformApi } from "../api";
 
@@ -15,6 +17,15 @@ const NAV: NavItem[] = [
   { href: "/admins", label: "Platform admins", icon: Users },
   { href: "/audit-log", label: "Audit log", icon: ScrollText },
 ];
+
+const SEARCH: PaletteSearch = {
+  label: "Institutes",
+  placeholder: "Search institutes by name or subdomain, or a page…",
+  run: async (q) => {
+    const res = await platformApi.listTenants({ q, page_size: 6 });
+    return res.items.map((t) => ({ id: t.id, href: `/institutes/${t.id}`, title: t.name, subtitle: t.subdomain }));
+  },
+};
 
 export interface CurrentPlatformAdmin {
   id: string;
@@ -45,10 +56,12 @@ export function useInstituteUrl(): (subdomain: string) => string {
 
 export function PlatformShell({
   admin,
+  appTheme,
   instituteUrlTemplate,
   children,
 }: {
   admin: CurrentPlatformAdmin;
+  appTheme?: AppTheme;
   instituteUrlTemplate: string;
   children: React.ReactNode;
 }) {
@@ -74,6 +87,12 @@ export function PlatformShell({
             <ShieldCheck /> Platform Admin
           </Badge>
         }
+        search={SEARCH}
+        changePasswordHref="/change-password"
+        theme={appTheme}
+        onThemeSave={async (t) => {
+          await platformApi.setMyAppTheme(t);
+        }}
         user={{ name: admin.name, email: admin.email }}
         onSignOut={signOut}
       >

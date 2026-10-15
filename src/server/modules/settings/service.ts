@@ -3,10 +3,11 @@ import { institutionProfiles, signatures, studentIdSettings, tenants } from "../
 import { getInTenant } from "../../core/db/tenant-scope";
 import { inTransaction } from "../../core/db/transaction";
 import type { DbOrTx } from "../../core/db/types";
-import { ValidationError, mapDatabaseError } from "../../core/errors";
+import { NotFoundError, ValidationError, mapDatabaseError } from "../../core/errors";
 import { assertFileReference } from "../../core/files/service";
 import { validEmail } from "../auth/platform-admin-input";
 import { audit } from "../audit/service";
+import { DEFAULT_APP_THEME, isAppTheme, type AppTheme } from "@/lib/app-themes";
 import { DEFAULT_STUDENT_ID_PATTERN, formatStudentId, studentIdPatternProblem, type StudentIdPattern } from "@/lib/student-id";
 
 export interface Actor {
@@ -123,6 +124,65 @@ export async function saveInstitutionProfile(db: DbOrTx, actor: Actor, input: In
       newValue: values,
     });
     return { ...values, isDefault: false };
+  });
+}
+
+// ---------------------------------------------------------------------------
+// App theme (D156, D157): one colour theme for the institute's office and portals
+// ---------------------------------------------------------------------------
+
+export interface Appearance {
+  appTheme: AppTheme;
+  /** The paper texture (D158): null = automatic (on with Classic Amber, see resolvePaper), else the admin's choice. */
+  paperBackground: boolean | null;
+}
+
+export async function getAppearance(db: DbOrTx, tenantId: string): Promise<Appearance> {
+  const [row] = await db
+    .select({ appTheme: institutionProfiles.appTheme, paperBackground: institutionProfiles.paperBackground })
+    .from(institutionProfiles)
+    .where(eq(institutionProfiles.tenantId, tenantId));
+  return { appTheme: row?.appTheme ?? DEFAULT_APP_THEME, paperBackground: row?.paperBackground ?? null };
+}
+
+export async function getAppTheme(db: DbOrTx, tenantId: string): Promise<AppTheme> {
+  return (await getAppearance(db, tenantId)).appTheme;
+}
+
+/** Who changes the theme: the institute's own admin, or the Super Admin from the institute's page (D157). */
+export type ThemeActor = { type: "TENANT_USER"; userId: string } | { type: "PLATFORM_USER"; platformUserId: string };
+
+/**
+ * Sets the institute's app theme and, when given, the paper background (`undefined` keeps it), audited in the same
+ * transaction. Before the profile is first saved there is no row, so one is created with the institute's name (what the
+ * profile shows until then anyway).
+ */
+export async function setAppTheme(
+  db: DbOrTx,
+  params: { tenantId: string; theme: AppTheme; paper?: boolean | null; actor: ThemeActor },
+): Promise<Appearance> {
+  if (!isAppTheme(params.theme)) throw new ValidationError("VALIDATION_FAILED", "Choose one of the listed themes.", { field: "appTheme" });
+  return inTransaction(db, async (tx) => {
+    const [tenant] = await tx.select({ name: tenants.name }).from(tenants).where(eq(tenants.id, params.tenantId));
+    if (!tenant) throw new NotFoundError("TENANT");
+    const before = await getAppearance(tx, params.tenantId);
+    const after: Appearance = { appTheme: params.theme, paperBackground: params.paper === undefined ? before.paperBackground : params.paper };
+    const userId = params.actor.type === "TENANT_USER" ? params.actor.userId : null;
+    await tx
+      .insert(institutionProfiles)
+      .values({ tenantId: params.tenantId, displayName: tenant.name, ...after, createdBy: userId, updatedBy: userId })
+      .onConflictDoUpdate({ target: institutionProfiles.tenantId, set: { ...after, updatedAt: new Date(), updatedBy: userId } });
+    await audit.record(tx, {
+      tenantId: params.tenantId,
+      actorType: params.actor.type,
+      ...(params.actor.type === "TENANT_USER" ? { userId: params.actor.userId } : { platformUserId: params.actor.platformUserId }),
+      action: "APP_THEME_CHANGED",
+      resourceType: "INSTITUTION_PROFILE",
+      resourceId: params.tenantId,
+      oldValue: { ...before },
+      newValue: { ...after },
+    });
+    return after;
   });
 }
 

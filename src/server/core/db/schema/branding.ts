@@ -1,6 +1,7 @@
 import { boolean, check, integer, pgTable, smallint, text, timestamp, unique, uniqueIndex, uuid, varchar } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { files, tenants } from "./core";
+import { appThemeEnum } from "./enums";
 
 /**
  * Institute profile and branding: what prints on receipts and marksheets and brands the institute's pages. One row
@@ -19,6 +20,10 @@ export const institutionProfiles = pgTable("institution_profiles", {
   logoFileId: uuid("logo_file_id").references(() => files.id, { onDelete: "set null" }),
   primaryColor: varchar("primary_color", { length: 7 }),
   secondaryColor: varchar("secondary_color", { length: 7 }),
+  // The office and portals' colour theme, for everyone in the institute (D156).
+  appTheme: appThemeEnum("app_theme").notNull().default("MIDNIGHT"),
+  // The paper texture behind pages (D158): null = automatic (on with Classic Amber), else the admin's choice.
+  paperBackground: boolean("paper_background"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   createdBy: uuid("created_by"),

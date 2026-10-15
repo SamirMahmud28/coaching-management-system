@@ -8,7 +8,7 @@ import { createTestDb } from "../../core/testing/db";
 import { auditLogs, files, signatures, tenants, users } from "../../core/db/schema";
 import { uploadFile, type FileCategory } from "../../core/files/service";
 import { LocalDiskStorage } from "../../core/files/storage";
-import { createSignature, deleteSignature, getInstitutionProfile, getStudentIdPattern, listSignatures, saveInstitutionProfile, saveStudentIdPattern, updateSignature, type InstitutionProfileInput } from "./service";
+import { createSignature, deleteSignature, getAppTheme, getAppearance, getInstitutionProfile, setAppTheme, getStudentIdPattern, listSignatures, saveInstitutionProfile, saveStudentIdPattern, updateSignature, type InstitutionProfileInput } from "./service";
 
 const { db, reset, close } = createTestDb();
 let storage: LocalDiskStorage;
@@ -152,5 +152,52 @@ describe("student ID pattern (D15, D16)", () => {
     });
     await saveStudentIdPattern(db, a.actor, { prefix: "AAA", includeCourseCode: false, separator: "", sequenceWidth: 5 });
     expect((await getStudentIdPattern(db, b.actor.tenantId)).isDefault).toBe(true);
+  });
+});
+
+describe("app theme (D156)", () => {
+  it("is Midnight until chosen; a save keeps the profile's other details and is audited", async () => {
+    const { actor } = await school();
+    expect(await getAppTheme(db, actor.tenantId)).toBe("MIDNIGHT");
+
+    // Before the profile is saved there is no row: one is made with the institute's name.
+    await setAppTheme(db, { tenantId: actor.tenantId, theme: "PLUM", actor: { type: "TENANT_USER", userId: actor.userId } });
+    expect(await getAppTheme(db, actor.tenantId)).toBe("PLUM");
+    expect((await getInstitutionProfile(db, actor.tenantId)).displayName).toBe("Green Valley School");
+
+    await saveInstitutionProfile(db, actor, profile());
+    await setAppTheme(db, { tenantId: actor.tenantId, theme: "INDIGO", actor: { type: "TENANT_USER", userId: actor.userId } });
+    expect(await getAppTheme(db, actor.tenantId)).toBe("INDIGO");
+    expect((await getInstitutionProfile(db, actor.tenantId)).displayName).toBe("Green Valley High School");
+
+    const entries = await db.select().from(auditLogs).where(eq(auditLogs.action, "APP_THEME_CHANGED"));
+    expect(entries.map((e) => [e.oldValue, e.newValue, e.userId])).toEqual([
+      [{ appTheme: "MIDNIGHT", paperBackground: null }, { appTheme: "PLUM", paperBackground: null }, actor.userId],
+      [{ appTheme: "PLUM", paperBackground: null }, { appTheme: "INDIGO", paperBackground: null }, actor.userId],
+    ]);
+  });
+
+  it("stores the paper background as automatic, on or off; leaving it out keeps it (D158)", async () => {
+    const { actor } = await school();
+    const by = { type: "TENANT_USER" as const, userId: actor.userId };
+    expect(await getAppearance(db, actor.tenantId)).toEqual({ appTheme: "MIDNIGHT", paperBackground: null });
+    await setAppTheme(db, { tenantId: actor.tenantId, theme: "MIDNIGHT", paper: true, actor: by });
+    expect(await getAppearance(db, actor.tenantId)).toEqual({ appTheme: "MIDNIGHT", paperBackground: true });
+    await setAppTheme(db, { tenantId: actor.tenantId, theme: "AMBER", actor: by });
+    expect((await getAppearance(db, actor.tenantId)).paperBackground).toBe(true);
+    await setAppTheme(db, { tenantId: actor.tenantId, theme: "AMBER", paper: false, actor: by });
+    expect((await getAppearance(db, actor.tenantId)).paperBackground).toBe(false);
+    await setAppTheme(db, { tenantId: actor.tenantId, theme: "AMBER", paper: null, actor: by });
+    expect((await getAppearance(db, actor.tenantId)).paperBackground).toBeNull();
+    const last = (await db.select().from(auditLogs).where(eq(auditLogs.action, "APP_THEME_CHANGED"))).at(-1);
+    expect(last).toMatchObject({ oldValue: { paperBackground: false }, newValue: { paperBackground: null } });
+  });
+
+  it("refuses an unknown theme and changes only its own institute", async () => {
+    const a = await school("A");
+    const b = await school("B");
+    await expect(setAppTheme(db, { tenantId: a.actor.tenantId, theme: "NEON" as never, actor: { type: "TENANT_USER", userId: a.actor.userId } })).rejects.toMatchObject({ status: 422 });
+    await setAppTheme(db, { tenantId: a.actor.tenantId, theme: "EMERALD", actor: { type: "TENANT_USER", userId: a.actor.userId } });
+    expect(await getAppTheme(db, b.actor.tenantId)).toBe("MIDNIGHT");
   });
 });

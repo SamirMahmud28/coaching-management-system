@@ -1,7 +1,7 @@
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { eq } from "drizzle-orm";
 import { createTestDb } from "../../core/testing/db";
-import { platformUsers, users } from "../../core/db/schema";
+import { auditLogs, institutionProfiles, platformUsers, users } from "../../core/db/schema";
 import type { Db } from "../../core/db/types";
 import { seedPlatformCatalog } from "../../core/db/seed";
 import { createPlatformAuth } from "../auth/platform-auth";
@@ -194,6 +194,36 @@ describe("tenants", () => {
     expect((await (await call("2027-01-31")).json()).paid_until).toBe("2027-01-31");
     expect((await (await call(null)).json()).paid_until).toBeNull();
     expect((await call("31/01/2027")).status).toBe(422);
+  });
+
+  it("PATCH /tenants/:id/app-theme sets the institute's theme, audited as the platform admin; bad values 422, unknown ids 404 (D157)", async () => {
+    const { cookie } = await signedInAdmin();
+    const tenant = await createTenantViaApi(cookie);
+    const call = (id: string, app_theme: string) => h.setTenantAppTheme(req("PATCH", `/tenants/${id}/app-theme`, { body: { app_theme }, cookie }), { id });
+
+    const ok = await call(tenant.id, "EMERALD");
+    const paper = await h.setTenantAppTheme(req("PATCH", `/tenants/${tenant.id}/app-theme`, { body: { app_theme: "EMERALD", paper_background: true }, cookie }), { id: tenant.id });
+    expect((await paper.json()).paper_background).toBe(true);
+    expect(ok.status).toBe(200);
+    expect((await ok.json()).app_theme).toBe("EMERALD");
+    const [row] = await testDb.select({ appTheme: institutionProfiles.appTheme }).from(institutionProfiles).where(eq(institutionProfiles.tenantId, tenant.id));
+    expect(row?.appTheme).toBe("EMERALD");
+    const [entry] = await testDb.select().from(auditLogs).where(eq(auditLogs.action, "APP_THEME_CHANGED"));
+    expect(entry).toMatchObject({ tenantId: tenant.id, actorType: "PLATFORM_USER", oldValue: { appTheme: "MIDNIGHT" }, newValue: { appTheme: "EMERALD" } });
+    expect(await (await h.getTenant(req("GET", `/tenants/${tenant.id}`, { cookie }), { id: tenant.id })).json()).toMatchObject({ app_theme: "EMERALD", paper_background: true });
+
+    expect((await call(tenant.id, "NEON")).status).toBe(422);
+    expect((await call("00000000-0000-4000-8000-000000000000", "PLUM")).status).toBe(404);
+    expect((await h.setTenantAppTheme(req("PATCH", `/tenants/${tenant.id}/app-theme`, { body: { app_theme: "PLUM" } }), { id: tenant.id })).status).toBe(401);
+  });
+
+  it("PATCH /me/app-theme saves the signed-in admin's own panel theme only (D157)", async () => {
+    const { cookie } = await signedInAdmin();
+    const res = await h.setMyAppTheme(req("PATCH", "/me/app-theme", { body: { app_theme: "INDIGO" }, cookie }));
+    expect((await res.json()).app_theme).toBe("INDIGO");
+    const themes = await testDb.select({ appTheme: platformUsers.appTheme }).from(platformUsers);
+    expect(themes.filter((t) => t.appTheme === "INDIGO")).toHaveLength(1);
+    expect((await h.setMyAppTheme(req("PATCH", "/me/app-theme", { body: { app_theme: "INDIGO" } }))).status).toBe(401);
   });
 
   it("POST /tenants/:id/transfer-ownership moves the Owner; another tenant's user is 404", async () => {

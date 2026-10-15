@@ -130,6 +130,8 @@ const HANDLERS: Entry[] = [
   // settings
   { factory: "settings", name: "getProfile", method: "GET", permission: "signed-in" },
   { factory: "settings", name: "saveProfile", method: "PUT", permission: "settings.manage", body: { display_name: "Matrix Institute" } },
+  { factory: "settings", name: "getAppearance", method: "GET", permission: "settings.manage" },
+  { factory: "settings", name: "saveAppearance", method: "PUT", permission: "settings.manage", body: { app_theme: "PLUM" } },
   { factory: "settings", name: "listSignatures", method: "GET", permission: "settings.manage" },
   { factory: "settings", name: "getStudentIdPattern", method: "GET", permission: "settings.manage" },
   { factory: "settings", name: "saveStudentIdPattern", method: "PUT", permission: "settings.manage", body: { prefix: "MX", include_course_code: false, separator: "-", sequence_width: 4 } },

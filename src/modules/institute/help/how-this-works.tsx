@@ -4,6 +4,7 @@ import { ChevronDown, ChevronUp, Lightbulb } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { helpTopic, type HelpTopicKey } from "./content";
 
 /**
@@ -16,10 +17,14 @@ export function HowThisWorks({ topic, fullGuide = true }: { topic: HelpTopicKey;
   const [open, setOpen] = useState(false);
 
   return (
-    <section aria-label={`How ${t.title.toLowerCase()} works`} className="rounded-lg border border-primary/25 bg-primary/5 text-sm" data-testid="how-this-works">
-      <button type="button" onClick={() => setOpen(!open)} aria-expanded={open} className="flex w-full items-center gap-2 px-4 py-2.5 text-left">
+    <section
+      aria-label={`How ${t.title.toLowerCase()} works`}
+      className={cn("text-sm transition-all", open ? "rounded-2xl border border-primary/25 bg-accent/40 shadow-xs" : "w-fit rounded-full border border-primary/25 bg-accent/50 hover:bg-accent")}
+      data-testid="how-this-works"
+    >
+      <button type="button" onClick={() => setOpen(!open)} aria-expanded={open} className={cn("flex cursor-pointer items-center gap-2 text-left outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50", open ? "w-full rounded-t-2xl px-4 py-3" : "rounded-full py-1.5 pr-3 pl-3 pointer-coarse:py-2.5")}>
         <Lightbulb aria-hidden className="size-4 shrink-0 text-primary-strong" />
-        <span className="flex-1 font-medium">How this works</span>
+        <span className={cn("font-medium", open && "flex-1")}>How this works</span>
         {open ? <ChevronUp aria-hidden className="size-4" /> : <ChevronDown aria-hidden className="size-4" />}
       </button>
       {open && (

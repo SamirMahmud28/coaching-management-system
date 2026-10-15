@@ -11,6 +11,8 @@ import { FormField } from "@/components/shared/form-field";
 import { PageHeader } from "@/components/shared/page-header";
 import { EmptyState, ErrorState, LoadingState } from "@/components/shared/states";
 import { StatusBadge } from "@/components/shared/status-badge";
+import { ThemePicker } from "@/components/shared/theme-picker";
+import { DEFAULT_APP_THEME } from "@/lib/app-themes";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -117,6 +119,7 @@ export function TenantDetailPage({ id }: { id: string }) {
           <TabsTrigger value="profile">Profile</TabsTrigger>
           <TabsTrigger value="modules">Modules</TabsTrigger>
           <TabsTrigger value="requests">Module requests</TabsTrigger>
+          <TabsTrigger value="appearance">App theme</TabsTrigger>
         </TabsList>
         <TabsContent value="profile" className="pt-4">
           <ProfileTab tenant={tenant} />
@@ -131,6 +134,22 @@ export function TenantDetailPage({ id }: { id: string }) {
               const target = tenant.modules.find((m) => m.key === key);
               setTab("modules");
               if (target && !target.enabled) setToggle({ module: target, enabled: true });
+            }}
+          />
+        </TabsContent>
+        <TabsContent value="appearance" className="space-y-3 pt-4">
+          <p className="text-sm text-muted-foreground">
+            The colour theme of this institute&apos;s office app and its student and instructor portals. The change is recorded in the
+            institute&apos;s audit log, and the institute&apos;s admins can change it later in Settings.
+          </p>
+          <ThemePicker
+            key={`${tenant.app_theme ?? DEFAULT_APP_THEME}-${String(tenant.paper_background ?? null)}`}
+            value={tenant.app_theme ?? DEFAULT_APP_THEME}
+            paper={tenant.paper_background ?? null}
+            savedMessage={`Theme saved for ${tenant.name}.`}
+            onSave={async (theme, paper) => {
+              await platformApi.setTenantAppTheme(id, theme, paper);
+              await invalidateTenant(queryClient, id);
             }}
           />
         </TabsContent>

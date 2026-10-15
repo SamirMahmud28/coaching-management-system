@@ -21,14 +21,15 @@ function CommandDialog({
   description = "Search for a page, a person or an action",
   children,
   className,
+  shouldFilter,
   ...props
-}: React.ComponentProps<typeof Dialog> & { title?: string; description?: string; className?: string }) {
+}: React.ComponentProps<typeof Dialog> & { title?: string; description?: string; className?: string; shouldFilter?: boolean }) {
   return (
     <Dialog {...props}>
       <DialogContent className={cn("top-[18%] translate-y-0 overflow-hidden p-0 sm:max-w-xl", className)} showCloseButton={false}>
         <DialogTitle className="sr-only">{title}</DialogTitle>
         <DialogDescription className="sr-only">{description}</DialogDescription>
-        <Command className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-muted-foreground [&_[cmdk-group]]:px-2 [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-input-wrapper]_svg]:size-5 [&_[cmdk-item]]:px-2 [&_[cmdk-item]]:py-2.5 [&_[cmdk-item]_svg]:size-4">
+        <Command shouldFilter={shouldFilter}>
           {children}
         </Command>
       </DialogContent>

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { APP_THEME_KEYS } from "@/lib/app-themes";
 import type { Db } from "../../core/db/types";
 import { handle, json, parseBody, parseQuery, pathId } from "../../core/http/respond";
 import { MODULE_KEYS } from "../../core/modules/registry";
@@ -17,6 +18,8 @@ import {
   listPlatformAudit,
   listTenantUsers,
   listTenants,
+  setPlatformAdminTheme,
+  setTenantAppTheme,
   setTenantPaidUntil,
   transferOwnership,
   transitionTenantStatus,
@@ -72,6 +75,7 @@ const listAdminsQuery = z.object({
   status: z.enum(["ACTIVE", "DISABLED"]).optional(),
 });
 const createAdminBody = z.object({ name: z.string(), email: z.string(), temporary_password: z.string() });
+const appThemeBody = z.object({ app_theme: z.enum(APP_THEME_KEYS), paper_background: z.boolean().nullable().optional() });
 const adminStatusBody = z.object({ status: z.enum(["ACTIVE", "DISABLED"]) });
 const auditQuery = z.object({
   tenant_id: z.uuid().optional(),
@@ -167,6 +171,23 @@ export function createPlatformHandlers({ db, auth, origin }: PlatformHttpDeps) {
         const tenantId = pathId(params.id, "TENANT");
         const body = await parseBody(request, paidUntilBody);
         return json(await setTenantPaidUntil(db, { tenantId, paidUntil: body.paid_until, platformUserId: session.platformUserId }));
+      }),
+
+    // PATCH /api/platform/tenants/:id/app-theme — the institute's office and portal theme (D157)
+    setTenantAppTheme: (request: Request, params: Params<"id">) =>
+      handle(async () => {
+        const session = await admin(request);
+        const tenantId = pathId(params.id, "TENANT");
+        const body = await parseBody(request, appThemeBody);
+        return json(await setTenantAppTheme(db, { tenantId, theme: body.app_theme, paper: body.paper_background, platformUserId: session.platformUserId }));
+      }),
+
+    // PATCH /api/platform/me/app-theme — this admin's own panel theme (D157)
+    setMyAppTheme: (request: Request) =>
+      handle(async () => {
+        const session = await admin(request);
+        const body = await parseBody(request, appThemeBody);
+        return json(await setPlatformAdminTheme(db, { platformUserId: session.platformUserId, theme: body.app_theme }));
       }),
 
     // POST /api/platform/tenants/:id/transfer-ownership

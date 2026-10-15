@@ -1,3 +1,4 @@
+import type { AppTheme } from "@/lib/app-themes";
 import type {
   Appearance, Background, BodyFont, ButtonStyle, CardStyle, CourseLayout, Density, GalleryLayout, GradientChoice, HeaderStyle, HeroLayout, HeroOverlay,
   FaqLayout, MotionLevel, NoticeLayout, PaletteChoice, Radius, SiteLanguage, TestimonialLayout, TextSize, WebsiteFont, WebsiteTheme,
@@ -100,9 +101,18 @@ export const instituteApi = {
     apiFetch<{ temporary_password: string }>(`/api/v1/users/${id}/reset-password`, { body: { temporary_password: temporaryPassword } }),
 };
 
+/** The institute's app theme and paper background (null = automatic, on with Classic Amber) (D156, D158). */
+export interface AppearanceRow {
+  app_theme: AppTheme;
+  paper_background: boolean | null;
+}
+
 export const settingsApi = {
   profile: () => apiFetch<InstitutionProfileRow>("/api/v1/settings/institution"),
   saveProfile: (body: Omit<InstitutionProfileRow, "is_default">) => apiFetch<InstitutionProfileRow>("/api/v1/settings/institution", { method: "PUT", body }),
+  appearance: () => apiFetch<AppearanceRow>("/api/v1/settings/appearance"),
+  saveAppearance: (theme: AppTheme, paper: boolean | null) =>
+    apiFetch<AppearanceRow>("/api/v1/settings/appearance", { method: "PUT", body: { app_theme: theme, paper_background: paper } }),
   signatures: () => apiFetch<{ items: SignatureRow[] }>("/api/v1/settings/signatures"),
   createSignature: (body: { title: string; person_name: string; signature_file_id: string | null; sort_order?: number }) =>
     apiFetch<SignatureRow>("/api/v1/settings/signatures", { method: "POST", body }),

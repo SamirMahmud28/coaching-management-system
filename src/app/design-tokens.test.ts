@@ -1,15 +1,16 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
+import { APP_THEMES } from "@/lib/app-themes";
 
 /**
- * The colour tokens' text pairs meet WCAG AA (4.5:1 for text; 3:1 for the focus ring), in light and dark mode (D149,
- * D152). Read from globals.css so a token change that breaks contrast fails here.
+ * Every app theme's text pairs meet WCAG AA (4.5:1 for text; 3:1 for the focus ring), in light and dark mode (D152,
+ * D155, D156). Read from globals.css so a token change that breaks contrast fails here.
  */
-const css = readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
+const css = readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8").replace(/\r\n/g, "\n");
 
 function block(selector: string): Record<string, string> {
-  const start = css.indexOf(selector);
+  const start = css.indexOf(`${selector} {`);
   if (start < 0) throw new Error(`no ${selector} block`);
   const body = css.slice(css.indexOf("{", start) + 1, css.indexOf("}", start));
   return Object.fromEntries([...body.matchAll(/--([\w-]+):\s*([^;]+);/g)].map((m) => [m[1], m[2].trim()]));
@@ -30,8 +31,16 @@ function contrast(a: string, b: string): number {
   return (x + 0.05) / (y + 0.05);
 }
 
-const light = block(":root,\n.theme-light {");
-const dark = { ...light, ...block(".dark {") };
+const rootLight = block(':root,\n.theme-light,\n[data-app-theme="midnight"]');
+const rootDark = { ...rootLight, ...block('.dark,\n.dark [data-app-theme="midnight"]') };
+
+/** The tokens in effect for a theme and mode, merged the way the cascade applies them. */
+function tokens(theme: string, mode: "light" | "dark"): Record<string, string> {
+  if (theme === "midnight") return mode === "light" ? rootLight : rootDark;
+  const light = block(`[data-app-theme="${theme}"]`);
+  if (mode === "light") return { ...rootLight, ...light };
+  return { ...rootDark, ...light, ...block(`.dark[data-app-theme="${theme}"],\n.dark [data-app-theme="${theme}"]`) };
+}
 
 const TEXT_PAIRS: [string, string][] = [
   ["foreground", "background"],
@@ -45,24 +54,46 @@ const TEXT_PAIRS: [string, string][] = [
   ["accent-foreground", "accent"],
   ["primary-strong", "card"],
   ["primary-strong", "background"],
+  ["destructive", "card"],
   ["sidebar-foreground", "sidebar"],
+  ["sidebar-muted-foreground", "sidebar"],
   ["sidebar-accent-foreground", "sidebar-accent"],
+  ["sidebar-foreground", "sidebar-accent"],
   ["sidebar-primary-foreground", "sidebar-primary"],
 ];
 
-describe.each([
-  ["light", light],
-  ["dark", dark],
-])("design tokens (%s)", (_mode, t) => {
+const CASES = APP_THEMES.flatMap((t) => (["light", "dark"] as const).map((mode) => [t.key.toLowerCase(), mode] as const));
+
+describe.each(CASES)("app theme %s (%s)", (theme, mode) => {
+  const t = tokens(theme, mode);
+
   it.each(TEXT_PAIRS)("%s on %s is at least 4.5:1", (fg, bg) => {
-    expect(contrast(t[fg], t[bg])).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(t[fg]!, t[bg]!)).toBeGreaterThanOrEqual(4.5);
   });
 
   it("the focus ring stands out from the page (3:1)", () => {
-    expect(contrast(t.ring, t.background)).toBeGreaterThanOrEqual(3);
+    expect(contrast(t.ring!, t.background!)).toBeGreaterThanOrEqual(3);
   });
+});
 
-  it("destructive text is readable on the card (4.5:1)", () => {
-    expect(contrast(t.destructive, t.card)).toBeGreaterThanOrEqual(4.5);
+/** a mixed into b by `amount` (0..1), like CSS color-mix in srgb. */
+function mix(a: string, b: string, amount: number): string {
+  const ch = (hex: string, i: number) => parseInt(hex.slice(1 + i * 2, 3 + i * 2), 16);
+  return `#${[0, 1, 2].map((i) => Math.round(ch(a, i) * amount + ch(b, i) * (1 - amount)).toString(16).padStart(2, "0")).join("")}`;
+}
+
+describe.each(CASES)("paper background, app theme %s (%s) (D158)", (theme, mode) => {
+  const t = tokens(theme, mode);
+  // Worst case on the page: the 3% tinted base under the strongest 8% primary glow (titles and hints sit on it; cards are solid).
+  const paper = mix(t.primary!, mix(t.primary!, t.background!, 0.03), 0.08);
+
+  it.each(["foreground", "muted-foreground", "primary-strong"])("%s stays at least 4.5:1 on the paper", (fg) => {
+    expect(contrast(t[fg]!, paper)).toBeGreaterThanOrEqual(4.5);
   });
+});
+
+it("every non-default theme has a light and a dark block", () => {
+  for (const t of APP_THEMES.filter((x) => x.key !== "MIDNIGHT")) {
+    expect(() => tokens(t.key.toLowerCase(), "dark")).not.toThrow();
+  }
 });

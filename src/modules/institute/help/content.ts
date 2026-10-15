@@ -27,6 +27,7 @@ export type HelpTopicKey =
   | "student-records"
   | "users"
   | "settings"
+  | "settings-appearance"
   | "modules"
   | "audit-log"
   | "fees-setup"
@@ -229,6 +230,27 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
       "Your public page and printed documents use these details straight away.",
     ],
     faqs: [{ q: "Why must the ID include the year?", a: "Because the running number restarts every year; the year keeps IDs unique." }],
+  },
+  {
+    key: "settings-appearance",
+    title: "App theme",
+    area: "Institute",
+    permission: "settings.manage",
+    summary: "Choose the colour theme of your institute's office app and the student and instructor portals: Midnight & Gold, Classic Amber, Royal Indigo, Emerald & Gold or Plum & Coral.",
+    steps: [
+      "Open Settings and find App theme.",
+      "Click a theme: the whole app shows it straight away so you can look around first.",
+      "Turn Paper background on or off: a subtle paper texture behind your pages. Left on Automatic, it comes on with Classic Amber.",
+      "Click Save theme to keep it, or Cancel to go back.",
+    ],
+    rules: [
+      "The theme is for everyone in your institute: staff, instructors and students.",
+      "Each person can still choose light or dark mode for themselves (the sun/moon button).",
+      "Cards and tables stay plain on top of the paper, so everything stays easy to read. It never prints.",
+      "Your public website keeps its own look; change it in Website.",
+      "Your provider may set a theme for you when they set up your account; you can change it any time.",
+    ],
+    faqs: [{ q: "Why didn't the colours change for a student?", a: "They see the new theme the next time a page loads." }],
   },
   {
     key: "modules",

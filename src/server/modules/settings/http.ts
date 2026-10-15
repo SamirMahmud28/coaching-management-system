@@ -1,3 +1,4 @@
+import { APP_THEME_KEYS } from "@/lib/app-themes";
 import { z } from "zod";
 import type { Db } from "../../core/db/types";
 import { handle, json, parseBody, pathId } from "../../core/http/respond";
@@ -41,6 +42,8 @@ const studentIdBody = z.object({
   sequence_width: z.number().int(),
 });
 
+const appearanceBody = z.object({ app_theme: z.enum(APP_THEME_KEYS), paper_background: z.boolean().nullable().optional() });
+
 export function createSettingsHandlers({ db, auth, host }: SettingsHttpDeps) {
   async function authorizeManage(request: Request) {
     const ctx = await withAuthorization({ db, auth, headers: request.headers, host, method: request.method, permission: "settings.manage" });
@@ -73,6 +76,23 @@ export function createSettingsHandlers({ db, auth, host }: SettingsHttpDeps) {
             primaryColor: b.primary_color ?? null,
             secondaryColor: b.secondary_color ?? null,
           }),
+        );
+      }),
+
+    // GET /api/v1/settings/appearance — the institute's app theme (D156)
+    getAppearance: (request: Request) =>
+      handle(async () => {
+        const actor = await authorizeManage(request);
+        return json(await settings.getAppearance(db, actor.tenantId));
+      }),
+
+    // PUT /api/v1/settings/appearance
+    saveAppearance: (request: Request) =>
+      handle(async () => {
+        const actor = await authorizeManage(request);
+        const b = await parseBody(request, appearanceBody);
+        return json(
+          await settings.setAppTheme(db, { tenantId: actor.tenantId, theme: b.app_theme, paper: b.paper_background, actor: { type: "TENANT_USER", userId: actor.userId } }),
         );
       }),
 

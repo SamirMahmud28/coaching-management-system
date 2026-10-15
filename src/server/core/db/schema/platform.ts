@@ -1,6 +1,6 @@
 import { boolean, foreignKey, index, inet, jsonb, pgTable, primaryKey, text, timestamp, uniqueIndex, uuid, varchar } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
-import { actorTypeEnum, moduleRequestStatusEnum, platformUserStatusEnum } from "./enums";
+import { actorTypeEnum, appThemeEnum, moduleRequestStatusEnum, platformUserStatusEnum } from "./enums";
 import { modules, tenants, users } from "./core";
 
 // Platform-owned tables: tenant_id here is a plain reference, not a tenant-isolation boundary.
@@ -14,6 +14,8 @@ export const platformUsers = pgTable("platform_users", {
   image: text("image"),
   status: platformUserStatusEnum("status").notNull().default("ACTIVE"),
   mustChangePassword: boolean("must_change_password").notNull().default(false),
+  // This admin's own panel theme (D157).
+  appTheme: appThemeEnum("app_theme").notNull().default("MIDNIGHT"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [
