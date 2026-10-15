@@ -20,6 +20,7 @@ export interface HelpTopic {
 
 export type HelpTopicKey =
   | "getting-started"
+  | "dashboard"
   | "courses"
   | "batches"
   | "instructors"
@@ -55,6 +56,31 @@ export type HelpTopicKey =
   | "website-enquiries";
 
 export const HELP_TOPICS: readonly HelpTopic[] = [
+  {
+    key: "dashboard",
+    title: "Your dashboard",
+    area: "Getting started",
+    permission: null,
+    summary: "Today at a glance: the key figures, attendance by batch, today's classes, fee collection, and what needs your attention. Each person sees only the parts their role allows.",
+    steps: [
+      "Key figures: today's attendance, active students, fees collected this month and pending actions. Click a card to open its page.",
+      "Student attendance by batch: switch between today, the last 7 days and this month. Each tile shows the percentage, how many were present, and a colour band.",
+      "Today's classes: who teaches each class and whether its register is taken. Use Take register to open it.",
+      "Fee collection: each month's collection (solid bar) against what was billed that month (faint bar), with the percentage on top. Pick a year.",
+      "Pending actions: registers not taken, leave to decide, exam marks missing or ready to publish, new enquiries and overdue fees. Urgent ones come first; Open takes you there.",
+      "Coming up: exams, holidays and class changes in the next 14 days.",
+    ],
+    rules: [
+      "Attendance % = (Present + Late) ÷ (Present + Late + Absent), from registers that are taken. Excused (leave) and unmarked students don't count either way.",
+      "Colour bands: 90% or more is Excellent, 80–90% is Good, below 80% Needs attention. The percentage is always written next to the colour.",
+      "Billed is the month's fee charges after waivers (one-off charges count in their due month). Collected is payments received that month, less refunds; voided payments don't count.",
+      "Nobody sees figures their role doesn't allow: for example an accountant sees fees but not attendance, and a module that's switched off has no widgets.",
+    ],
+    faqs: [
+      { q: "Why is there no staff attendance?", a: "Staff attendance isn't part of the system yet. Today's classes shows who teaches each class and whether the register is done." },
+      { q: "Why does a batch show “—”?", a: "No register has been taken for it in the chosen period, so there's nothing to count yet." },
+    ],
+  },
   {
     key: "getting-started",
     title: "Getting started",

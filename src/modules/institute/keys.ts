@@ -5,6 +5,7 @@ export const instituteKeys = {
   users: () => ["institute-users"],
   roles: () => ["institute-roles"],
   profile: () => ["institute-profile"],
+  dashboard: (...parts: unknown[]) => ["institute-dashboard", ...parts],
   appearance: () => ["institute-appearance"],
   signatures: () => ["institute-signatures"],
   studentIdPattern: () => ["institute-student-id-pattern"],

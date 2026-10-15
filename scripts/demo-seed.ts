@@ -118,7 +118,7 @@ async function main() {
     const hscEvening = await batch(hsc.id, "Evening", [[hPhy.id, mahmud.id, "14:00", "15:00"], [hChem.id, sharmin.id, "12:00", "13:00"], [hBio.id, rezaul.id, "15:00", "16:00"]]);
 
     // --- Students -------------------------------------------------------------------------------------------
-    const admissionDate = addDays(today, -75);
+    const admissionDate = addDays(today, -200);
     const people: [string, "FEMALE" | "MALE", string, typeof sscMorning][] = [
       ["Nusrat Jahan", "FEMALE", "Abdul Karim", sscMorning], ["Tanvir Ahmed", "MALE", "Shahidul Ahmed", sscMorning], ["Anika Rahman", "FEMALE", "Rokeya Rahman", sscMorning],
       ["Fahim Hossain", "MALE", "Delwar Hossain", sscMorning], ["Sadia Islam", "FEMALE", "Nazrul Islam", sscMorning],
@@ -150,22 +150,50 @@ async function main() {
     const period = today.slice(0, 7);
     await feeCharges.confirmGeneration(db, actor, { feeItemId: sscFee.id, period });
     await feeCharges.confirmGeneration(db, actor, { feeItemId: hscFee.id, period });
+    // The previous five months too, paid on a day in that month, mostly in full: the dashboard's fee chart (D163).
+    for (let back = 5; back >= 1; back--) {
+      const first = new Date(Date.UTC(Number(today.slice(0, 4)), Number(today.slice(5, 7)) - 1 - back, 1));
+      const past = first.toISOString().slice(0, 7);
+      await feeCharges.confirmGeneration(db, actor, { feeItemId: sscFee.id, period: past });
+      await feeCharges.confirmGeneration(db, actor, { feeItemId: hscFee.id, period: past });
+      for (const [i, st] of admitted.entries()) {
+        if ((i + back * 3) % (back === 1 ? 5 : 11) === 0) continue; // some still owe, more so recently
+        const due = (await feeCharges.listStudentCharges(db, tenantId, st.id)).filter((c) => c.period === past && c.state === "DUE");
+        if (!due.length) continue;
+        const paidOn = `${past}-${String(3 + ((i * 5 + back) % 22)).padStart(2, "0")}`;
+        await feePayments.collectPayment(db, owner, st.id, { chargeIds: due.map((c) => c.id), method: i % 3 ? "BKASH" : "CASH", reference: i % 3 ? `TX${7000 + back * 100 + i}` : null, paidOn, idempotencyKey: randomUUID() });
+      }
+    }
     for (const [i, s] of admitted.entries()) {
       if (i % 4 === 3) continue; // a few still owe this month
-      const charges = await feeCharges.listStudentCharges(db, tenantId, s.id);
+      const charges = (await feeCharges.listStudentCharges(db, tenantId, s.id)).filter((c) => c.period === period && c.state === "DUE");
+      if (!charges.length) continue;
       await feePayments.collectPayment(db, owner, s.id, { chargeIds: charges.map((c) => c.id), method: i % 2 ? "BKASH" : "CASH", reference: i % 2 ? `TX${8800 + i}` : null, idempotencyKey: randomUUID() });
     }
 
-    // --- Attendance: the last few class days of SSC Morning ---------------------------------------------------
+    // --- Attendance: about three weeks for every batch, each at its own level (dashboard bands, D163) -------------
     const classDays: string[] = [];
-    for (let d = addDays(today, -1); classDays.length < 4; d = addDays(d, -1)) if (weekdayOf(d) !== "FRI") classDays.push(d);
+    for (let d = addDays(today, -1); classDays.length < 16; d = addDays(d, -1)) if (weekdayOf(d) !== "FRI") classDays.push(d);
     const morningStudents = admitted.filter((s) => s.batch === sscMorning);
-    for (const [di, date] of classDays.entries()) {
-      for (const bs of Object.values(sscMorning.subjects)) {
-        await registers.saveRegister(db, owner, {
-          batchSubjectId: bs.id, date, startsAt: bs.startsAt, reason: "Demo data",
-          marks: morningStudents.map((s, si) => ({ studentId: s.id, status: (si + di) % 7 === 0 ? "ABSENT" : (si + di) % 5 === 0 ? "LATE" : "PRESENT" })),
-        });
+    const levels: [typeof sscMorning, number][] = [[sscMorning, 6], [sscEvening, 13], [hscEvening, 24]]; // % absent, roughly
+    for (const [bi, [b, absentPct]] of levels.entries()) {
+      const members = admitted.filter((s) => s.batch === b);
+      for (const [di, date] of classDays.entries()) {
+        for (const [ki, bs] of Object.values(b.subjects).entries()) {
+          await registers.saveRegister(db, owner, {
+            batchSubjectId: bs.id, date, startsAt: bs.startsAt, reason: "Demo data",
+            marks: members.map((s, si) => {
+              const roll = (si * 37 + di * 23 + ki * 11 + bi * 7) % 100;
+              return { studentId: s.id, status: roll < absentPct ? "ABSENT" : roll < absentPct + 5 ? "LATE" : "PRESENT" };
+            }),
+          });
+        }
+      }
+    }
+    // Today: the first morning classes are already done.
+    if (weekdayOf(today) !== "FRI") {
+      for (const bs of Object.values(sscMorning.subjects).slice(0, 2)) {
+        await registers.saveRegister(db, owner, { batchSubjectId: bs.id, date: today, startsAt: bs.startsAt, marks: morningStudents.map((s, si) => ({ studentId: s.id, status: si === 2 ? "ABSENT" : "PRESENT" })) });
       }
     }
     // A leave request waiting for a decision.
@@ -183,6 +211,11 @@ async function main() {
       });
     }
     await results.publishExam(db, owner, weekly.id);
+    const running = await examSetup.createExam(db, owner, {
+      courseId: ssc.id, name: "Weekly Test 4", kind: "WEEKLY", startsOn: addDays(today, -1), endsOn: addDays(today, -1), batchIds: [sscMorning.id],
+      papers: [{ subjectId: sMath.id, fullMarks: "50", passMarks: "17" }],
+    });
+    await marks.saveMarks(db, owner, running.papers[0].id, { entries: morningStudents.slice(0, 3).map((s, si) => ({ studentId: s.id, obtained: String(30 + si * 6) })) });
     await examSetup.createExam(db, owner, {
       courseId: hsc.id, name: "Model Test 1", kind: "MODEL", startsOn: addDays(today, 12), endsOn: addDays(today, 13), batchIds: [hscEvening.id],
       papers: [{ subjectId: hPhy.id, fullMarks: "100", passMarks: "33" }, { subjectId: hChem.id, fullMarks: "100", passMarks: "33" }, { subjectId: hBio.id, fullMarks: "100", passMarks: "33" }],

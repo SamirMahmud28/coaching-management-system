@@ -1233,3 +1233,91 @@ export const enquiriesApi = {
   update: (id: string, body: { status?: EnquiryStatus; note?: string | null }) => apiFetch<EnquiryRow>(`/api/v1/website/enquiries/${id}`, { method: "PATCH", body }),
   convert: (id: string, studentId: string) => apiFetch<EnquiryRow>(`/api/v1/website/enquiries/${id}/convert`, { body: { student_id: studentId } }),
 };
+
+// ---------------------------------------------------------------------------------------------------------------------
+// Dashboard (U3, D163)
+// ---------------------------------------------------------------------------------------------------------------------
+
+export interface TallyWire {
+  present: number;
+  late: number;
+  absent: number;
+  excused: number;
+  /** (Present + Late) ÷ (Present + Late + Absent), one decimal; null when nothing counts yet. */
+  percentage: number | null;
+}
+
+export interface DashboardSummary {
+  students?: { active: number; on_hold: number; admitted_this_month: number };
+  attendance?: { today: TallyWire; yesterday: number | null };
+  fees?: { collected_this_month: string; collected_last_month_to_date: string; billed_this_month: string };
+}
+
+export type AttendancePeriod = "TODAY" | "WEEK" | "MONTH";
+
+export interface DashboardBatchAttendance extends TallyWire {
+  batch_id: string;
+  batch_name: string;
+  course_name: string;
+}
+
+export interface DashboardClass {
+  batch_subject_id: string;
+  batch_id: string;
+  batch_name: string;
+  course_name: string;
+  subject_name: string;
+  starts_at: string;
+  ends_at: string;
+  state: "NOT_TAKEN" | "OPEN" | "TAKEN" | "NOT_HELD";
+  not_held_reason: string | null;
+  routine_note: string | null;
+  counts: { present: number; absent: number; late: number; excused: number } | null;
+  instructors: string[];
+  substitute: string | null;
+  ended: boolean;
+}
+
+export interface DashboardFeeMonth {
+  month: string;
+  collected: string;
+  billed: string;
+  percent: number | null;
+  students_billed: number;
+  students_paid: number;
+}
+
+export interface DashboardAttentionItem {
+  key: string;
+  tone: "critical" | "warning" | "info";
+  title: string;
+  detail: string;
+  count: number;
+  href: string;
+}
+
+export interface DashboardUpcomingItem {
+  key: string;
+  kind: "EXAM" | "HOLIDAY" | "CANCELLED" | "SUBSTITUTE" | "RESCHEDULED";
+  date: string;
+  title: string;
+  detail: string;
+  href: string;
+}
+
+export const dashboardApi = {
+  summary: () => apiFetch<DashboardSummary>("/api/v1/dashboard/summary"),
+  attendance: (period: AttendancePeriod) =>
+    apiFetch<{ period: AttendancePeriod; from: string; to: string; batches: DashboardBatchAttendance[]; overall: TallyWire }>("/api/v1/dashboard/attendance", { query: { period } }),
+  classes: () =>
+    apiFetch<{ date: string; today: string; can_take: boolean; counts: { total: number; taken: number; not_yet: number; not_held: number }; classes: DashboardClass[] }>("/api/v1/dashboard/classes"),
+  fees: (year: number) =>
+    apiFetch<{
+      year: number;
+      months: DashboardFeeMonth[];
+      totals: { billed: string; collected: string; percent: number | null; students_billed: number; students_paid: number; student_months_billed: number };
+    }>("/api/v1/dashboard/fees", { query: { year } }),
+  attention: () => apiFetch<{ items: DashboardAttentionItem[] }>("/api/v1/dashboard/attention"),
+  upcoming: () => apiFetch<{ items: DashboardUpcomingItem[] }>("/api/v1/dashboard/upcoming"),
+  setup: () => apiFetch<{ steps: { key: string; title: string; done: boolean; href: string }[]; done: number }>("/api/v1/dashboard/setup"),
+};

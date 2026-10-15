@@ -128,9 +128,9 @@ test("help: every page explains itself on request, and the Help centre has the g
   await signIn(page, INSTITUTE.ownerEmail, ownerPassword);
   await expect(page).toHaveURL(url("/app"));
   const panel = page.getByTestId("how-this-works");
-  await expect(panel).not.toContainText("Set your institute up in this order"); // collapsed until clicked
+  await expect(panel).not.toContainText("Today at a glance"); // collapsed until clicked
   await panel.getByRole("button", { name: /How this works/ }).click();
-  await expect(panel).toContainText("Set your institute up in this order");
+  await expect(panel).toContainText("Today at a glance");
 
   await page.getByRole("navigation").first().getByRole("link", { name: "Help" }).click();
   await expect(page.getByRole("heading", { name: "Help", level: 1 })).toBeVisible();

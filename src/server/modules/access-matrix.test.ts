@@ -19,6 +19,7 @@ import { createAttendanceHandlers } from "./attendance/http";
 import { createExamsHandlers } from "./exams/http";
 import { createRoutineHandlers } from "./routine/http";
 import { createWebsiteHandlers } from "./website/http";
+import { createDashboardHandlers } from "./dashboard/http";
 import * as routineService from "./routine/service";
 import * as lessonService from "./routine/lessons";
 import * as websiteContent from "./website/content";
@@ -54,7 +55,7 @@ let storage: LocalDiskStorage;
 
 const DUMMY = "00000000-0000-4000-8000-000000000000";
 type Entity = "COURSE" | "SUBJECT" | "BATCH" | "BATCH_SUBJECT" | "SCHEDULE_SLOT" | "STUDENT" | "MEMBERSHIP" | "INSTRUCTOR" | "USER" | "SIGNATURE" | "FILE" | "FEE_ITEM" | "STUDENT_FEE_AMOUNT" | "FEE_RUN" | "FEE_CHARGE" | "FEE_PAYMENT" | "LEAVE" | "EXAM" | "EXAM_PAPER" | "ROUTINE_CHANGE" | "HOLIDAY" | "LESSON_TOPIC" | "NOTICE" | "GALLERY_PHOTO" | "TESTIMONIAL" | "ENQUIRY" | "FACULTY" | "ACHIEVER";
-type Factory = "academic" | "students" | "instructors" | "institute" | "settings" | "files" | "fees" | "attendance" | "exams" | "routine" | "website";
+type Factory = "academic" | "students" | "instructors" | "institute" | "settings" | "files" | "fees" | "attendance" | "exams" | "routine" | "website" | "dashboard";
 /** Paid modules: each handler of these factories is refused while its module is off. */
 const PAID: Partial<Record<Factory, "fees" | "attendance" | "exams" | "routine" | "website">> = { fees: "fees", attendance: "attendance", exams: "exams", routine: "routine", website: "website" };
 const TODAY = todayInDhaka();
@@ -128,6 +129,14 @@ const HANDLERS: Entry[] = [
   { factory: "institute", name: "setStatus", method: "PATCH", permission: "users.manage", id: "USER", body: { disabled: true } },
   { factory: "institute", name: "resetPassword", method: "POST", permission: "users.manage", id: "USER", body: { temporary_password: "NewPass123" } },
   // settings
+  // dashboard (U3, D163): composite widgets are signed-in and include only the sections the user's permissions allow
+  { factory: "dashboard", name: "summary", method: "GET", permission: "signed-in" },
+  { factory: "dashboard", name: "attendance", method: "GET", permission: "attendance.report.view" },
+  { factory: "dashboard", name: "classes", method: "GET", permission: "attendance.view" },
+  { factory: "dashboard", name: "fees", method: "GET", permission: "fees.report.view" },
+  { factory: "dashboard", name: "attention", method: "GET", permission: "signed-in" },
+  { factory: "dashboard", name: "upcoming", method: "GET", permission: "signed-in" },
+  { factory: "dashboard", name: "setup", method: "GET", permission: "academic.manage" },
   { factory: "settings", name: "getProfile", method: "GET", permission: "signed-in" },
   { factory: "settings", name: "saveProfile", method: "PUT", permission: "settings.manage", body: { display_name: "Matrix Institute" } },
   { factory: "settings", name: "getAppearance", method: "GET", permission: "settings.manage" },
@@ -331,6 +340,7 @@ beforeAll(async () => {
     exams: createExamsHandlers({ db, auth, host }) as unknown as Handlers,
     routine: createRoutineHandlers({ db, auth, host }) as unknown as Handlers,
     website: createWebsiteHandlers({ db, auth, host, storage }) as unknown as Handlers,
+    dashboard: createDashboardHandlers({ db, auth, host }) as unknown as Handlers,
   };
 
   const institute = async (sub: string) => {
@@ -437,7 +447,7 @@ describe("access matrix: catalogue", () => {
       }
     };
     await walk(root);
-    const moduleOf: Record<string, Factory> = { academic: "academic", students: "students", instructors: "instructors", institute: "institute", settings: "settings", files: "files", fees: "fees", attendance: "attendance", exams: "exams", routine: "routine", website: "website" };
+    const moduleOf: Record<string, Factory> = { academic: "academic", students: "students", instructors: "instructors", institute: "institute", settings: "settings", files: "files", fees: "fees", attendance: "attendance", exams: "exams", routine: "routine", website: "website", dashboard: "dashboard" };
     const seen: string[] = [];
     for (const file of files) {
       const rel = path.relative(root, file).replaceAll("\\", "/");
