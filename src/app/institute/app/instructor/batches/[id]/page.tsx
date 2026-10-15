@@ -14,7 +14,7 @@ import { getInstructorBatch } from "@/server/modules/portal/service";
 
 export const metadata: Metadata = { title: "Batch" };
 
-// Only a batch the instructor teaches; any other id is a 404 (D24). Students show roll, ID, name, photo and school (D60).
+// Only a batch the instructor teaches; any other id is a 404. Students show roll, ID, name, photo and school.
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   if (!isUuid(id)) notFound();

@@ -18,7 +18,7 @@ const PERIODS: { value: AttendancePeriod; label: string }[] = [
   { value: "MONTH", label: "This month" },
 ];
 
-/** Student attendance by batch, colour-banded with the percentage and band name always written out (D163). */
+/** Student attendance by batch, colour-banded with the percentage and band name always written out. */
 export function BatchAttendanceGrid() {
   const [period, setPeriod] = useState<AttendancePeriod>("TODAY");
   const query = useQuery({ queryKey: instituteKeys.dashboard("attendance", period), queryFn: () => dashboardApi.attendance(period), placeholderData: keepPreviousData });

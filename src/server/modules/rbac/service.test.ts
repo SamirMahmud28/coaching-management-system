@@ -66,7 +66,7 @@ describe("getEffectivePermissions (real database)", () => {
     const { tenant, roleIds } = await seedTenant("Institute A", "inst-a");
     const instructor = await addUserWithRole(tenant.id, "Instructor", roleIds, "Instructor A");
     const perms = await getEffectivePermissions(db, tenant.id, instructor.id);
-    expect([...perms].sort()).toEqual(["attendance.report.view", "attendance.take", "attendance.view", "batches.own.view", "exams.marks.enter", "exams.view", "lessons.manage", "routine.view"]); // D24, D81
+    expect([...perms].sort()).toEqual(["attendance.report.view", "attendance.take", "attendance.view", "batches.own.view", "exams.marks.enter", "exams.view", "lessons.manage", "routine.view"]);
   });
 
   it("is empty for a user with no roles", async () => {
@@ -203,7 +203,7 @@ describe("syncSystemRolePermissions (real database)", () => {
     const [custom] = await testDb.insert(roles).values({ tenantId: tenant.id, name: "Custom", isSystem: false }).returning();
 
     const first = await syncSystemRolePermissions(testDb);
-    expect(first.granted).toBe(3); // Owner and Admin (all permissions), and Accountant (D63)
+    expect(first.granted).toBe(3); // Owner and Admin (all permissions), and Accountant
     expect((await getEffectivePermissions(testDb, tenant.id, owner.id)).has("fees.view")).toBe(true);
     expect(await testDb.select().from(rolePermissions).where(eq(rolePermissions.roleId, custom.id))).toHaveLength(0);
     expect((await syncSystemRolePermissions(testDb)).granted).toBe(0);

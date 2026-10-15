@@ -11,7 +11,7 @@ import { tenantAuth } from "../auth/instance";
 import { getTenantSession, type TenantSession } from "../auth/tenant-session";
 import { getActivePermissions } from "../authorization/service";
 
-// Redirect targets are host-relative: the proxy maps "/x" to "/institute/x" on an institute host (D19).
+// Redirect targets are host-relative: the proxy maps "/x" to "/institute/x" on an institute host.
 
 /** The institute this request's host resolves to; a well-formed subdomain with no institute is a 404. */
 export async function getCurrentInstitute(): Promise<Tenant> {
@@ -52,7 +52,7 @@ async function pageContext(): Promise<PageContext> {
 /**
  * The single guard for institute app pages: signed in, served the portal its permissions call for (anyone else is
  * sent to their own), and holding `permission` with its module active, or a 404 so a page's existence isn't
- * revealed. Every page uses this; none checks the module on its own (an EMS gap, investigation report F3).
+ * revealed. Every page uses this; none checks the module on its own.
  */
 export async function requireModulePage(permission: PermissionName, portal: PortalKind = "admin"): Promise<PageContext> {
   const ctx = await pageContext();

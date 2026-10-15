@@ -25,7 +25,7 @@ async function setUp(sub: string) {
   return { tenantId: tenant.id, userId: owner.id };
 }
 
-describe("the grading scale (D102)", () => {
+describe("the grading scale", () => {
   it("is the BD 5.0 scale until the institute saves its own, and can go back to it", async () => {
     const a = await setUp("grade-a");
     const b = await setUp("grade-b");

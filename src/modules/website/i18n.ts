@@ -1,7 +1,7 @@
 import type { SiteLanguage, SitePage, WebsiteSectionKey } from "@/server/modules/website/design";
 import type { Weekday } from "@/server/modules/academic/service";
 
-// Every built-in label on the public website, in English and Bangla (D140). What the office writes (headings, notices,
+// Every built-in label on the public website, in English and Bangla. What the office writes (headings, notices,
 // course names) is shown as written. In Bangla, numbers, times and dates use Bangla digits.
 
 const BN_DIGITS = "০১২৩৪৫৬৭৮৯";
@@ -34,7 +34,7 @@ export interface SiteLabels {
   num: (text: string) => string;
   date: (iso: string) => string;
   nav: Record<WebsiteSectionKey, string>;
-  /** Each page's name in the menu and as its heading (D142). */
+  /** Each page's name in the menu and as its heading. */
   page: Record<SitePage, string>;
   /** The line under a page's heading. */
   pageLine: Partial<Record<SitePage, string>>;

@@ -38,7 +38,7 @@ export const STATUS: Record<RoutineClassRow["status"], { label: string; tone: "s
   MOVED_IN: { label: "Moved here", tone: "info" },
 };
 
-/** What changed about a class, in a few words (D117). */
+/** What changed about a class, in a few words. */
 export function changeNote(c: RoutineClassRow) {
   if (c.status === "MOVED_AWAY" && c.moved_to) return `Moved to ${formatDate(c.moved_to.date)}, ${c.moved_to.starts_at}–${c.moved_to.ends_at}`;
   if (c.status === "MOVED_IN" && c.moved_from) return `Moved from ${formatDate(c.moved_from.date)}, ${c.moved_from.starts_at}`;
@@ -50,8 +50,8 @@ export function changeNote(c: RoutineClassRow) {
 type Dialog = { kind: "change"; cls: RoutineClassRow } | { kind: "withdraw"; cls: RoutineClassRow } | { kind: "holiday" } | null;
 
 /**
- * The routine (D114–D117): the classes of a day, a batch's week or an instructor's week with every change shown, and
- * (for the office, D115) cancelling, rescheduling, substituting, holidays and withdrawing a change.
+ * The routine: the classes of a day, a batch's week or an instructor's week with every change shown, and
+ * (for the office) cancelling, rescheduling, substituting, holidays and withdrawing a change.
  */
 export function RoutinePage({ canManage, base = "/app/routine", fullGuide = true }: { canManage: boolean; base?: string; fullGuide?: boolean }) {
   const options = useQuery({ queryKey: instituteKeys.routine("options"), queryFn: () => routineApi.options() });

@@ -122,7 +122,7 @@ describe("files API", () => {
     // Another institute, even with the exact id.
     expect((await h.serve(req("inst-b", "GET", `/api/v1/files/${uploaded.id}`, { cookie: adminB.cookie }), { id: uploaded.id })).status).toBe(404);
 
-    // A student can't see another student's photo (their own photo is added with the student records, M6).
+    // A student can't see another student's photo (their own photo is added with the student records).
     const student = await a.login("Student", "STU-000002", true);
     expect((await h.serve(req("inst-a", "GET", `/api/v1/files/${uploaded.id}`, { cookie: student.cookie }), { id: uploaded.id })).status).toBe(404);
   });

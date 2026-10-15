@@ -21,7 +21,7 @@ const ALL = "ALL";
 const GENDERS = { MALE: "Male", FEMALE: "Female", OTHER: "Other" } as const;
 const DEFAULT_FILTERS: Record<string, string> = { status: "ACTIVE" };
 
-/** The Instructor List (EMS record-list layout, as the EMS Teacher List). */
+/** The Instructor List: filters applied with Search, a ruled table, row actions, numbered pages. */
 export function InstructorsListPage({ canManage }: { canManage: boolean }) {
   const router = useRouter();
   const queryClient = useQueryClient();

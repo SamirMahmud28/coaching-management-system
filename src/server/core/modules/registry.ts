@@ -1,4 +1,4 @@
-// Source of truth for the modules and module_dependencies tables (docs/00-master/PRODUCT-AND-MODULES.md §1).
+// Source of truth for the modules and module_dependencies tables.
 export const MODULE_KEYS = ["core", "attendance", "routine", "exams", "fees", "website"] as const;
 export type ModuleKey = (typeof MODULE_KEYS)[number];
 
@@ -12,7 +12,7 @@ export interface ModuleDefinition {
   alwaysOn: boolean;
 }
 
-// Core is every institute's (D1); each paid module depends on Core only, never on another paid module (D2, D21).
+// Core is every institute's; each paid module depends on Core only, never on another paid module.
 export const MODULE_REGISTRY: readonly ModuleDefinition[] = [
   { key: "core", name: "Core", tier: "CORE", dependsOn: [], alwaysOn: true },
   { key: "attendance", name: "Attendance & Leave", tier: "PAID", dependsOn: ["core"], alwaysOn: false },

@@ -30,7 +30,7 @@ const FILTERS: (EnquiryStatus | "ALL")[] = ["ALL", "NEW", "CONTACTED", "CONVERTE
 
 const when = (iso: string) => new Date(iso).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit", timeZone: "Asia/Dhaka" });
 
-/** The admission enquiry inbox (D22, D127, D129): New → Contacted → Converted or Closed, with a note. */
+/** The admission enquiry inbox: New → Contacted → Converted or Closed, with a note. */
 export function EnquiriesPage({ canAdmit }: { canAdmit: boolean }) {
   const queryClient = useQueryClient();
   const [filter, setFilter] = useState<EnquiryStatus | "ALL">("NEW");

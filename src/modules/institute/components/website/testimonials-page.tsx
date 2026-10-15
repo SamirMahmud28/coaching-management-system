@@ -23,7 +23,7 @@ import { websiteContentApi, type TestimonialRow } from "../../api";
 import { instituteKeys } from "../../keys";
 import { WebsiteTabs } from "./website-tabs";
 
-/** Testimonials entered by the office (D130), shown on the website in the order set. */
+/** Testimonials entered by the office, shown on the website in the order set. */
 export function WebsiteTestimonialsPage() {
   const queryClient = useQueryClient();
   const list = useQuery({ queryKey: instituteKeys.website("testimonials"), queryFn: websiteContentApi.testimonials });

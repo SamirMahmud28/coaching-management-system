@@ -63,7 +63,7 @@ function fromExam(e: ExamDetail): Draft {
 const blank = (): Draft => ({ courseId: "", name: "", kind: "WEEKLY", startsOn: "", endsOn: "", syllabus: "", showGrades: true, batchIds: [], papers: [] });
 
 /**
- * Create or edit an exam (D101, D102, D108): its course and batches, then one paper per subject with full and pass
+ * Create or edit an exam: its course and batches, then one paper per subject with full and pass
  * marks, optionally split into parts. A paper with marks is locked; a published exam keeps its batches and papers.
  */
 export function ExamFormPage({ base, examId }: { base: string; examId?: string }) {

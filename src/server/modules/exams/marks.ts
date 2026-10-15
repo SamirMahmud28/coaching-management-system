@@ -21,7 +21,7 @@ import { audit } from "../audit/service";
 import { hundredths } from "./result-engine";
 import { seesAllExams, type Viewer } from "./setup";
 
-// Marks entry (D24, D104, D106, D107): a roster per paper; a mark per part (or for the whole paper) or Absent. While
+// Marks entry: a roster per paper; a mark per part (or for the whole paper) or Absent. While
 // the exam is a draft, whoever may enter marks for the paper can; once published, only Owner/Admin correct a mark,
 // with a reason, audited with the old and new values.
 
@@ -47,7 +47,7 @@ export async function paperWithExam(db: DbOrTx, tenantId: string, paperId: strin
 
 /**
  * The exam batches whose students this viewer can see marks for in a paper: all of them for the office; for an
- * instructor, the batches where they teach the paper's subject (D24). Empty means none.
+ * instructor, the batches where they teach the paper's subject. Empty means none.
  */
 export async function paperBatchScope(db: DbOrTx, viewer: Viewer, examId: string, subjectId: string): Promise<string[]> {
   const examBatchRows = await db.select({ batchId: examBatches.batchId }).from(examBatches).where(and(eq(examBatches.tenantId, viewer.tenantId), eq(examBatches.examId, examId)));
@@ -63,7 +63,7 @@ export async function paperBatchScope(db: DbOrTx, viewer: Viewer, examId: string
 }
 
 /**
- * Who sits the exam in these batches (D26, D101): members on its first day — joined by then and either still active
+ * Who sits the exam in these batches: members on its first day — joined by then and either still active
  * with the student Active (so On Hold is left off), or with a membership that ended after that day.
  */
 export async function examSitters(db: DbOrTx, tenantId: string, batchIds: string[], startsOn: string) {
@@ -105,7 +105,7 @@ async function marksOf(db: DbOrTx, tenantId: string, paperId: string) {
   );
 }
 
-/** Whether this viewer may enter or change marks in this paper now, and whether a reason is needed (D107). */
+/** Whether this viewer may enter or change marks in this paper now, and whether a reason is needed. */
 function editRule(viewer: Viewer, examState: "DRAFT" | "PUBLISHED") {
   if (!viewer.permissions.has("exams.marks.enter") && !viewer.permissions.has("exams.publish")) return { allowed: false, reasonRequired: false, why: "You can view these marks but not change them." };
   if (examState === "DRAFT") {
@@ -116,7 +116,7 @@ function editRule(viewer: Viewer, examState: "DRAFT" | "PUBLISHED") {
     : { allowed: false, reasonRequired: false, why: "The results are published. Ask an Owner or Admin to correct a mark." };
 }
 
-/** A paper's roster with each student's mark, scoped to the viewer (D24). */
+/** A paper's roster with each student's mark, scoped to the viewer. */
 export async function getRoster(db: DbOrTx, viewer: Viewer, paperId: string) {
   const paper = await paperWithExam(db, viewer.tenantId, paperId);
   const scope = await paperBatchScope(db, viewer, paper.examId, paper.subjectId);
@@ -169,7 +169,7 @@ const describe = (m: MarkView | null) =>
 
 /**
  * Saves marks for some students of a paper. Draft: entered and changed freely (audited per save). Published: only
- * with exams.publish and a reason, each change audited with its old and new value (D107).
+ * with exams.publish and a reason, each change audited with its old and new value.
  */
 export async function saveMarks(db: DbOrTx, viewer: Viewer, paperId: string, input: { entries: MarkEntry[]; reason?: string | null }) {
   if (!input.entries.length) throw new ValidationError("VALIDATION_NO_MARKS", "Enter at least one mark.", { field: "entries" });

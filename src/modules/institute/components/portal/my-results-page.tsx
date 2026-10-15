@@ -16,7 +16,7 @@ export interface MyResultsWire {
   results: { exam: { id: string; name: string; kind: ExamKind; course_name: string; starts_on: string; show_grades: boolean }; sitting: number; row: ResultRowWire }[];
 }
 
-/** The student's published results (D27): each exam's marks, GPA when shown, result, position and marksheet. */
+/** The student's published results: each exam's marks, GPA when shown, result, position and marksheet. */
 export function MyResultsPage({ data }: { data: MyResultsWire }) {
   return (
     <>

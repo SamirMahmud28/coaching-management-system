@@ -54,7 +54,7 @@ async function setUp() {
   return { admin: { ...actor, permissions: ADMIN } as Viewer, rahim, karim, mPhy, mChem, ePhy };
 }
 
-describe("lesson plans (D118–D120)", () => {
+describe("lesson plans", () => {
   it("lets the subject's instructor build and update their plan; Completed records the date; Overdue is derived", async () => {
     const s = await setUp();
     const ch1 = await addTopic(db, s.rahim.viewer, s.mPhy.id, { title: "Ch 1: Vectors", startDate: addDays(today, -20), targetDate: addDays(today, -5) });
@@ -80,7 +80,7 @@ describe("lesson plans (D118–D120)", () => {
     expect((await lessonPlan(db, s.admin, s.mPhy.id)).topics).toHaveLength(1);
   });
 
-  it("lets an instructor see their batches' plans but edit only the subjects they teach (D24)", async () => {
+  it("lets an instructor see their batches' plans but edit only the subjects they teach", async () => {
     const s = await setUp();
     const topic = await addTopic(db, s.admin, s.mChem.id, { title: "Ch 1: Atoms" });
     expect((await lessonPlan(db, s.rahim.viewer, s.mChem.id)).editable).toBe(false); // same batch, Karim's subject

@@ -23,7 +23,7 @@ const TONE: Record<DashboardAttentionItem["tone"], { icon: React.ComponentType<{
   info: { icon: Info, box: "border-info/30 bg-info/8 text-blue-700 dark:text-blue-300", label: "For you" },
 };
 
-/** What needs attention now, urgent first; each item only for those who can act on it (D163). */
+/** What needs attention now, urgent first; each item only for those who can act on it. */
 export function PendingActions() {
   const query = useQuery({ queryKey: instituteKeys.dashboard("attention"), queryFn: dashboardApi.attention });
   const items = query.data?.items ?? [];

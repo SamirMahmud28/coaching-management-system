@@ -32,7 +32,7 @@ import { listChanges, routineClassesOn } from "../routine/service";
 import { listEnquiries } from "../website/enquiries";
 
 /**
- * The admin "Today" dashboard (U3, D163): a thin aggregator over the modules' own services, so every number follows the
+ * The admin "Today" dashboard: a thin aggregator over the modules' own services, so every number follows the
  * same rule as its page (attendance % = tally, money in poisha, exam readiness = the publish check). Each section is
  * computed only for a viewer holding its permission; permissions are already limited to the institute's active modules.
  */
@@ -210,7 +210,7 @@ export interface FeeMonth {
 
 /**
  * Each month of a year: what was billed (the month's charges after waivers; one-off charges by their due month) and
- * what was collected, plus how many billed students have settled every charge of that month (D163).
+ * what was collected, plus how many billed students have settled every charge of that month.
  */
 export async function feeMonths(db: DbOrTx, tenantId: string, year: number) {
   if (!Number.isInteger(year) || year < 2000 || year > 2100) throw new ValidationError("VALIDATION_FAILED", "Choose a year.", { field: "year" });

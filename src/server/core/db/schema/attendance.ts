@@ -4,7 +4,7 @@ import { batchSubjects } from "./academic";
 import { users } from "./core";
 import { batchMemberships, students } from "./students";
 
-// Attendance & Leave (paid module `attendance`): D24, D26, D27, D80–D95.
+// Attendance & Leave (paid module `attendance`):,,.
 
 export const attendanceClassSourceEnum = pgEnum("attendance_class_source", ["SCHEDULED", "EXTRA"]);
 export const attendanceClassStateEnum = pgEnum("attendance_class_state", ["OPEN", "TAKEN", "NOT_HELD"]);
@@ -13,9 +13,9 @@ export const leaveStatusEnum = pgEnum("leave_status", ["PENDING", "APPROVED", "R
 export const leaveSourceEnum = pgEnum("leave_source", ["STUDENT", "OFFICE"]);
 
 /**
- * One class of a batch subject on a date (D80): from its weekly schedule (identified by date and start time, so later
- * schedule changes don't touch it) or an extra class (D85). Created when its
- * register is first saved or it's marked not held (D86), or when an extra class is added.
+ * One class of a batch subject on a date: from its weekly schedule (identified by date and start time, so later
+ * schedule changes don't touch it) or an extra class. Created when its
+ * register is first saved or it's marked not held, or when an extra class is added.
  */
 export const attendanceClasses = pgTable("attendance_classes", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -44,7 +44,7 @@ export const attendanceClasses = pgTable("attendance_classes", {
   check("attendance_classes_not_held", sql`(${t.state} = 'NOT_HELD') = (${t.notHeldReason} IS NOT NULL)`),
 ]);
 
-/** A student's leave (D89–D93). Office entries are approved at once (D90). */
+/** A student's leave. Office entries are approved at once. */
 export const leaveApplications = pgTable("leave_applications", {
   id: uuid("id").primaryKey().defaultRandom(),
   tenantId: uuid("tenant_id").notNull(),
@@ -75,7 +75,7 @@ export const leaveApplications = pgTable("leave_applications", {
 
 /**
  * A student in one class. `status` is what a person marked (null until marked); `leaveId` is the approved leave covering
- * the class, if any. The effective status is Excused while that leave stands (D91), otherwise the marked status (D93).
+ * the class, if any. The effective status is Excused while that leave stands, otherwise the marked status.
  */
 export const attendanceMarks = pgTable("attendance_marks", {
   id: uuid("id").primaryKey().defaultRandom(),

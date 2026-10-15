@@ -21,7 +21,7 @@ import { leaveDates } from "../attendance/leave-page";
 
 const STATUS_LABEL: Partial<Record<LeaveRow["status"], string>> = { PENDING: "Waiting for a decision" };
 
-/** The student's own leave (D89, D92, D93): apply for up to 7 days back or any future date, see decisions, withdraw. */
+/** The student's own leave: apply for up to 7 days back or any future date, see decisions, withdraw. */
 export function MyLeavePage() {
   const queryClient = useQueryClient();
   const mine = useQuery({ queryKey: instituteKeys.myLeave(), queryFn: () => leaveApi.mine() });

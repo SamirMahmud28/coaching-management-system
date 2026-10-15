@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { DEFAULT_DESIGN, PALETTES, WEBSITE_FONTS, WEBSITE_THEMES, completeDesign } from "@/server/modules/website/design";
 import { LOOKS, applyLook } from "./looks";
 
-describe("ready-made looks (D146)", () => {
+describe("ready-made looks", () => {
   it("offers about twenty distinct looks, each a valid, complete design", () => {
     expect(LOOKS.length).toBeGreaterThanOrEqual(20);
     expect(new Set(LOOKS.map((l) => l.id)).size).toBe(LOOKS.length);

@@ -1,4 +1,4 @@
-// The website's design catalogue (D135, D136): themes and their presets, colour palettes, gradients, fonts and the
+// The website's design catalogue: themes and their presets, colour palettes, gradients, fonts and the
 // other look settings. Pure data with no server imports, so the editor and the public site share it with validation.
 
 export const WEBSITE_THEMES = ["CLASSIC", "MODERN", "BOLD", "ELEGANT", "PLAYFUL", "MINIMAL", "VIBRANT", "MIDNIGHT", "GLASS", "BENTO", "AURORA", "NEO_BRUTAL"] as const;
@@ -10,15 +10,15 @@ export const WEBSITE_FONTS = [
 /** Fonts comfortable for paragraphs; display faces (Playfair, DM Serif, Oswald, Tiro, Baloo) are headings only. */
 export const BODY_FONTS = ["INTER", "POPPINS", "LATO", "NUNITO", "MONTSERRAT", "RALEWAY", "OUTFIT", "LORA", "MERRIWEATHER", "HIND_SILIGURI", "ANEK_BANGLA", "NOTO_SERIF_BENGALI"] as const;
 
-/** The sections below the hero, in the order shown; each can be turned off (D20). */
+/** The sections below the hero, in the order shown; each can be turned off. */
 export const WEBSITE_SECTIONS = ["ABOUT", "STATS", "FEATURES", "COURSES", "FACULTY", "ACHIEVERS", "NOTICES", "GALLERY", "VIDEO", "TESTIMONIALS", "FAQ", "ENQUIRY", "CONTACT"] as const;
 export type WebsiteSectionKey = (typeof WEBSITE_SECTIONS)[number];
 
-/** The website's fixed pages (D142), as their addresses: `home` is `/`, every other is `/<slug>`. */
+/** The website's fixed pages, as their addresses: `home` is `/`, every other is `/<slug>`. */
 export const SITE_PAGES = ["home", "about", "courses", "teachers", "results", "gallery", "notices", "admission", "contact"] as const;
 export type SitePage = (typeof SITE_PAGES)[number];
 
-/** The page each section lives on (D142). Home shows the banner and the sections marked "On Home" (D143). */
+/** The page each section lives on. Home shows the banner and the sections marked "On Home". */
 export const SECTION_PAGE: Record<WebsiteSectionKey, Exclude<SitePage, "home">> = {
   ABOUT: "about",
   STATS: "about",
@@ -35,14 +35,14 @@ export const SECTION_PAGE: Record<WebsiteSectionKey, Exclude<SitePage, "home">> 
   CONTACT: "contact",
 };
 
-/** On Home by default, for new sites and sites saved before pages existed (D143). */
+/** On Home by default, for new sites and sites saved before pages existed. */
 export const HOME_DEFAULT: readonly WebsiteSectionKey[] = ["STATS", "FEATURES", "COURSES", "ACHIEVERS", "TESTIMONIALS", "ENQUIRY"];
 
 export type WebsiteTheme = (typeof WEBSITE_THEMES)[number];
 export type WebsiteFont = (typeof WEBSITE_FONTS)[number];
 export type BodyFont = (typeof BODY_FONTS)[number];
 
-// --- colour (D136) ------------------------------------------------------------------------------------------------
+// --- colour ------------------------------------------------------------------------------------------------
 
 export const PALETTE_FAMILIES = ["BANGLADESH", "BLUE", "GREEN", "TEAL", "RED", "ORANGE", "GOLD", "PURPLE", "PINK", "NEUTRAL"] as const;
 export type PaletteFamily = (typeof PALETTE_FAMILIES)[number];
@@ -90,7 +90,7 @@ export const PALETTES = [
   { id: "STONE", family: "NEUTRAL", label: "Stone", primary: "#57534e", accent: "#ea580c" },
 ] as const satisfies readonly Palette[];
 
-/** `BRAND` uses the colour from Institute Settings (the default, D136); `CUSTOM` uses the two colours chosen. */
+/** `BRAND` uses the colour from Institute Settings (the default); `CUSTOM` uses the two colours chosen. */
 export const PALETTE_CHOICES = ["BRAND", "CUSTOM", ...PALETTES.map((p) => p.id)] as const;
 export type PaletteChoice = (typeof PALETTE_CHOICES)[number];
 
@@ -119,7 +119,7 @@ export const GRADIENTS = [
 export const GRADIENT_CHOICES = ["AUTO", ...GRADIENTS.map((g) => g.id)] as const;
 export type GradientChoice = (typeof GRADIENT_CHOICES)[number];
 
-// --- shapes, spacing and background (D135) ------------------------------------------------------------------------
+// --- shapes, spacing and background ------------------------------------------------------------------------
 
 export const TEXT_SIZES = ["SMALL", "MEDIUM", "LARGE"] as const;
 export const RADII = ["NONE", "SMALL", "MEDIUM", "LARGE", "FULL"] as const;
@@ -138,7 +138,7 @@ export type Density = (typeof DENSITIES)[number];
 export type Background = (typeof BACKGROUNDS)[number];
 export type Appearance = (typeof APPEARANCES)[number];
 
-// --- layout and language (D135, D140) -----------------------------------------------------------------------------
+// --- layout and language -----------------------------------------------------------------------------
 
 /** `THEME` uses the theme's own banner; the others borrow another theme's composition. */
 export const HERO_LAYOUTS = ["THEME", "CENTRED", "SPLIT", "BANNER", "GRADIENT", "MINIMAL", "AURORA", "GLASS", "BENTO", "BRUTAL"] as const;
@@ -150,9 +150,9 @@ export const TESTIMONIAL_LAYOUTS = ["GRID", "CAROUSEL", "SPOTLIGHT"] as const;
 export const COURSE_LAYOUTS = ["CARDS", "LIST"] as const;
 export const NOTICE_LAYOUTS = ["CARDS", "TIMELINE"] as const;
 export const FAQ_LAYOUTS = ["ACCORDION", "TWO_COLUMN"] as const;
-/** How much the website moves (D145): Normal is the full set of effects of D137. "Reduce motion" always wins. */
+/** How much the website moves: Normal is the full set of effects of. "Reduce motion" always wins. */
 export const MOTION_LEVELS = ["OFF", "SUBTLE", "NORMAL", "LIVELY"] as const;
-/** The language of the site's built-in labels (D140); what the office writes is shown as written. */
+/** The language of the site's built-in labels; what the office writes is shown as written. */
 export const SITE_LANGUAGES = ["EN", "BN"] as const;
 
 export type HeroLayout = (typeof HERO_LAYOUTS)[number];

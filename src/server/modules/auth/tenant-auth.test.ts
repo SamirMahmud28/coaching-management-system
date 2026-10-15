@@ -47,7 +47,7 @@ async function seed() {
       { name: "School B", subdomain: "school-b", status: "ACTIVE" },
     ])
     .returning();
-  // The same email is a different account in each school (D10), with different passwords.
+  // The same email is a different account in each school, with different passwords.
   const adminA = await createLogin(db, { tenantId: a.id, name: "Admin A", email: "admin@school.test", password: "PasswordA1" });
   const adminB = await createLogin(db, { tenantId: b.id, name: "Admin B", email: "admin@school.test", password: "PasswordB1" });
   // Both schools have a STU-000001 — with the same temporary password, the worst case.
@@ -76,7 +76,7 @@ describe("tenant sign-in (real database)", () => {
     expect(session?.mustChangePassword).toBe(true); // admin-provisioned logins start flagged
   });
 
-  it("treats the same email in two schools as two separate accounts (D10)", async () => {
+  it("treats the same email in two schools as two separate accounts", async () => {
     const { adminB } = await seed();
     expect((await signIn(B, "admin@school.test", "PasswordA1")).status).toBe(401); // A's password on B
     const res = await signIn(B, "admin@school.test", "PasswordB1");
@@ -240,7 +240,7 @@ describe("tenant auth endpoint surface", () => {
   });
 });
 
-describe("sign-in identifiers (D17)", () => {
+describe("sign-in identifiers", () => {
   it("signs an instructor in by mobile number, in any common format", async () => {
     const { a } = await seed();
     const instructor = await createLogin(db, { tenantId: a.id, name: "Instructor", phone: "+880 1712-345678", password: "Teach1234" });
@@ -259,7 +259,7 @@ describe("sign-in identifiers (D17)", () => {
     expect((await sessionFor(A, cookieFrom(res)))?.userId).toBe(studentA.id);
   });
 
-  it("never signs in a banned user, such as a student who isn't Active (D26)", async () => {
+  it("never signs in a banned user, such as a student who isn't Active", async () => {
     const { studentA } = await seed();
     await testDb.update(users).set({ banned: true }).where(eq(users.id, studentA.id));
     expect((await signIn(A, "STU-000001", "Student123")).status).toBe(401);

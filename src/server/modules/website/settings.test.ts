@@ -49,7 +49,7 @@ const input = (o: Partial<WebsiteSettingsInput> = {}): WebsiteSettingsInput => (
   heroImageFileId: null, heroButton: "CALL", aboutHeading: null, aboutText: null, aboutImageFileId: null, design: DEFAULT_DESIGN, content: DEFAULT_CONTENT, ...o,
 });
 
-describe("website settings (D124, D126, D131)", () => {
+describe("website settings", () => {
   it("starts from the defaults, then saves the whole look at once and audits it", async () => {
     const s = await institute();
     expect(await getWebsiteSettings(db, s.tenant.id)).toMatchObject({ theme: "CLASSIC", headingFont: "INTER", heroButton: "ENQUIRE", isDefault: true, sections: DEFAULT_SECTIONS });
@@ -107,7 +107,7 @@ describe("website settings (D124, D126, D131)", () => {
   });
 });
 
-describe("website design (D135, D136)", () => {
+describe("website design", () => {
   const pro = { ...DEFAULT_DESIGN, palette: "JAMDANI", gradient: "AURORA", bodyFont: "ANEK_BANGLA", textSize: "LARGE", radius: "FULL", buttonStyle: "GRADIENT", cardStyle: "GLASS", density: "SPACIOUS", background: "NAKSHI", appearance: "DARK" } as const;
 
   it("saves every design setting with the new themes and fonts, and audits it", async () => {
@@ -155,7 +155,7 @@ describe("website design (D135, D136)", () => {
   });
 });
 
-describe("website layout, words and language (D135, D138, D140)", () => {
+describe("website layout, words and language", () => {
   const content = (o: Partial<WebsiteContent> = {}): WebsiteContent => ({ ...DEFAULT_CONTENT, ...o });
 
   it("saves layouts, the language, section titles, the announcement and social links", async () => {
@@ -210,7 +210,7 @@ describe("website layout, words and language (D135, D138, D140)", () => {
     expect((await getPublicWebsite(db, s.tenant.id))?.settings.content.announcement?.text).toBe("Fresh news");
   });
 
-  it("reads a row saved before W6 with empty words and the default layouts", async () => {
+  it("reads an older row with empty words and the default layouts", async () => {
     const s = await institute();
     await saveWebsiteSettings(db, s.actor, input());
     await testDb.update(websiteSettings).set({ content: {}, design: { palette: "OCEAN" } }).where(eq(websiteSettings.tenantId, s.tenant.id));
@@ -220,7 +220,7 @@ describe("website layout, words and language (D135, D138, D140)", () => {
   });
 });
 
-describe("banner slides, ticker and video gallery (D147)", () => {
+describe("banner slides, ticker and video gallery", () => {
   const content = (o: Partial<WebsiteContent> = {}): WebsiteContent => ({ ...DEFAULT_CONTENT, ...o });
 
   it("saves extra slides of this institute's website pictures; their pictures are public while used", async () => {
@@ -253,7 +253,7 @@ describe("banner slides, ticker and video gallery (D147)", () => {
   });
 });
 
-describe("motion strength (D145)", () => {
+describe("motion strength", () => {
   it("saves the motion level, refuses an unknown one, and defaults old rows to Normal", async () => {
     const s = await institute();
     expect((await saveWebsiteSettings(db, s.actor, input({ design: { ...DEFAULT_DESIGN, motion: "LIVELY" } }))).design.motion).toBe("LIVELY");
@@ -263,7 +263,7 @@ describe("motion strength (D145)", () => {
   });
 });
 
-describe("pages and the home page (D142, D143)", () => {
+describe("pages and the home page", () => {
   it("saves which sections are on Home; rows saved before pages existed get the default Home set", async () => {
     const s = await institute();
     expect(DEFAULT_SECTIONS.filter((x) => x.onHome).map((x) => x.key)).toEqual(["STATS", "FEATURES", "COURSES", "ACHIEVERS", "TESTIMONIALS", "ENQUIRY"]);
@@ -277,7 +277,7 @@ describe("pages and the home page (D142, D143)", () => {
   });
 });
 
-describe("Stats, Why choose us, FAQ and Video (D138)", () => {
+describe("Stats, Why choose us, FAQ and Video", () => {
   const content = (o: Partial<WebsiteContent> = {}): WebsiteContent => ({ ...DEFAULT_CONTENT, ...o });
 
   it("saves the lists and turns any YouTube address into its video id", async () => {
@@ -325,8 +325,8 @@ describe("Stats, Why choose us, FAQ and Video (D138)", () => {
   });
 });
 
-describe("the public website (D21, D58)", () => {
-  it("is shown only while the Website module is on; the settings are kept while it's off (D5)", async () => {
+describe("the public website", () => {
+  it("is shown only while the Website module is on; the settings are kept while it's off", async () => {
     const s = await institute();
     expect(await getPublicWebsite(db, s.tenant.id)).toBeNull();
     await setModules(db, s.tenant.id, ["website"]);
@@ -374,7 +374,7 @@ describe("the public website (D21, D58)", () => {
       const pic = await t.upload();
       await saveWebsiteSettings(db, t.actor, input({ heroImageFileId: pic.id }));
       await setModules(db, t.tenant.id, ["website"]);
-      expect((await get(t.subdomain, pic.id)).status).toBe(t === suspended ? 200 : 404); // D58
+      expect((await get(t.subdomain, pic.id)).status).toBe(t === suspended ? 200 : 404);
     }
   });
 });

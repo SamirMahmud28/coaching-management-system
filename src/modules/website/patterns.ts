@@ -1,7 +1,7 @@
 import type { CSSProperties } from "react";
 import type { Background } from "@/server/modules/website/design";
 
-// Page backgrounds behind the website's sections (D135, D136). Drawn in the site's main colour at low strength, as a
+// Page backgrounds behind the website's sections. Drawn in the site's main colour at low strength, as a
 // fixed layer that never catches clicks. Nakshi Kantha (running-stitch flowers) and Alpana (lotus rosette) are our own
 // simple SVG tiles inspired by the Bengali folk patterns.
 

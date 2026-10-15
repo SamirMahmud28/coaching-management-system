@@ -5,7 +5,7 @@ import type {
   Radius, SiteLanguage, TestimonialLayout, TextSize, WebsiteFont, WebsiteTheme,
 } from "@/server/modules/website/design";
 
-// Labels shared by the website editor and the public site (D124, D131, D135, D136).
+// Labels shared by the website editor and the public site.
 
 export type { WebsiteFont, WebsiteTheme };
 export type HeroButton = "ENQUIRE" | "CALL" | "NONE";

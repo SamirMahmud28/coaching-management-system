@@ -30,7 +30,7 @@ const TITLES: Record<FeeReportKind, string> = {
   refunds: "Fee refunds",
 };
 
-/** The fee reports on A4 (D75–D78), with the same filters as the screen. Needs fees.report.view. */
+/** The fee reports on A4, with the same filters as the screen. Needs fees.report.view. */
 export const feeReportDocument: DocumentTypeDefinition<FeeReportRecord, Selection> = {
   key: "fee-report",
   label: "Fee report",

@@ -2,11 +2,11 @@ import type { CSSProperties } from "react";
 import type { MotionLevel } from "@/server/modules/website/design";
 import { cn } from "@/lib/utils";
 
-// Floating 3D shapes behind the welcome banner (D137): a spinning cube, a tilted ring, glossy orbs and a turning
+// Floating 3D shapes behind the welcome banner: a spinning cube, a tilted ring, glossy orbs and a turning
 // diamond, built with CSS 3D transforms (no WebGL, so they stay smooth on modest phones). They drift with the mouse
 // pointer at different depths (`site-motion.tsx` sets --px/--py) and stand still for visitors who ask for less motion.
 // `tone` picks the site's colours on a light banner, or the banner's text colour on a coloured one. They are part of
-// Normal and Lively motion only (D145); Lively adds two more.
+// Normal and Lively motion only; Lively adds two more.
 
 type Shape = { kind: "cube" | "ring" | "orb" | "diamond"; at: string; size: string; depth: number; delay?: string; wide?: boolean };
 

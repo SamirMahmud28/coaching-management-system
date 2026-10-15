@@ -56,7 +56,7 @@ const at = (bs: string, date: string) => ({ batchSubjectId: bs, date, startsAt: 
 const effectiveOf = async (s: Awaited<ReturnType<typeof setUp>>, studentId: string, date: string) =>
   (await getRegister(db, s.admin, at(s.phy.id, date))).rows.find((r) => r.studentId === studentId)!.effective;
 
-describe("a student's application (D89, D92, D93)", () => {
+describe("a student's application", () => {
   it("waits for a decision, may go at most 7 days back, and can't overlap another", async () => {
     const s = await setUp();
     await expect(applyForLeave(db, s.asStudent(s.anika), { fromDate: addDays(today, -8), toDate: today, reason: "Fever" })).rejects.toMatchObject({ code: "VALIDATION_LEAVE_TOO_EARLY" });
@@ -93,7 +93,7 @@ describe("a student's application (D89, D92, D93)", () => {
   });
 });
 
-describe("approval and its effect on registers (D90, D91)", () => {
+describe("approval and its effect on registers", () => {
   it("excuses registers already taken and starts later ones Excused; rejection changes nothing", async () => {
     const s = await setUp();
     await saveRegister(db, s.admin, { ...at(s.phy.id, yesterday), marks: [{ studentId: s.anika.id, status: "ABSENT" }, { studentId: s.bushra.id, status: "ABSENT" }], reason: "Paper register" });
@@ -124,7 +124,7 @@ describe("approval and its effect on registers (D90, D91)", () => {
   });
 });
 
-describe("revoking approved leave (D93)", () => {
+describe("revoking approved leave", () => {
   it("needs a reason and puts each class back as it was marked, or unmarked", async () => {
     const s = await setUp();
     await saveRegister(db, s.admin, { ...at(s.phy.id, yesterday), marks: [{ studentId: s.anika.id, status: "LATE" }], reason: "Paper register" });

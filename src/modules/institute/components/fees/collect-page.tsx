@@ -26,7 +26,7 @@ interface Picked {
 }
 
 /**
- * The counter (D99): find a student by name or ID (mobile too, with contact access), see what they owe and collect it — with any waivers and
+ * The counter: find a student by name or ID (mobile too, with contact access), see what they owe and collect it — with any waivers and
  * fines — then print the receipt. The same collect panel as the student's fees page.
  */
 export function CollectPage({ nav, canWaive, canFine }: { nav: FeesNav; canWaive: boolean; canFine: boolean }) {

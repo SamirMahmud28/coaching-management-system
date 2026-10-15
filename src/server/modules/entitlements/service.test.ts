@@ -76,7 +76,7 @@ describe("isModuleActive (real database)", () => {
 });
 
 describe("setTenantModules (real database)", () => {
-  it("switches a paid module off without deleting anything: the row stays, so re-enabling restores it (D5)", async () => {
+  it("switches a paid module off without deleting anything: the row stays, so re-enabling restores it", async () => {
     const tenant = await seedTenantRow("inst-a");
     await set(tenant.id, [{ key: "fees", enabled: true }]);
     await set(tenant.id, [{ key: "fees", enabled: false }]);

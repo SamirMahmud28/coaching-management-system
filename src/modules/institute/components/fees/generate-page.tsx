@@ -33,7 +33,7 @@ export const SKIP_LABEL: Record<SkipReason, string> = {
   EXCLUDED: "Left out by you",
 };
 
-/** Generate monthly or one-time charges from a preview (D30, D40, D62, D65, D67, D68). */
+/** Generate monthly or one-time charges from a preview. */
 export function GeneratePage({ nav }: { nav: FeesNav }) {
   const queryClient = useQueryClient();
   const items = useQuery({ queryKey: instituteKeys.feeItems({ status: "ACTIVE" }), queryFn: () => feesApi.items({ status: "ACTIVE" }) });

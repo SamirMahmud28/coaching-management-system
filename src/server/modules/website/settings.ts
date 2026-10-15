@@ -16,9 +16,8 @@ import {
   SOCIAL_HOSTS, SOCIAL_NETWORKS, completeContent, normaliseLink, youtubeIdOf, type WebsiteContent,
 } from "./site-content";
 
-// The website's look and fixed content (D124, D126, D131, D135, D136): theme, heading font, the design settings, the
+// The website's look and fixed content: theme, heading font, the design settings, the
 // sections below the hero (on/off and order), and the hero and about texts and pictures. Every save is public at once
-// (D126).
 
 export { WEBSITE_FONTS, WEBSITE_THEMES, type WebsiteFont, type WebsiteTheme };
 export const HERO_BUTTONS = ["ENQUIRE", "CALL", "NONE"] as const;
@@ -77,7 +76,7 @@ const DEFAULTS: WebsiteSettings = {
 function completeSections(stored: WebsiteSectionSetting[]): WebsiteSectionSetting[] {
   const result = stored
     .filter((s, i) => WEBSITE_SECTIONS.includes(s.key) && stored.findIndex((o) => o.key === s.key) === i)
-    // A row saved before pages existed has no Home choice: it gets the default Home set (D143).
+    // A row saved before pages existed has no Home choice: it gets the default Home set.
     .map((s) => ({ key: s.key, enabled: !!s.enabled, onHome: typeof s.onHome === "boolean" ? s.onHome : HOME_DEFAULT.includes(s.key) }));
   WEBSITE_SECTIONS.forEach((key, order) => {
     if (result.some((s) => s.key === key)) return;
@@ -126,7 +125,7 @@ function hexColour(value: string | null | undefined, field: string): string | nu
   return v;
 }
 
-/** Every design setting from its allowed list (D135, D136); custom colours are required for the Custom palette. */
+/** Every design setting from its allowed list; custom colours are required for the Custom palette. */
 function cleanDesign(d: WebsiteDesign): WebsiteDesign {
   const choice = "Choose one of the options.";
   const design: WebsiteDesign = {
@@ -171,7 +170,7 @@ function link(value: string | null | undefined, field: string, hosts?: readonly 
   return url;
 }
 
-/** Section titles, the announcement bar and social links (D138, D140). */
+/** Section titles, the announcement bar and social links. */
 function cleanContent(c: WebsiteContent): WebsiteContent {
   const sectionTitles: WebsiteContent["sectionTitles"] = {};
   for (const [key, t] of Object.entries(c.sectionTitles ?? {})) {
@@ -246,7 +245,7 @@ const valuesOf = (s: WebsiteSettings): WebsiteSettingsInput => ({
   heroImageFileId: s.heroImageFileId, heroButton: s.heroButton, aboutHeading: s.aboutHeading, aboutText: s.aboutText, aboutImageFileId: s.aboutImageFileId,
 });
 
-/** Saves the whole look at once; it is public immediately (D126). Audited. */
+/** Saves the whole look at once; it is public immediately. Audited. */
 export async function saveWebsiteSettings(db: DbOrTx, actor: Actor, input: WebsiteSettingsInput): Promise<WebsiteSettings> {
   const values = {
     theme: oneOf(input.theme, WEBSITE_THEMES, "theme", "Choose one of the themes."),

@@ -23,7 +23,7 @@ describe("resolvePortal", () => {
     expect(resolvePortal(new Set([...perms("Instructor"), "student.self.view"]))).toBe("admin");
   });
 
-  it("keeps the institute app under /app (D19)", () => {
+  it("keeps the institute app under /app", () => {
     for (const home of Object.values(PORTAL_HOME)) expect(home.startsWith("/app")).toBe(true);
   });
 });

@@ -33,7 +33,7 @@ const STATUS: Record<NoticeStatus, { label: string; variant: "success" | "info" 
 
 const formatDate = (iso: string) => new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
 
-/** Public notices on the website (D23, D128): add, edit, pin, hide. */
+/** Public notices on the website: add, edit, pin, hide. */
 export function WebsiteNoticesPage() {
   const queryClient = useQueryClient();
   const notices = useQuery({ queryKey: instituteKeys.website("notices"), queryFn: websiteContentApi.notices });

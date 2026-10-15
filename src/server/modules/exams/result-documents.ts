@@ -24,8 +24,8 @@ export interface MarksheetRecord {
 }
 
 /**
- * A student's marksheet (one A4 page each), for a published exam only (D27, D110). Staff print one student, a batch or
- * everyone they may see (D24); a student prints only their own (selfPermission).
+ * A student's marksheet (one A4 page each), for a published exam only. Staff print one student, a batch or
+ * everyone they may see; a student prints only their own (selfPermission).
  */
 export const examMarksheetDocument: DocumentTypeDefinition<MarksheetRecord, Selection> = {
   key: "exam-marksheet",
@@ -54,7 +54,7 @@ export const examMarksheetDocument: DocumentTypeDefinition<MarksheetRecord, Sele
 
 export type MeritListRecord = Awaited<ReturnType<typeof getResults>>;
 
-/** The merit list on A4 (D103, D109), as the results screen shows it — a draft prints marked as such. */
+/** The merit list on A4, as the results screen shows it — a draft prints marked as such. */
 export const examMeritListDocument: DocumentTypeDefinition<MeritListRecord, Selection> = {
   key: "exam-merit-list",
   label: "Merit list",

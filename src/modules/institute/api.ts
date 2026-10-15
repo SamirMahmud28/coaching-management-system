@@ -101,7 +101,7 @@ export const instituteApi = {
     apiFetch<{ temporary_password: string }>(`/api/v1/users/${id}/reset-password`, { body: { temporary_password: temporaryPassword } }),
 };
 
-/** The institute's app theme and paper background (null = automatic, on with Classic Amber) (D156, D158). */
+/** The institute's app theme and paper background (null = automatic, on with Classic Amber). */
 export interface AppearanceRow {
   app_theme: AppTheme;
   paper_background: boolean | null;
@@ -218,7 +218,6 @@ export interface BatchDetail {
   course: { id: string; name: string; code: string; status: AcademicStatus };
   subjects: BatchSubjectRow[];
 }
-
 
 type NameAndStatus = { name?: string; status?: AcademicStatus };
 
@@ -534,7 +533,7 @@ export const reportsApi = {
 export const reportPrintUrl = (report: FeeReportKind, q: ReportFilters) =>
   `/app/print/fee-report?${new URLSearchParams({ report, ...Object.fromEntries(Object.entries(q).filter(([, v]) => v)) }).toString()}`;
 
-// Attendance (paid module): class registers (D80–D86).
+// Attendance (paid module): class registers.
 export type AttendanceStatus = "PRESENT" | "ABSENT" | "LATE" | "EXCUSED";
 export type ClassState = "NOT_TAKEN" | "OPEN" | "TAKEN" | "NOT_HELD";
 
@@ -551,7 +550,7 @@ export interface DayClassRow {
   state: ClassState;
   not_held_reason: string | null;
   counts: { present: number; absent: number; late: number; excused: number } | null;
-  /** Set when the Routine module is on: moved here, or a substitute (D116, D121). */
+  /** Set when the Routine module is on: moved here, or a substitute. */
   routine_note?: string | null;
 }
 
@@ -617,7 +616,7 @@ export const attendanceApi = {
     apiFetch<{ id: string; date: string; starts_at: string; ends_at: string }>(`${registerPath(batchSubjectId)}/extra-classes`, { body }),
 };
 
-// Leave (D89–D93).
+// Leave.
 export type LeaveStatus = "PENDING" | "APPROVED" | "REJECTED" | "WITHDRAWN" | "REVOKED";
 
 export interface LeaveRow {
@@ -657,7 +656,7 @@ export const leaveApi = {
   withdraw: (id: string) => apiFetch<void>(`/api/v1/me/leave/${id}/withdraw`, { method: "POST" }),
 };
 
-// Attendance reports (D87, D88).
+// Attendance reports.
 export interface AttendanceTallyWire {
   present: number;
   late: number;
@@ -713,7 +712,7 @@ export const attendanceReportsApi = {
 export const attendanceRegisterPrintUrl = (q: { batch_id: string; month: string; batch_subject_id?: string }) =>
   `/app/print/attendance-register?${new URLSearchParams(Object.entries(q).filter((e): e is [string, string] => !!e[1])).toString()}`;
 
-// Fees F7 (D99): every receipt in a date range.
+// Fees F7: every receipt in a date range.
 export interface PaymentListRow {
   id: string;
   receipt_label: string;
@@ -735,7 +734,7 @@ export const paymentListApi = {
     apiFetch<{ range: { from: string; to: string }; total: string; count: number; payments: PaymentListRow[] }>("/api/v1/fees/payments", { query: q }),
 };
 
-// Exams & Results (D101–D110).
+// Exams & Results.
 export type ExamKind = "WEEKLY" | "MONTHLY" | "MODEL" | "CUSTOM";
 export type ExamState = "DRAFT" | "PUBLISHED";
 export const EXAM_KIND_LABEL: Record<ExamKind, string> = { WEEKLY: "Weekly", MONTHLY: "Monthly", MODEL: "Model test", CUSTOM: "Custom" };
@@ -919,7 +918,7 @@ const printQuery = (q: Record<string, string | undefined>) => new URLSearchParam
 export const marksheetUrl = (q: { exam: string; student?: string; batch?: string }) => `/app/print/exam-marksheet?${printQuery(q)}`;
 export const meritListUrl = (q: { exam: string; batch?: string }) => `/app/print/exam-merit-list?${printQuery(q)}`;
 
-// Routine & Lesson Plans (D114–D122).
+// Routine & Lesson Plans.
 export type RoutineClassStatus = "SCHEDULED" | "CANCELLED" | "HOLIDAY" | "MOVED_AWAY" | "MOVED_IN";
 
 export interface RoutineClassRow {
@@ -1049,7 +1048,7 @@ export const lessonsApi = {
 export type { WebsiteSectionKey } from "@/server/modules/website/design";
 import type { WebsiteSectionKey } from "@/server/modules/website/design";
 
-/** The design settings on the wire (D135, D136); values are those of `src/server/modules/website/design.ts`. */
+/** The design settings on the wire; values are those of `src/server/modules/website/design.ts`. */
 export interface WebsiteDesignWire {
   palette: PaletteChoice;
   custom_primary: string | null;
@@ -1075,7 +1074,7 @@ export interface WebsiteDesignWire {
   language: SiteLanguage;
 }
 
-/** Section titles, the announcement bar and social links on the wire (D138, D140). */
+/** Section titles, the announcement bar and social links on the wire. */
 export interface WebsiteContentWire {
   section_titles: Partial<Record<WebsiteSectionKey, { title: string | null; subtitle: string | null }>>;
   announcement: { text: string; link_url: string | null; link_label: string | null; show_until: string | null } | null;
@@ -1141,7 +1140,7 @@ export interface GalleryPhotoRow {
   caption: string | null;
 }
 
-/** An instructor shown on the website (D141). */
+/** An instructor shown on the website. */
 export interface FacultyRow {
   id: string;
   instructor_id: string;
@@ -1235,7 +1234,7 @@ export const enquiriesApi = {
 };
 
 // ---------------------------------------------------------------------------------------------------------------------
-// Dashboard (U3, D163)
+// Dashboard
 // ---------------------------------------------------------------------------------------------------------------------
 
 export interface TallyWire {

@@ -1,5 +1,5 @@
 /*
- * The public website's design tokens in use (D135, D136). `tokens.ts` sets the --site-* variables on the root; the
+ * The public website's design tokens in use. `tokens.ts` sets the --site-* variables on the root; the
  * data attributes on the root pick the button and card styles. Text colours switch between their light and dark
  * versions with the page's mode, so they always read clearly.
  */

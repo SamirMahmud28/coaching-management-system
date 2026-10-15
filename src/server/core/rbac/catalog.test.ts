@@ -42,7 +42,7 @@ describe("role templates", () => {
     expect(of("Admin").sort()).toEqual([...catalogNames].sort());
   });
 
-  it("keeps instructors to their own batches: no guardian contacts, student admin, fees or settings (D24)", () => {
+  it("keeps instructors to their own batches: no guardian contacts, student admin, fees or settings", () => {
     const instructor = of("Instructor");
     expect(instructor).toContain("batches.own.view");
     for (const forbidden of ["students.contact.view", "students.create", "students.update", "students.status", "fees.view", "settings.manage"]) {
@@ -50,7 +50,7 @@ describe("role templates", () => {
     }
   });
 
-  it("limits students to their own records (D27)", () => {
+  it("limits students to their own records", () => {
     expect(of("Student")).toEqual(["student.self.view", "fees.self.view", "attendance.self.view", "leave.self.apply", "exams.self.view", "routine.self.view"]);
   });
 });

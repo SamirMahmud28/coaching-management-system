@@ -32,7 +32,7 @@ describe("proxy routing", () => {
     });
   });
 
-  describe("institute subdomain (D19)", () => {
+  describe("institute subdomain", () => {
     it("serves the public page at /, sign-in at /login and the app under /app", () => {
       expect(getRewrittenUrl(routeRequest(request("demo.localhost:3000", "/"), config))).toBe("http://demo.localhost:3000/institute");
       expect(getRewrittenUrl(routeRequest(request("demo.localhost:3000", "/login?next=%2Fapp"), config))).toBe(

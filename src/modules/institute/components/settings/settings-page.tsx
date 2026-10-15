@@ -70,7 +70,7 @@ export function InstituteSettingsPage() {
   );
 }
 
-/** The office and portals' colour theme for everyone in the institute (D156); a click previews it across the app. */
+/** The office and portals' colour theme for everyone in the institute; a click previews it across the app. */
 function AppearanceCard() {
   const queryClient = useQueryClient();
   const appearance = useQuery({ queryKey: instituteKeys.appearance(), queryFn: settingsApi.appearance });

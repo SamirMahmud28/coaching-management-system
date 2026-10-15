@@ -13,7 +13,7 @@ export const paperMark = (p: PaperOutcome) => (p.status === "ABSENT" ? "Absent" 
 export const resultText = (o: StudentOutcome) => (o.status === "ABSENT" ? "Absent" : o.status === "PENDING" ? "Pending" : o.passed ? "Passed" : "Failed");
 const dates = (from: string, to: string) => (from === to ? docDate(from) : `${docDate(from)} – ${docDate(to)}`);
 
-/** A student's marksheet (D102–D109): each paper with its parts, total, GPA and grade when shown, result and position. */
+/** A student's marksheet: each paper with its parts, total, GPA and grade when shown, result and position. */
 export function ExamMarksheetTemplate({ record, branding }: TemplateProps) {
   const r = record as MarksheetRecord;
   const o = r.row.outcome;
@@ -94,7 +94,7 @@ export function ExamMarksheetTemplate({ record, branding }: TemplateProps) {
   );
 }
 
-/** The combined merit list (D103, D109) on A4; a draft is marked as not yet published. */
+/** The combined merit list on A4; a draft is marked as not yet published. */
 export function ExamMeritListTemplate({ record, branding }: TemplateProps) {
   const r = record as MeritListRecord;
   const grades = r.exam.showGrades;

@@ -164,7 +164,7 @@ export function createPlatformHandlers({ db, auth, origin }: PlatformHttpDeps) {
         );
       }),
 
-    // PATCH /api/platform/tenants/:id/paid-until — display only (D4)
+    // PATCH /api/platform/tenants/:id/paid-until — display only
     setTenantPaidUntil: (request: Request, params: Params<"id">) =>
       handle(async () => {
         const session = await admin(request);
@@ -173,7 +173,7 @@ export function createPlatformHandlers({ db, auth, origin }: PlatformHttpDeps) {
         return json(await setTenantPaidUntil(db, { tenantId, paidUntil: body.paid_until, platformUserId: session.platformUserId }));
       }),
 
-    // PATCH /api/platform/tenants/:id/app-theme — the institute's office and portal theme (D157)
+    // PATCH /api/platform/tenants/:id/app-theme — the institute's office and portal theme
     setTenantAppTheme: (request: Request, params: Params<"id">) =>
       handle(async () => {
         const session = await admin(request);
@@ -182,7 +182,7 @@ export function createPlatformHandlers({ db, auth, origin }: PlatformHttpDeps) {
         return json(await setTenantAppTheme(db, { tenantId, theme: body.app_theme, paper: body.paper_background, platformUserId: session.platformUserId }));
       }),
 
-    // PATCH /api/platform/me/app-theme — this admin's own panel theme (D157)
+    // PATCH /api/platform/me/app-theme — this admin's own panel theme
     setMyAppTheme: (request: Request) =>
       handle(async () => {
         const session = await admin(request);

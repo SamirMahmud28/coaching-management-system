@@ -72,7 +72,7 @@ export function createFilesHandlers({ db, auth, host, storage }: FilesHttpDeps) 
         });
       }),
 
-    // GET /api/public/logo — this host's institute logo for its public page (D58: only while the page is shown)
+    // GET /api/public/logo — this host's institute logo for its public page (only while the page is shown)
     publicLogo: (request: Request) =>
       handle(async () => {
         const resolved = await resolveHost(db, request.headers.get("host"), host);

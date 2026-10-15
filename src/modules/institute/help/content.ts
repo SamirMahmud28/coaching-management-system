@@ -1,9 +1,9 @@
 import type { PermissionName } from "@/server/core/rbac/catalog";
 
 /**
- * In-app help (D96): one guide per feature, shown in each page's "How this works" panel and in the Help centre. Written
+ * In-app help: one guide per feature, shown in each page's "How this works" panel and in the Help centre. Written
  * for institute staff in plain words — what the feature is for, the steps, the rules the system enforces, and common
- * questions. When a feature's behaviour changes, its guide changes in the same commit (CLAUDE.md, D97).
+ * questions. When a feature's behaviour changes, its guide changes in the same commit.
  */
 export interface HelpTopic {
   key: HelpTopicKey;

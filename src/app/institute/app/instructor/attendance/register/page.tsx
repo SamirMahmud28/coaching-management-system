@@ -6,7 +6,7 @@ import { requireModulePage } from "@/server/modules/institute/current-user";
 
 export const metadata: Metadata = { title: "Register" };
 
-// A register of a subject the instructor teaches; any other is a 404 from the API (D24).
+// A register of a subject the instructor teaches; any other is a 404 from the API.
 export default async function Page({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   await requireModulePage("attendance.view", "instructor");
   const at = classParams(await searchParams);

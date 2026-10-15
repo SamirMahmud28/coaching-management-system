@@ -36,8 +36,8 @@ const SYSTEM = "System";
 
 /**
  * Navigation per portal, built from permissions that are already limited to the institute's active modules, so a
- * link appears only when its page would open (unlike the EMS, which listed modules regardless of permission). The
- * office menu is grouped by how often each page is used (D152).
+ * link appears only when its page would open. The
+ * office menu is grouped by how often each page is used.
  */
 function buildNav(portal: PortalKind, permissions: ReadonlySet<string>): NavItem[] {
   if (portal === "instructor") {

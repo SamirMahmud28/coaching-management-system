@@ -1,4 +1,4 @@
-// PROVISIONAL: the product name, logo and domain are not decided yet (decision log O15). Change them here only.
+// PROVISIONAL: the product name, logo and domain are not decided yet (decision log). Change them here only.
 export const BRAND = {
   name: "Khaatakolom CMS",
   tagline: "Coaching centre management, made simple.",

@@ -22,7 +22,7 @@ const FILTERS: { value: ExamState | ""; label: string }[] = [
 
 const dates = (from: string, to: string) => (from === to ? formatDate(from) : `${formatDate(from)} – ${formatDate(to)}`);
 
-/** Exams, newest first (D101): the office sees every exam, an instructor those of batches they teach (D24). */
+/** Exams, newest first: the office sees every exam, an instructor those of batches they teach. */
 export function ExamsListPage({ base, canManage, fullGuide = true }: { base: string; canManage: boolean; fullGuide?: boolean }) {
   const [state, setState] = useState<ExamState | "">("");
   const q = state ? { state } : {};

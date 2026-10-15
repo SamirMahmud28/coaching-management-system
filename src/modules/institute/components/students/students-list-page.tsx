@@ -27,7 +27,7 @@ const STATUSES: { value: StudentStatus | typeof ALL; label: string }[] = [
 const DEFAULT_FILTERS: Record<string, string> = { courseId: ALL, batchId: ALL, status: "ACTIVE" };
 const pick = (value: string) => (value === ALL || value === NO_BATCH ? undefined : value);
 
-/** The Student List (EMS record-list layout): filters applied with Search, a ruled table, row actions, numbered pages. */
+/** The Student List: filters applied with Search, a ruled table, row actions, numbered pages. */
 export function StudentsListPage({
   canAdmit,
   canSeeContacts,

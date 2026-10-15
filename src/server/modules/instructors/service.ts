@@ -41,7 +41,7 @@ interface CleanIdentity {
   phone: string | null;
 }
 
-/** Name and sign-in identifiers (D17: mobile number or email, at least one). */
+/** Name and sign-in identifiers (mobile number or email, at least one). */
 function cleanIdentity(input: { fullName: string; email?: string | null; phone?: string | null }): CleanIdentity {
   const fullName = input.fullName.trim();
   const email = input.email?.trim().toLowerCase() || null;
@@ -207,7 +207,7 @@ export async function listInstructors(db: DbOrTx, tenantId: string, params: List
   return { items, total: countRows[0]?.count ?? 0, page, pageSize };
 }
 
-/** Active instructors, for pickers such as a batch subject's instructor (M4). */
+/** Active instructors, for pickers such as a batch subject's instructor. */
 export async function listAssignableInstructors(db: DbOrTx, tenantId: string) {
   return db
     .select({ id: instructors.id, fullName: instructors.fullName })

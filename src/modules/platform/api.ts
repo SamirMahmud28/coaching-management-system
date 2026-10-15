@@ -42,14 +42,14 @@ export interface TenantDetail {
   suspended_at: string | null;
   suspended_reason: string | null;
   deactivated_at: string | null;
-  // Display only (D4), YYYY-MM-DD.
+  // Display only, YYYY-MM-DD.
   paid_until: string | null;
   created_at: string;
   owner: { id: string; name: string; email: string | null } | null;
   modules: TenantModule[];
-  /** The institute's app theme (D157); returned by the detail read. */
+  /** The institute's app theme; returned by the detail read. */
   app_theme?: AppTheme;
-  /** null = automatic (on with Classic Amber) (D158). */
+  /** null = automatic (on with Classic Amber). */
   paper_background?: boolean | null;
 }
 

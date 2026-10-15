@@ -46,7 +46,7 @@ async function institute(status: "ACTIVE" | "SUSPENDED" | "DEACTIVATED" = "ACTIV
 const ok = { name: "Anika Rahman", mobile: "+880 1712-345678" };
 const meta = (ip: string | null = "203.0.113.5") => ({ ipAddress: ip });
 
-describe("the public enquiry form (D22, D129)", () => {
+describe("the public enquiry form", () => {
   it("stores a valid enquiry with a normalized mobile number and the chosen course", async () => {
     const s = await institute();
     expect(await submitEnquiry(db, s.tenantId, { ...ok, courseId: s.course.id, message: "  Evening batch?  " }, meta())).toEqual({ stored: true });
@@ -91,7 +91,7 @@ describe("the public enquiry form (D22, D129)", () => {
     await expect(submitEnquiry(db, s.tenantId, { ...ok, courseId: s.course.id }, meta())).rejects.toMatchObject({ code: "VALIDATION_COURSE" });
   });
 
-  it("is open on the institute's own host only while the website is shown (D58)", async () => {
+  it("is open on the institute's own host only while the website is shown", async () => {
     const h = createWebsiteHandlers({ db, auth, host, storage: new LocalDiskStorage(await mkdtemp(path.join(os.tmpdir(), "cms-enq-"))) });
     const post = (subdomain: string, body: object, ip = "192.0.2.1") =>
       h.submitEnquiry(new Request(`http://${subdomain}.localhost:3000/api/public/enquiries`, { method: "POST", headers: { host: `${subdomain}.localhost:3000`, "content-type": "application/json", "x-forwarded-for": `${ip}, 10.0.0.1` }, body: JSON.stringify(body) }));
@@ -113,7 +113,7 @@ describe("the public enquiry form (D22, D129)", () => {
   });
 });
 
-describe("the enquiry inbox (D22, D127)", () => {
+describe("the enquiry inbox", () => {
   it("moves through New, Contacted and Closed with a note, and audits each status change", async () => {
     const s = await institute();
     await submitEnquiry(db, s.tenantId, ok, meta());
@@ -150,7 +150,7 @@ describe("the enquiry inbox (D22, D127)", () => {
     expect(await testDb.select().from(auditLogs).where(eq(auditLogs.action, "ENQUIRY_CONVERTED"))).toHaveLength(1);
   });
 
-  it("keeps a course named in an enquiry from being deleted (D5)", async () => {
+  it("keeps a course named in an enquiry from being deleted", async () => {
     const s = await institute();
     await submitEnquiry(db, s.tenantId, { ...ok, courseId: s.course.id }, meta());
     await expect(academic.deleteCourse(db, s.actor, s.course.id)).rejects.toMatchObject({ code: "CONFLICT_COURSE_IN_USE" });

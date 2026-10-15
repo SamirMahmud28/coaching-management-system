@@ -9,7 +9,7 @@ export interface NewLogin {
   tenantId: string;
   name: string;
   email?: string | null;
-  // A BD mobile number (instructors sign in with it, D17); stored normalised as 01XXXXXXXXX.
+  // A BD mobile number (instructors sign in with it); stored normalised as 01XXXXXXXXX.
   phone?: string | null;
   username?: string | null;
   password: string;

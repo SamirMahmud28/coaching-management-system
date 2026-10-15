@@ -1,6 +1,6 @@
 import { THEME_PRESETS, type PaletteChoice, type WebsiteDesign, type WebsiteFont, type WebsiteTheme } from "@/server/modules/website/design";
 
-// Ready-made looks (D146): complete styles in one click, a theme with its preset, a palette and a few signature
+// Ready-made looks: complete styles in one click, a theme with its preset, a palette and a few signature
 // touches. The owner can change anything afterwards; a look never touches the language or the website's words.
 
 export interface Look {

@@ -7,8 +7,8 @@ import { ConflictError, NotFoundError, ValidationError } from "../../core/errors
 import { isCalendarDate, todayInDhaka } from "@/lib/dates";
 import type { Actor } from "./settings";
 
-// The website's own lists (D125, D128, D130): public notices, the gallery and testimonials. Every save is public at
-// once (D126). Notices are hidden rather than deleted; a gallery photo or testimonial is website content, so removing
+// The website's own lists: public notices, the gallery and testimonials. Every save is public at
+// once. Notices are hidden rather than deleted; a gallery photo or testimonial is website content, so removing
 // one deletes its row (the picture file stays in storage).
 
 export const MAX_GALLERY_PHOTOS = 60;
@@ -35,7 +35,7 @@ function assertSameSet(ids: string[], existing: string[], field: string) {
 }
 
 // ---------------------------------------------------------------------------
-// Notices (D23, D128)
+// Notices
 // ---------------------------------------------------------------------------
 
 export type NoticeStatus = "ON_WEBSITE" | "SCHEDULED" | "EXPIRED" | "HIDDEN";
@@ -136,7 +136,7 @@ export async function publicNotices(db: DbOrTx, tenantId: string, today = todayI
 }
 
 // ---------------------------------------------------------------------------
-// Gallery (D125)
+// Gallery
 // ---------------------------------------------------------------------------
 
 const lockGallery = (tx: DbOrTx, tenantId: string) => tx.execute(sql`select pg_advisory_xact_lock(hashtext(${`gallery:${tenantId}`}))`);
@@ -198,7 +198,7 @@ export async function reorderGallery(db: DbOrTx, actor: Actor, ids: string[]) {
 }
 
 // ---------------------------------------------------------------------------
-// Testimonials (D130)
+// Testimonials
 // ---------------------------------------------------------------------------
 
 export interface TestimonialInput {

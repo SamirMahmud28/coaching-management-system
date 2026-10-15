@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { formatAmount, formatDate } from "@/lib/format";
 import { METHOD_LABEL, paymentsApi, receiptUrl, type PaymentRow } from "../../api";
 
-/** A student's payments: print or reprint each receipt (never a new record), and void one with a reason (D35). */
+/** A student's payments: print or reprint each receipt (never a new record), and void one with a reason. */
 export function PaymentsCard({ payments, canVoid, onChanged }: { payments: PaymentRow[]; canVoid: boolean; onChanged: () => Promise<unknown> }) {
   const [voiding, setVoiding] = useState<PaymentRow | null>(null);
   const [reason, setReason] = useState("");

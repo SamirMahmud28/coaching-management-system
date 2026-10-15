@@ -24,9 +24,9 @@ import { SocialLinks, type SectionProps, type Site } from "./sections/shared";
 import "../website.css";
 import "../motion.css";
 
-// The institute's public website (Website module, D20, D124–D147): fixed pages (D142), each server-rendered from the
+// The institute's public website (Website module): fixed pages, each server-rendered from the
 // institute's own data and drawn in the theme's composition with the design settings as CSS variables, and the
-// built-in labels in the site's language. Home shows the banner and the sections marked "On Home" (D143); every other
+// built-in labels in the site's language. Home shows the banner and the sections marked "On Home"; every other
 // page shows its own sections under a heading strip. Sections and pages with nothing to show are left out.
 
 /** Home sections that end with a link to their page; the others are complete where they are. */

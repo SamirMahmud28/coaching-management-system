@@ -23,7 +23,7 @@ import { editRule, effectiveStatus, tally, type AttendanceStatus } from "./rules
 import { routineClassesOn, routineOffReason, substitutionsOn } from "../routine/service";
 import "./references";
 
-// Class registers (D80–D86, D91): which classes are on a day, a class's register, taking and correcting it.
+// Class registers: which classes are on a day, a class's register, taking and correcting it.
 
 export interface Viewer {
   tenantId: string;
@@ -48,7 +48,7 @@ function cleanDate(value: string | undefined, field = "date"): string {
 
 /**
  * The batch subjects this viewer may take or see registers for: all of them for staff who see every batch (Owner,
- * Admin, or a custom role with academic.view), otherwise only the ones they teach (D24, D81). Registers use active
+ * Admin, or a custom role with academic.view), otherwise only the ones they teach. Registers use active
  * batches only; reports (`includeArchived`) also reach archived ones, so their history stays readable.
  */
 export async function scopedBatchSubjects(db: DbOrTx, viewer: Viewer, onlyIds?: string[], opts: { includeArchived?: boolean; unscoped?: boolean } = {}) {
@@ -83,7 +83,7 @@ export async function scopedBatchSubjects(db: DbOrTx, viewer: Viewer, onlyIds?: 
 
 /**
  * The batch subject of one class the viewer may use: one they teach (or any, for the office), or one they substitute
- * in on that date when the Routine module is on (D121). Otherwise a 404 — like another institute's (D24).
+ * in on that date when the Routine module is on. Otherwise a 404 — like another institute's.
  */
 async function scopedBatchSubject(db: DbOrTx, viewer: Viewer, batchSubjectId: string, at?: { date: string; startsAt: string }) {
   const [row] = await scopedBatchSubjects(db, viewer, [batchSubjectId]);
@@ -108,7 +108,7 @@ export interface DayClass {
   /** NOT_TAKEN: on the schedule but no register yet. */
   state: "NOT_TAKEN" | "OPEN" | "TAKEN" | "NOT_HELD";
   notHeldReason: string | null;
-  /** What the routine changed about it, when the Routine module is on (D116, D121): moved here, or a substitute. */
+  /** What the routine changed about it, when the Routine module is on: moved here, or a substitute. */
   routineNote: string | null;
   counts: { present: number; absent: number; late: number; excused: number } | null;
 }
@@ -117,7 +117,7 @@ export interface DayClass {
 export async function classesOn(db: DbOrTx, viewer: Viewer, dateInput: string): Promise<DayClass[]> {
   const date = cleanDate(dateInput);
   const own = await scopedBatchSubjects(db, viewer);
-  // Classes the viewer substitutes in that day (D121): only those classes of those batch subjects.
+  // Classes the viewer substitutes in that day: only those classes of those batch subjects.
   const subs = await substitutionsOn(db, viewer.tenantId, viewer.userId, date);
   const extraIds = [...new Set(subs.map((s) => s.batchSubjectId))].filter((id) => !own.some((o) => o.id === id));
   const scope = [...own, ...(extraIds.length ? await scopedBatchSubjects(db, viewer, extraIds, { unscoped: true }) : [])];
@@ -125,7 +125,7 @@ export async function classesOn(db: DbOrTx, viewer: Viewer, dateInput: string): 
   const ids = scope.map((s) => s.id);
   const byId = new Map(scope.map((s) => [s.id, s]));
   const onlySubstituted = (bsId: string, startsAt: string) => !extraIds.includes(bsId) || subs.some((s) => s.batchSubjectId === bsId && s.startsAt === hhmm(startsAt));
-  // The routine's view of the day (D116), when the module is on.
+  // The routine's view of the day, when the module is on.
   const routine = await routineClassesOn(db, viewer.tenantId, date, ids);
   const routineAt = new Map((routine ?? []).map((c) => [`${c.batchSubjectId}|${c.startsAt}`, c]));
   const [slots, recorded] = await Promise.all([
@@ -157,7 +157,7 @@ export async function classesOn(db: DbOrTx, viewer: Viewer, dateInput: string): 
     const r = routineAt.get(k);
     const off = r ? routineOffReason(r) : null;
     // A register already taken stands; otherwise a class moved away isn't on this day, and a cancelled or holiday class
-    // shows as not held with the routine's reason (D116).
+    // shows as not held with the routine's reason.
     if (!cls && r?.status === "MOVED_AWAY") return;
     const routineNote = r?.status === "MOVED_IN" && r.movedFrom ? `Moved from ${r.movedFrom.date}, ${r.movedFrom.startsAt}` : r?.substituteName ? `Substitute: ${r.substituteName}` : null;
     const statuses = cls ? markCounts.filter((m) => m.classId === cls.id).map(effectiveStatus) : [];
@@ -178,7 +178,7 @@ export async function classesOn(db: DbOrTx, viewer: Viewer, dateInput: string): 
 
 /**
  * The class on a date at a start time: a recorded one, one the routine moved here, or one from the weekly schedule,
- * else not found. `routineOff` says why a class the routine cancelled, closed or moved away can't be taken (D116).
+ * else not found. `routineOff` says why a class the routine cancelled, closed or moved away can't be taken.
  */
 async function findClass(db: DbOrTx, tenantId: string, batchSubjectId: string, date: string, startsAt: string) {
   const [recorded] = await db
@@ -203,7 +203,7 @@ const assertNotRoutineOff = (cls: { routineOff: string | null }) => {
 
 /**
  * Members of the batch on the date: joined by then and either still active (and the student Active, so On Hold is
- * left off — D26) or ended after that day, so a past register an Admin takes late still lists who was there.
+ * left off —) or ended after that day, so a past register an Admin takes late still lists who was there.
  */
 async function eligibleMembers(db: DbOrTx, tenantId: string, batchId: string, date: string) {
   return db
@@ -227,7 +227,7 @@ async function eligibleMembers(db: DbOrTx, tenantId: string, batchId: string, da
     );
 }
 
-/** Approved leave covering the date, per student (D91). */
+/** Approved leave covering the date, per student. */
 async function leaveOn(db: DbOrTx, tenantId: string, studentIds: string[], date: string) {
   if (!studentIds.length) return new Map<string, string>();
   const rows = await db
@@ -252,13 +252,13 @@ export interface RegisterRow {
   fullName: string;
   photoFileId: string | null;
   rollNumber: string | null;
-  /** What a person marked; on a register not yet taken, the default it starts with (D83). */
+  /** What a person marked; on a register not yet taken, the default it starts with. */
   status: AttendanceStatus | null;
   onLeave: boolean;
   effective: AttendanceStatus | null;
 }
 
-/** A class's register: who is on it and how they're marked, and whether the viewer may change it now (D82, D84). */
+/** A class's register: who is on it and how they're marked, and whether the viewer may change it now. */
 export async function getRegister(db: DbOrTx, viewer: Viewer, input: { batchSubjectId: string; date: string; startsAt: string }) {
   const date = cleanDate(input.date);
   const startsAt = cleanTime(input.startsAt, "startsAt");
@@ -288,7 +288,7 @@ export async function getRegister(db: DbOrTx, viewer: Viewer, input: { batchSubj
   for (const m of members) {
     const mark = marked.get(m.studentId);
     const leaveId = mark ? mark.leaveId : (leave.get(m.studentId) ?? null);
-    // Not marked yet: everyone starts Present (D83); on leave they show as Excused through the leave (D91).
+    // Not marked yet: everyone starts Present; on leave they show as Excused through the leave.
     const status = mark ? mark.status : leaveId ? null : "PRESENT";
     rows.push({ ...m, status, onLeave: !!leaveId, effective: effectiveStatus({ status, leaveId }) });
   }
@@ -343,7 +343,7 @@ async function upsertClass(tx: DbOrTx, viewer: Viewer, bsId: string, date: strin
 
 /**
  * Saves a register: every listed student's status. The first save takes it; later saves are corrections, audited with
- * each change (after the class day: Owner/Admin only, with a reason — D82, D84). A not-held class becomes taken.
+ * each change (after the class day: Owner/Admin only, with a reason —). A not-held class becomes taken.
  */
 export async function saveRegister(
   db: DbOrTx,
@@ -388,7 +388,7 @@ export async function saveRegister(
       });
       if (wasTaken) changes.push({ student: m.studentId, from: null, to: m.status });
     }
-    // Members not sent (e.g. the page was opened before they joined) still get a row, as on leave or Present (D83).
+    // Members not sent (e.g. the page was opened before they joined) still get a row, as on leave or Present.
     for (const member of members) {
       if (existing.some((e) => e.studentId === member.studentId) || input.marks.some((m) => m.studentId === member.studentId)) continue;
       const leaveId = leave.get(member.studentId) ?? null;
@@ -421,7 +421,7 @@ export async function saveRegister(
   });
 }
 
-/** Records that a class didn't happen, with a reason (D86); it then counts for nobody. */
+/** Records that a class didn't happen, with a reason; it then counts for nobody. */
 export async function markNotHeld(db: DbOrTx, viewer: Viewer, input: { batchSubjectId: string; date: string; startsAt: string; reason: string }) {
   const date = cleanDate(input.date);
   const startsAt = cleanTime(input.startsAt, "startsAt");
@@ -447,7 +447,7 @@ export async function markNotHeld(db: DbOrTx, viewer: Viewer, input: { batchSubj
   });
 }
 
-/** Adds a one-off class for a batch subject (D85); its register is then taken like any other. */
+/** Adds a one-off class for a batch subject; its register is then taken like any other. */
 export async function addExtraClass(db: DbOrTx, viewer: Viewer, input: { batchSubjectId: string; date: string; startsAt: string; endsAt: string }) {
   if (!viewer.permissions.has("attendance.take")) throw new ForbiddenError();
   const date = cleanDate(input.date);
@@ -469,7 +469,6 @@ export async function addExtraClass(db: DbOrTx, viewer: Viewer, input: { batchSu
     return { id: row.id, date, startsAt: hhmm(startsAt), endsAt: hhmm(endsAt) };
   });
 }
-
 
 /** The batch subjects the viewer can take registers for, e.g. to add an extra class. */
 export async function registerSubjects(db: DbOrTx, viewer: Viewer) {

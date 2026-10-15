@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-// Server code reads configuration through getEnv(), never process.env directly.
+// Server code reads configuration through getEnv, never process.env directly.
 export const envSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   DATABASE_URL: z.string().url(),

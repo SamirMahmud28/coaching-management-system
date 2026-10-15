@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import { clearRateLimits, instituteUrl, seedInstitute, seedTeaching, setInstituteModules } from "./helpers";
 
-// One serial story for the Attendance & Leave module; each milestone (A2–A4) adds its steps.
+// One serial story for the Attendance & Leave module; each milestone adds its steps.
 test.describe.configure({ mode: "serial" });
 
 const INSTITUTE = {
@@ -48,7 +48,7 @@ test("the Owner signs in for the first time", async ({ page }) => {
   await expect(page).toHaveURL(url("/app"));
 });
 
-test("an instructor takes today's register for their own subject: everyone starts Present (D81, D83)", async ({ page }) => {
+test("an instructor takes today's register for their own subject: everyone starts Present", async ({ page }) => {
   await signIn(page, TEACHER.email, TEACHER.password);
   await expect(page).toHaveURL(url("/app/instructor"));
   await page.getByRole("link", { name: "Today's attendance" }).click();
@@ -74,7 +74,7 @@ test("an instructor takes today's register for their own subject: everyone start
   await expect(classes.getByText("2 present, 1 absent")).toBeVisible();
 });
 
-test("an instructor can't take a past day's register (D82, D84)", async ({ page }) => {
+test("an instructor can't take a past day's register", async ({ page }) => {
   await signIn(page, TEACHER.email, TEACHER.password);
   await expect(page).toHaveURL(url("/app/instructor"));
   await page.goto(url("/app/instructor/attendance"));
@@ -85,7 +85,7 @@ test("an instructor can't take a past day's register (D82, D84)", async ({ page 
   await expect(page.getByTestId(`row-${codes[0]}`).getByRole("radio", { name: "Absent", exact: true })).toBeDisabled();
 });
 
-test("the Owner takes a missed register with a reason, marks a class not held, and adds an extra class (D84–D86)", async ({ page }) => {
+test("the Owner takes a missed register with a reason, marks a class not held, and adds an extra class", async ({ page }) => {
   await signIn(page, INSTITUTE.ownerEmail, OWNER_PASSWORD);
   await expect(page).toHaveURL(url("/app"));
   await page.getByRole("link", { name: "Attendance", exact: true }).click();
@@ -122,7 +122,7 @@ test("the Owner takes a missed register with a reason, marks a class not held, a
   await expect(classes.getByText("No class held")).toBeVisible();
 });
 
-test("a student applies for leave in their portal (D89, D92)", async ({ page }) => {
+test("a student applies for leave in their portal", async ({ page }) => {
   await signIn(page, codes[0], "Student123");
   await expect(page).toHaveURL(url("/app/student"));
   await page.getByRole("link", { name: "Leave", exact: true }).click();
@@ -132,7 +132,7 @@ test("a student applies for leave in their portal (D89, D92)", async ({ page }) 
   await expect(page.getByTestId("my-leave").getByText("Waiting for a decision")).toBeVisible();
 });
 
-test("the Owner approves it, the register shows the student Excused, then revokes it (D90, D91, D93)", async ({ page }) => {
+test("the Owner approves it, the register shows the student Excused, then revokes it", async ({ page }) => {
   await signIn(page, INSTITUTE.ownerEmail, OWNER_PASSWORD);
   await expect(page).toHaveURL(url("/app"));
   await page.goto(url("/app/attendance"));
@@ -156,7 +156,7 @@ test("the Owner approves it, the register shows the student Excused, then revoke
   await expect(page.getByText("Leave revoked. 1 class restored.")).toBeVisible();
 });
 
-test("the Owner enters leave for a student who phoned, approved at once (D89, D90)", async ({ page }) => {
+test("the Owner enters leave for a student who phoned, approved at once", async ({ page }) => {
   await signIn(page, INSTITUTE.ownerEmail, OWNER_PASSWORD);
   await expect(page).toHaveURL(url("/app"));
   await page.goto(url("/app/attendance/leave"));
@@ -182,7 +182,7 @@ test("the student sees the revoked leave with its reason", async ({ page }) => {
 
 // By now: yesterday's Physics has Anika Absent (taken late by the Owner); today's Physics has her Present again (her
 // leave was revoked) and Bushra Excused (office leave). So Anika is at 50%.
-test("the Owner reads the reports: monthly register (and its print), low attendance with guardian mobiles, absentees, a student's card (D88)", async ({ page }) => {
+test("the Owner reads the reports: monthly register (and its print), low attendance with guardian mobiles, absentees, a student's card", async ({ page }) => {
   await signIn(page, INSTITUTE.ownerEmail, OWNER_PASSWORD);
   await expect(page).toHaveURL(url("/app"));
   await page.goto(url("/app/attendance"));
@@ -209,7 +209,7 @@ test("the Owner reads the reports: monthly register (and its print), low attenda
   await expect(page.getByTestId("student-attendance").getByText("50%", { exact: true }).first()).toBeVisible();
 });
 
-test("an instructor's reports cover their subject only, without guardian mobiles (D24)", async ({ page }) => {
+test("an instructor's reports cover their subject only, without guardian mobiles", async ({ page }) => {
   await signIn(page, TEACHER.email, TEACHER.password);
   await expect(page).toHaveURL(url("/app/instructor"));
   await page.goto(url("/app/instructor/attendance"));
@@ -221,7 +221,7 @@ test("an instructor's reports cover their subject only, without guardian mobiles
   await expect(low.getByRole("link")).toHaveCount(0); // no student profiles in the instructor portal
 });
 
-test("the student sees My attendance on their home page (D27, D87)", async ({ page }) => {
+test("the student sees My attendance on their home page", async ({ page }) => {
   await signIn(page, codes[0], "Student123");
   await expect(page).toHaveURL(url("/app/student"));
   const mine = page.getByTestId("my-attendance");
@@ -229,7 +229,7 @@ test("the student sees My attendance on their home page (D27, D87)", async ({ pa
   await expect(mine.getByText(/1 attended, 1 absent, 0 excused/)).toBeVisible();
 });
 
-test("Attendance disappears while the module is off (D5)", async ({ page }) => {
+test("Attendance disappears while the module is off", async ({ page }) => {
   await setInstituteModules(INSTITUTE.subdomain, { attendance: false });
   try {
     await signIn(page, INSTITUTE.ownerEmail, OWNER_PASSWORD);

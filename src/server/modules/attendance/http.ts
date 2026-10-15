@@ -105,7 +105,7 @@ export function createAttendanceHandlers({ db, auth, host }: AttendanceHttpDeps)
         return json(await leave.listLeave(db, actor.tenantId, { status: q.status, studentId: q.student_id }));
       }),
 
-    // POST /api/v1/students/:id/leave — the office enters leave, approved at once (D90)
+    // POST /api/v1/students/:id/leave — the office enters leave, approved at once
     enterLeave: (request: Request, params: { id: string }) =>
       handle(async () => {
         const actor = await authorize(request, "leave.manage");

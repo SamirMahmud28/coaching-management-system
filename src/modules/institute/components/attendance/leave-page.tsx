@@ -36,7 +36,7 @@ export const leaveDates = (l: Pick<LeaveRow, "from_date" | "to_date" | "days">) 
 type Dialog = { kind: "enter" } | { kind: "approve" | "reject" | "revoke"; leave: LeaveRow } | null;
 
 /**
- * The office's leave (D89–D93): applications waiting for a decision first; approve or reject with an optional note the
+ * The office's leave: applications waiting for a decision first; approve or reject with an optional note the
  * student sees; enter leave for a student (approved at once); revoke approved leave with a reason.
  */
 export function LeavePage({ canReport = false }: { canReport?: boolean }) {

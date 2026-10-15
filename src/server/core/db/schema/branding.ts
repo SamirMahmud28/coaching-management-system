@@ -20,9 +20,9 @@ export const institutionProfiles = pgTable("institution_profiles", {
   logoFileId: uuid("logo_file_id").references(() => files.id, { onDelete: "set null" }),
   primaryColor: varchar("primary_color", { length: 7 }),
   secondaryColor: varchar("secondary_color", { length: 7 }),
-  // The office and portals' colour theme, for everyone in the institute (D156).
+  // The office and portals' colour theme, for everyone in the institute.
   appTheme: appThemeEnum("app_theme").notNull().default("MIDNIGHT"),
-  // The paper texture behind pages (D158): null = automatic (on with Classic Amber), else the admin's choice.
+  // The paper texture behind pages: null = automatic (on with Classic Amber), else the admin's choice.
   paperBackground: boolean("paper_background"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
@@ -50,9 +50,9 @@ export const signatures = pgTable("signatures", {
 ]);
 
 /**
- * The institute's student ID pattern (D8, D15, D16): PREFIX · COURSE CODE (optional) · ADMISSION YEAR · NUMBER, joined
+ * The institute's student ID pattern: PREFIX · COURSE CODE (optional) · ADMISSION YEAR · NUMBER, joined
  * by the separator, e.g. "KC-HSC-2026-0001". The year is always included because the number restarts every year
- * (D16). One row per tenant, created on first save; until then the defaults below apply.
+ *. One row per tenant, created on first save; until then the defaults below apply.
  */
 export const studentIdSettings = pgTable("student_id_settings", {
   tenantId: uuid("tenant_id").primaryKey().references(() => tenants.id),

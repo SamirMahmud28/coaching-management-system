@@ -1,7 +1,7 @@
 /**
- * The app's colour themes (D155–D157). The tokens live in globals.css: Midnight on :root, the others under
+ * The app's colour themes. The tokens live in globals.css: Midnight on:root, the others under
  * `[data-app-theme="<key in lower case>"]`. Institutes pick one for everyone (Settings → Appearance); each platform
- * admin picks one for their own panel. The public website has its own design (D136).
+ * admin picks one for their own panel. The public website has its own design.
  */
 export const APP_THEME_KEYS = ["MIDNIGHT", "AMBER", "INDIGO", "EMERALD", "PLUM"] as const;
 export type AppTheme = (typeof APP_THEME_KEYS)[number];
@@ -25,12 +25,12 @@ export const APP_THEMES: AppThemeInfo[] = [
 
 export const isAppTheme = (value: unknown): value is AppTheme => typeof value === "string" && (APP_THEME_KEYS as readonly string[]).includes(value);
 
-/** The `data-app-theme` attribute value; undefined for the default, which lives on :root. */
+/** The `data-app-theme` attribute value; undefined for the default, which lives on:root. */
 export const themeAttribute = (theme: AppTheme | null | undefined): string | undefined =>
   theme && theme !== DEFAULT_APP_THEME ? theme.toLowerCase() : undefined;
 
 /**
- * Whether the paper background shows (D158): an explicit choice wins; otherwise ("automatic", null) it is on with
+ * Whether the paper background shows: an explicit choice wins; otherwise ("automatic", null) it is on with
  * Classic Amber only.
  */
 export const resolvePaper = (theme: AppTheme, paper: boolean | null | undefined): boolean => paper ?? theme === "AMBER";

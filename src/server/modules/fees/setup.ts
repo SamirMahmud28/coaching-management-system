@@ -8,7 +8,7 @@ import { fromPoisha, isAmountText, toPoisha } from "@/lib/money";
 import { audit } from "../audit/service";
 import "./references";
 
-// Fee setup (Fees F2): a course's fee items (D28), a student's own amounts (D29) and the receipt prefix (D38).
+// Fee setup (Fees F2): a course's fee items, a student's own amounts and the receipt prefix.
 
 export interface Actor {
   tenantId: string;
@@ -132,7 +132,7 @@ export async function deleteFeeItem(db: DbOrTx, actor: Actor, id: string) {
 }
 
 // ---------------------------------------------------------------------------
-// A student's own amounts (D29)
+// A student's own amounts
 // ---------------------------------------------------------------------------
 
 /**
@@ -198,7 +198,7 @@ export async function removeStudentFeeAmount(db: DbOrTx, actor: Actor, id: strin
 }
 
 // ---------------------------------------------------------------------------
-// Receipt prefix (D38)
+// Receipt prefix
 // ---------------------------------------------------------------------------
 
 export const DEFAULT_RECEIPT_PREFIX = "R";
@@ -225,6 +225,6 @@ export async function saveFeeSettings(db: DbOrTx, actor: Actor, input: { receipt
   });
 }
 
-/** "R-000123": the prefix and a six-digit running number (D38). */
+/** "R-000123": the prefix and a six-digit running number. */
 export const receiptLabel = (prefix: string, receiptNo: number) => `${prefix}-${String(receiptNo).padStart(6, "0")}`;
 

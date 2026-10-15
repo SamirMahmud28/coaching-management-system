@@ -4,7 +4,7 @@ import { academicStatusEnum, courses } from "./academic";
 import { tenants, users } from "./core";
 import { students } from "./students";
 
-// Fees & Payments (paid module `fees`): D26, D28–D44, D62–D65. Money is numeric(14,2); arithmetic happens in integer
+// Fees & Payments (paid module `fees`):,. Money is numeric(14,2); arithmetic happens in integer
 // poisha (src/lib/money.ts). Charges, waivers, payments, allocations and refunds are history: database triggers
 // (migration 0006_fees_guards) refuse deletes and edits, apart from cancelling a charge or voiding a payment once.
 
@@ -15,7 +15,7 @@ export const feePaymentMethodEnum = pgEnum("fee_payment_method", ["CASH", "BANK_
 export const feePaymentStatusEnum = pgEnum("fee_payment_status", ["VALID", "VOID"]);
 export const feeWaiverKindEnum = pgEnum("fee_waiver_kind", ["FIXED", "PERCENT"]);
 
-/** Per-institute fee settings: the receipt prefix (D38). */
+/** Per-institute fee settings: the receipt prefix. */
 export const feeSettings = pgTable("fee_settings", {
   tenantId: uuid("tenant_id").primaryKey().references(() => tenants.id),
   receiptPrefix: varchar("receipt_prefix", { length: 10 }).notNull().default("R"),
@@ -23,7 +23,7 @@ export const feeSettings = pgTable("fee_settings", {
   updatedBy: uuid("updated_by"),
 }, (t) => [check("fee_settings_receipt_prefix", sql`${t.receiptPrefix} ~ '^[A-Z][A-Z0-9]{0,9}$'`)]);
 
-/** A course's fee (D28): admission (one-time), monthly, or another one-time fee. Archived, never deleted once charged. */
+/** A course's fee: admission (one-time), monthly, or another one-time fee. Archived, never deleted once charged. */
 export const feeItems = pgTable("fee_items", {
   id: uuid("id").primaryKey().defaultRandom(),
   tenantId: uuid("tenant_id").notNull(),
@@ -44,7 +44,7 @@ export const feeItems = pgTable("fee_items", {
   check("fee_items_amount_positive", sql`${t.amount} > 0`),
 ]);
 
-/** A different amount for one student's fee item, with a reason (D29). Zero means the student isn't charged it. */
+/** A different amount for one student's fee item, with a reason. Zero means the student isn't charged it. */
 export const studentFeeAmounts = pgTable("student_fee_amounts", {
   id: uuid("id").primaryKey().defaultRandom(),
   tenantId: uuid("tenant_id").notNull(),
@@ -63,14 +63,14 @@ export const studentFeeAmounts = pgTable("student_fee_amounts", {
   check("student_fee_amounts_amount", sql`${t.amount} >= 0`),
 ]);
 
-/** One confirmed generation (D30, D62): a fee item, a period (YYYY-MM or ONCE), what it charged and what it skipped. */
+/** One confirmed generation: a fee item, a period (YYYY-MM or ONCE), what it charged and what it skipped. */
 export const feeGenerationRuns = pgTable("fee_generation_runs", {
   id: uuid("id").primaryKey().defaultRandom(),
   tenantId: uuid("tenant_id").notNull(),
   feeItemId: uuid("fee_item_id").notNull(),
   period: varchar("period", { length: 7 }).notNull(),
   createdCount: integer("created_count").notNull(),
-  // Students not charged, counted by reason (ON_HOLD, ALREADY_CHARGED, JOINED_LATER, ...).
+  // Students not charged, counted by reason (ON_HOLD, ALREADY_CHARGED, JOINED_LATER,...).
   skipped: jsonb("skipped").$type<Record<string, number>>().notNull(),
   totalAmount: numeric("total_amount", { precision: 14, scale: 2 }).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
@@ -83,8 +83,8 @@ export const feeGenerationRuns = pgTable("fee_generation_runs", {
 ]);
 
 /**
- * What a student owes for one fee item and period, or a manual fine (D34). Everything it needs later is copied in when
- * it's created, so later edits to fee items never reach it. Never deleted; cancelled at most once (D43).
+ * What a student owes for one fee item and period, or a manual fine. Everything it needs later is copied in when
+ * it's created, so later edits to fee items never reach it. Never deleted; cancelled at most once.
  */
 export const feeCharges = pgTable("fee_charges", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -110,7 +110,7 @@ export const feeCharges = pgTable("fee_charges", {
   createdBy: uuid("created_by"),
 }, (t) => [
   unique("fee_charges_tenant_id_unique").on(t.tenantId, t.id),
-  // No duplicates (D30, D62): one active charge per student, fee item and month; a one-time fee once per student.
+  // No duplicates: one active charge per student, fee item and month; a one-time fee once per student.
   uniqueIndex("fee_charges_active_month_idx")
     .on(t.tenantId, t.studentId, t.feeItemId, t.period)
     .where(sql`${t.status} = 'ACTIVE' AND ${t.period} IS NOT NULL AND ${t.period} <> 'ONCE'`),
@@ -134,7 +134,7 @@ export const feeCharges = pgTable("fee_charges", {
   ),
 ]);
 
-/** A one-off reduction of one unpaid charge, fixed or percent, with a reason (D33). Never changed or deleted. */
+/** A one-off reduction of one unpaid charge, fixed or percent, with a reason. Never changed or deleted. */
 export const feeWaivers = pgTable("fee_waivers", {
   id: uuid("id").primaryKey().defaultRandom(),
   tenantId: uuid("tenant_id").notNull(),
@@ -154,15 +154,15 @@ export const feeWaivers = pgTable("fee_waivers", {
   check("fee_waivers_value", sql`${t.value} > 0 AND (${t.kind} = 'FIXED' OR ${t.value} <= 100)`),
 ]);
 
-/** The next receipt number per institute, taken under a row lock inside the payment's transaction (D38). */
+/** The next receipt number per institute, taken under a row lock inside the payment's transaction. */
 export const feeReceiptCounters = pgTable("fee_receipt_counters", {
   tenantId: uuid("tenant_id").primaryKey().references(() => tenants.id),
   nextValue: integer("next_value").notNull().default(1),
 });
 
 /**
- * Money received from one student for one or more whole charges (D31), with its receipt. Never changed or deleted;
- * voided once with a reason by Owner/Admin (D35). The receipt label is stored, so a later prefix change never alters it.
+ * Money received from one student for one or more whole charges, with its receipt. Never changed or deleted;
+ * voided once with a reason by Owner/Admin. The receipt label is stored, so a later prefix change never alters it.
  */
 export const feePayments = pgTable("fee_payments", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -173,7 +173,7 @@ export const feePayments = pgTable("fee_payments", {
   // The day the money was received (Bangladesh date); earlier than the day it was recorded means backdated.
   paidOn: date("paid_on").notNull(),
   method: feePaymentMethodEnum("method").notNull(),
-  // Transaction id or cheque number; required for everything but cash (D39).
+  // Transaction id or cheque number; required for everything but cash.
   reference: varchar("reference", { length: 100 }),
   amount: numeric("amount", { precision: 14, scale: 2 }).notNull(),
   remarks: varchar("remarks", { length: 500 }),
@@ -201,7 +201,7 @@ export const feePayments = pgTable("fee_payments", {
   ),
 ]);
 
-/** Which whole charges a payment settled, and for how much (each charge's full remaining amount, D31). Never changes. */
+/** Which whole charges a payment settled, and for how much (each charge's full remaining amount). Never changes. */
 export const feePaymentAllocations = pgTable("fee_payment_allocations", {
   id: uuid("id").primaryKey().defaultRandom(),
   tenantId: uuid("tenant_id").notNull(),
@@ -217,7 +217,7 @@ export const feePaymentAllocations = pgTable("fee_payment_allocations", {
 ]);
 
 /**
- * Money given back against a paid charge (D36, D37): up to what was paid; the charge stays settled. Never changed or
+ * Money given back against a paid charge: up to what was paid; the charge stays settled. Never changed or
  * deleted.
  */
 export const feeRefunds = pgTable("fee_refunds", {

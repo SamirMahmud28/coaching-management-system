@@ -1,7 +1,7 @@
 /**
- * Result calculation (EXAM-AND-RESULT-LOGIC.md, D102–D109). Ported from the EMS (`exam/result-engine.ts`) and adapted:
- * marks may have two decimals (D104), Absent is recorded rather than inferred (D106), a mark not entered yet leaves the
- * result pending, and the merit order is total marks first (D103). Pure functions only, table-tested. Marks are
+ * Result calculation:
+ * marks may have two decimals, Absent is recorded rather than inferred, a mark not entered yet leaves the
+ * result pending, and the merit order is total marks first. Pure functions only, table-tested. Marks are
  * compared in hundredths (integers), so a boundary like 79.99% never becomes an A+.
  */
 
@@ -11,7 +11,7 @@ export interface GradeBand {
   gradePoint: number;
 }
 
-/** Bangladesh GPA 5.0 scale (D102); used until an institute saves its own. */
+/** Bangladesh GPA 5.0 scale; used until an institute saves its own. */
 export const DEFAULT_GRADE_SCALE: readonly GradeBand[] = [
   { grade: "A+", minPercent: 80, gradePoint: 5 },
   { grade: "A", minPercent: 70, gradePoint: 4 },
@@ -22,7 +22,7 @@ export const DEFAULT_GRADE_SCALE: readonly GradeBand[] = [
   { grade: "F", minPercent: 0, gradePoint: 0 },
 ];
 
-/** Only the part of an optional (4th) subject's grade point above this is added to the GPA (D108). */
+/** Only the part of an optional (4th) subject's grade point above this is added to the GPA. */
 export const OPTIONAL_BONUS_THRESHOLD = 2;
 
 /** Marks and grade points in hundredths, as integers. */
@@ -80,7 +80,7 @@ export function gradeForGpa(gpa: number, scale: readonly GradeBand[]): GradeBand
 export interface PartInput {
   name: string;
   fullMarks: number;
-  /** A part's own pass mark (D105), if it has one. */
+  /** A part's own pass mark, if it has one. */
   passMarks: number | null;
   obtained: number | null;
 }
@@ -116,13 +116,13 @@ export interface PaperOutcome {
 }
 
 export interface Options {
-  /** Grades and GPA on results, or marks only (D102). */
+  /** Grades and GPA on results, or marks only. */
   showGrades: boolean;
 }
 
 /**
- * A paper passes when its total reaches its pass mark and every part with a pass mark reaches it (D105). When grades
- * are shown, a percentage in the failing band (F) is a fail too, as on board results. Absent fails it (D106).
+ * A paper passes when its total reaches its pass mark and every part with a pass mark reaches it. When grades
+ * are shown, a percentage in the failing band (F) is a fail too, as on board results. Absent fails it.
  */
 export function evaluatePaper(paper: PaperInput, scale: readonly GradeBand[], options: Options): PaperOutcome {
   const base = { paperId: paper.paperId, name: paper.name, optional: paper.optional, fullMarks: paper.fullMarks, passMarks: paper.passMarks };
@@ -162,7 +162,7 @@ export function evaluatePaper(paper: PaperInput, scale: readonly GradeBand[], op
   };
 }
 
-/** COMPLETE: a result. PENDING: a compulsory mark not entered yet. ABSENT: absent from every paper sat (D106). */
+/** COMPLETE: a result. PENDING: a compulsory mark not entered yet. ABSENT: absent from every paper sat. */
 export type ResultStatus = "COMPLETE" | "PENDING" | "ABSENT";
 
 export interface StudentOutcome {
@@ -178,7 +178,7 @@ export interface StudentOutcome {
 }
 
 /**
- * The student's result (D105, D106, D108). Failing any compulsory paper fails the student (GPA 0). Otherwise
+ * The student's result. Failing any compulsory paper fails the student (GPA 0). Otherwise
  * GPA = (Σ compulsory grade points + the best optional paper's points above 2.0) ÷ number of compulsory papers,
  * rounded to two decimals and capped at the top grade point; an optional paper never fails the student. If an exam
  * has only optional papers, they count as compulsory.
@@ -223,7 +223,7 @@ export interface Rankable {
   gpa: number | null;
 }
 
-/** Merit order (D103): passed before failed, then higher total marks, then higher GPA (when grades are shown). */
+/** Merit order: passed before failed, then higher total marks, then higher GPA (when grades are shown). */
 export function compareForRank(a: Rankable, b: Rankable): number {
   if (!!a.passed !== !!b.passed) return a.passed ? -1 : 1;
   const total = hundredths(b.totalObtained) - hundredths(a.totalObtained);
@@ -232,8 +232,8 @@ export function compareForRank(a: Rankable, b: Rankable): number {
 }
 
 /**
- * Competition ranking ("1, 1, 3", D103) across everyone given — the whole exam (D109). Only complete results are
- * ranked: pending and all-absent students get null (D106). Returns positions by input index.
+ * Competition ranking ("1, 1, 3") across everyone given — the whole exam. Only complete results are
+ * ranked: pending and all-absent students get null. Returns positions by input index.
  */
 export function assignPositions(items: readonly Rankable[]): (number | null)[] {
   const ranked = items.map((item, index) => ({ item, index })).filter((x) => x.item.status === "COMPLETE");

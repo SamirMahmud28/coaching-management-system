@@ -8,7 +8,7 @@ import { fromPoisha, sumPoisha, toPoisha } from "@/lib/money";
 import { chargeViews } from "./ledger";
 import type { PaymentMethod } from "./payments";
 
-// Fee reports (D75–D78): collections, dues (current and former students, D42) and refunds.
+// Fee reports: collections, dues (current and former students) and refunds.
 
 export interface ReportFilter {
   courseId?: string;
@@ -28,7 +28,7 @@ export function cleanRange(from: string | undefined, to: string | undefined): Da
   return range;
 }
 
-/** The course a filter narrows charges to: the course itself, or the batch's course (D77). */
+/** The course a filter narrows charges to: the course itself, or the batch's course. */
 async function scopeOf(db: DbOrTx, tenantId: string, filter: ReportFilter) {
   if (filter.batchId) {
     const batch = await getInTenant(db, batches, tenantId, filter.batchId, "BATCH");
@@ -48,7 +48,7 @@ function inBatch(tenantId: string, batchId: string, studentColumn: SQL | Column,
 }
 
 // ---------------------------------------------------------------------------
-// Collections (D75, D78)
+// Collections
 // ---------------------------------------------------------------------------
 
 export async function collectionReport(db: DbOrTx, tenantId: string, range: DateRange, filter: ReportFilter = {}) {
@@ -149,12 +149,12 @@ export async function refundsReport(db: DbOrTx, tenantId: string, range: DateRan
 }
 
 // ---------------------------------------------------------------------------
-// Dues (D42, D76)
+// Dues
 // ---------------------------------------------------------------------------
 
 /**
  * Unpaid charges as of today, one line per student, most overdue first. `former` switches from current students
- * (Active, On Hold) to former ones (Completed, Left), whose dues outlive them (D42). Guardian mobiles only `withContacts`.
+ * (Active, On Hold) to former ones (Completed, Left), whose dues outlive them. Guardian mobiles only `withContacts`.
  */
 export async function duesReport(db: DbOrTx, tenantId: string, filter: ReportFilter & { former?: boolean; withContacts?: boolean } = {}) {
   const scope = await scopeOf(db, tenantId, filter);

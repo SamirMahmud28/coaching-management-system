@@ -12,7 +12,7 @@ const change = (o: Partial<Change> & Pick<Change, "kind">): Change => ({
 });
 const view = (cs: ReturnType<typeof expandTimetable>) => cs.map((c) => [c.date, c.batchSubjectId, c.startsAt, c.status]);
 
-describe("expanding the weekly times (D3)", () => {
+describe("expanding the weekly times", () => {
   it("lists every class of every date in the range, in date and time order", () => {
     expect(view(expandTimetable({ slots, changes: [], holidays: [], from: "2026-11-07", to: "2026-11-09" }))).toEqual([
       ["2026-11-07", "phy", "09:00", "SCHEDULED"],
@@ -23,7 +23,7 @@ describe("expanding the weekly times (D3)", () => {
   });
 });
 
-describe("one-off changes and holidays (D114)", () => {
+describe("one-off changes and holidays", () => {
   it("cancels one class with its reason and leaves the others", () => {
     const out = expandTimetable({ slots, changes: [change({ kind: "CANCEL", reason: "Instructor ill" })], holidays: [], from: "2026-11-07", to: "2026-11-07" });
     expect(out.find((c) => c.batchSubjectId === "phy")).toMatchObject({ status: "CANCELLED", reason: "Instructor ill", changeId: "c-CANCEL" });
@@ -63,7 +63,7 @@ describe("one-off changes and holidays (D114)", () => {
   });
 });
 
-describe("overlaps (D51)", () => {
+describe("overlaps", () => {
   it("treats touching times as free and any shared minute as a clash", () => {
     expect(overlaps({ startsAt: "09:00", endsAt: "10:00" }, { startsAt: "10:00", endsAt: "11:00" })).toBe(false);
     expect(overlaps({ startsAt: "09:00:00", endsAt: "10:00:00" }, { startsAt: "09:59", endsAt: "11:00" })).toBe(true);

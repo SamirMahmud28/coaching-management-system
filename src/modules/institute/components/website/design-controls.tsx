@@ -17,7 +17,7 @@ import {
 } from "@/server/modules/website/design";
 import type { WebsiteDesignWire } from "../../api";
 
-// Controls for the website's look (D135, D136). There is no live preview of the whole site (D139): instead every
+// Controls for the website's look. There is no live preview of the whole site: instead every
 // choice is shown as a swatch, a sample in its own font, or a small drawing in the institute's colours.
 
 const toCamel = (k: string) => k.replace(/_([a-z])/g, (_, c: string) => c.toUpperCase());
@@ -26,7 +26,7 @@ const toSnake = (k: string) => k.replace(/[A-Z]/g, (c) => `_${c.toLowerCase()}`)
 /** The design settings as the server and the public site name them. */
 export const fromWire = (d: WebsiteDesignWire): WebsiteDesign => Object.fromEntries(Object.entries(d).map(([k, v]) => [toCamel(k), v])) as unknown as WebsiteDesign;
 
-/** A ready-made look on the wire (D146): theme, palette, fonts and the rest, keeping the language. */
+/** A ready-made look on the wire: theme, palette, fonts and the rest, keeping the language. */
 export function lookWire(look: Look, current: WebsiteDesignWire): { theme: WebsiteTheme; heading_font: WebsiteFont; design: WebsiteDesignWire } {
   const applied = applyLook(look, fromWire(current));
   return {
@@ -208,7 +208,7 @@ function Swatch({ colours, label, selected, onClick, wide }: { colours: string[]
   );
 }
 
-/** Palettes by family, the Settings brand colour, or two custom colours (D136). */
+/** Palettes by family, the Settings brand colour, or two custom colours. */
 export function PalettePicker({ design, onChange, brand }: { design: WebsiteDesignWire; onChange: (d: Partial<WebsiteDesignWire>) => void; brand: string | null }) {
   const brandColour = brand ?? "#2563eb";
   const custom = design.palette === "CUSTOM";

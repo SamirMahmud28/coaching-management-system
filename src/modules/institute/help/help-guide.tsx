@@ -11,7 +11,7 @@ const subscribeHash = (listener: () => void) => {
 
 /**
  * One guide in the Help centre: the title and summary, expanding to the steps, rules and common questions when clicked
- * (D98). A link straight to it (`/app/help#<key>`, e.g. from a page's panel) opens it.
+ *. A link straight to it (`/app/help#<key>`, e.g. from a page's panel) opens it.
  */
 export function HelpGuide({ topic: t }: { topic: HelpTopic }) {
   const hash = useSyncExternalStore(subscribeHash, () => window.location.hash.slice(1), () => "");

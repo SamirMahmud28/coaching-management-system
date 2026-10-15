@@ -9,8 +9,8 @@ import { examSitters } from "./marks";
 import { assignPositions, evaluateStudent, sortScale, type GradeBand, type PaperInput, type StudentOutcome } from "./result-engine";
 import { seesAllExams, taughtBatchIds, type Viewer } from "./setup";
 
-// Results (D102–D113): calculated from the marks each time; one merit list across all the exam's batches (D109);
-// published as a whole (D110) once every mark is in (D113), with the grading scale frozen at publishing (D112).
+// Results: calculated from the marks each time; one merit list across all the exam's batches;
+// published as a whole once every mark is in, with the grading scale frozen at publishing.
 
 type ExamRow = typeof exams.$inferSelect;
 
@@ -24,7 +24,7 @@ async function examById(db: DbOrTx, tenantId: string, examId: string): Promise<E
   return { ...row.exam, courseName: row.courseName };
 }
 
-/** The scale an exam is graded with: frozen at publishing (D112), else the institute's current one. */
+/** The scale an exam is graded with: frozen at publishing, else the institute's current one. */
 async function scaleFor(db: DbOrTx, exam: ExamRow): Promise<GradeBand[]> {
   if (exam.state === "PUBLISHED" && exam.publishedScale) return sortScale(exam.publishedScale as GradeBand[]);
   return (await getGradeScale(db, exam.tenantId)).bands;
@@ -43,7 +43,7 @@ export interface ResultRow {
 }
 
 /**
- * Every sitting student's result in an exam, ranked together (D109). Not scoped: callers filter what a viewer may see.
+ * Every sitting student's result in an exam, ranked together. Not scoped: callers filter what a viewer may see.
  */
 export async function calculateResults(db: DbOrTx, tenantId: string, examId: string) {
   const exam = await examById(db, tenantId, examId);
@@ -71,7 +71,7 @@ export async function calculateResults(db: DbOrTx, tenantId: string, examId: str
   ]);
   const partMarks = marks.length ? await db.select().from(examMarkParts).where(and(eq(examMarkParts.tenantId, tenantId), inArray(examMarkParts.markId, marks.map((m) => m.id)))) : [];
 
-  // Who sits: the batches' members on the first day, plus anyone who already has a mark (D26, D101).
+  // Who sits: the batches' members on the first day, plus anyone who already has a mark.
   const sitters = await examSitters(db, tenantId, batchRows.map((b) => b.id), exam.startsOn);
   const people = new Map<string, { studentId: string; studentCode: string; fullName: string; rollNumber: string | null; batchId: string; batchName: string }>();
   for (const s of sitters) if (!people.has(s.studentId)) people.set(s.studentId, s);
@@ -130,7 +130,7 @@ function summarise(results: ResultRow[]) {
   };
 }
 
-/** Who still needs a mark, per paper (D113). */
+/** Who still needs a mark, per paper. */
 function missingMarks(results: ResultRow[]) {
   return results
     .filter((r) => r.outcome.status === "PENDING")
@@ -138,8 +138,8 @@ function missingMarks(results: ResultRow[]) {
 }
 
 /**
- * The results sheet (D103, D109): the combined merit list, filtered to what the viewer may see — the office all
- * batches, an instructor the batches they teach (D24) — and optionally one batch.
+ * The results sheet: the combined merit list, filtered to what the viewer may see — the office all
+ * batches, an instructor the batches they teach — and optionally one batch.
  */
 export async function getResults(db: DbOrTx, viewer: Viewer, examId: string, filter: { batchId?: string } = {}) {
   const calc = await calculateResults(db, viewer.tenantId, examId);
@@ -164,8 +164,8 @@ export async function getResults(db: DbOrTx, viewer: Viewer, examId: string, fil
 }
 
 /**
- * Publishes the whole exam (D110) once every sitting student has a mark or Absent in every compulsory paper (D113),
- * freezing the grading scale on it (D112). Audited.
+ * Publishes the whole exam once every sitting student has a mark or Absent in every compulsory paper,
+ * freezing the grading scale on it. Audited.
  */
 export async function publishExam(db: DbOrTx, actor: Viewer, examId: string) {
   return inTransaction(db, async (tx) => {
@@ -204,7 +204,7 @@ export async function resultCard(db: DbOrTx, tenantId: string, examId: string, s
   return { exam: calc.exam, papers: calc.papers, sitting: calc.results.length, row };
 }
 
-/** The signed-in student's published results, newest first (D27). */
+/** The signed-in student's published results, newest first. */
 export async function myResults(db: DbOrTx, tenantId: string, userId: string) {
   const [student] = await db.select({ id: students.id }).from(students).where(and(eq(students.tenantId, tenantId), eq(students.userId, userId)));
   if (!student) throw new NotFoundError("STUDENT");

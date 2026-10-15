@@ -8,7 +8,7 @@ import { todayInDhaka } from "@/lib/dates";
 /**
  * A charge as the fee screens see it. Its state is derived, never stored: cancelled; paid (settled by a valid payment);
  * waived (waivers took it to zero); or due (overdue once its due date has passed). Voiding a payment makes its charges
- * due again (D35); a refund never does (D37).
+ * due again; a refund never does.
  */
 export type ChargeState = "DUE" | "PAID" | "WAIVED" | "CANCELLED";
 
@@ -112,7 +112,7 @@ export async function chargeViewsByIds(db: DbOrTx, tenantId: string, ids: string
 }
 
 /**
- * A student's own fees for the portal (D27, D79): due charges (overdue first) and paid ones with their receipts. Cancelled
+ * A student's own fees for the portal: due charges (overdue first) and paid ones with their receipts. Cancelled
  * charges, voided payments and staff reasons are left out. Found by the signed-in user's own student record only.
  */
 export async function myFees(db: DbOrTx, tenantId: string, userId: string) {
@@ -123,7 +123,7 @@ export async function myFees(db: DbOrTx, tenantId: string, userId: string) {
     id: v.id,
     title: v.title,
     courseName: v.courseName,
-    // A fine's reason (D79); generated charges have no note.
+    // A fine's reason; generated charges have no note.
     reason: v.source === "FINE" ? v.note : null,
     amount: v.amount,
     waived: v.waived,

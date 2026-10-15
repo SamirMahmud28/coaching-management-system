@@ -32,7 +32,7 @@ export interface PaletteSearch {
 const matches = (q: string, ...texts: (string | undefined)[]) => texts.some((t) => t?.toLowerCase().includes(q));
 
 /**
- * The ⌘K / Ctrl+K palette (D152): jump to any page in the menu, start a common task, or find a record by name, ID or
+ * The ⌘K / Ctrl+K palette: jump to any page in the menu, start a common task, or find a record by name, ID or
  * mobile. Everything listed comes from what the user can already open, so it reveals nothing new.
  */
 export function CommandPalette({

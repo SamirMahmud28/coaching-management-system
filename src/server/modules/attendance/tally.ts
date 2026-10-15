@@ -1,4 +1,4 @@
-/** The attendance percentage rule (D87), shared by registers, reports and the dashboard. */
+/** The attendance percentage rule, shared by registers, reports and the dashboard. */
 export interface AttendanceTally {
   present: number;
   late: number;

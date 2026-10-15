@@ -8,8 +8,8 @@ import { getCurrentInstitute } from "@/server/modules/institute/current-user";
 import { publicPageVisible } from "@/server/modules/portal/service";
 import { loadPublicWebsite } from "@/server/modules/website/load";
 
-// The website's other pages (D142): /about, /courses, /teachers, /results, /gallery, /notices, /admission, /contact.
-// Only while the Website module is on and the institute's page is shown (D21, D58), and only a page with something to
+// The website's other pages: /about, /courses, /teachers, /results, /gallery, /notices, /admission, /contact.
+// Only while the Website module is on and the institute's page is shown, and only a page with something to
 // show; anything else is 404. /login and /app are their own routes and take precedence.
 
 type Props = { params: Promise<{ page: string }> };

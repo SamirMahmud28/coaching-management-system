@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 
 /**
  * A frosted bar that stays at the bottom of the screen while a long form is scrolled (a register, a mark sheet, fee
- * collection), so the summary and the Save button are always in reach (D152). It sits in the page flow (sticky), so it
+ * collection), so the summary and the Save button are always in reach. It sits in the page flow (sticky), so it
  * never covers the last rows: they scroll up above it. `--app-bottom-inset` lifts it above the phone tab bar.
  */
 export function StickyActionBar({

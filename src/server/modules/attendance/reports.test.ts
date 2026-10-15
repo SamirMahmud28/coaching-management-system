@@ -78,7 +78,7 @@ async function setUp() {
   return { tenant, admin, instructor, morning, evening, phy, chem, anika, bushra, chaity, dina };
 }
 
-describe("monthly batch register (D88)", () => {
+describe("monthly batch register", () => {
   it("shows taken classes as columns, each student's effective status, totals and percentage", async () => {
     const s = await setUp();
     const month = yesterday.slice(0, 7);
@@ -118,7 +118,7 @@ describe("monthly batch register (D88)", () => {
   });
 });
 
-describe("low attendance and daily absentees (D88)", () => {
+describe("low attendance and daily absentees", () => {
   it("lists students below the percentage, lowest first, with guardian mobiles only with contact access", async () => {
     const s = await setUp();
     const range = { from: yesterday, to: today };
@@ -143,11 +143,11 @@ describe("low attendance and daily absentees (D88)", () => {
       ["Bushra", ["Physics", "Chemistry"]],
     ]);
     const mine = await dailyAbsentees(db, s.instructor, { date: yesterday });
-    expect(mine.rows.map((r) => [r.fullName, r.guardianPhone])).toEqual([["Bushra", null]]); // instructors never see guardian mobiles (D24)
+    expect(mine.rows.map((r) => [r.fullName, r.guardianPhone])).toEqual([["Bushra", null]]); // instructors never see guardian mobiles
   });
 });
 
-describe("a student's history (D88) and My attendance (D27)", () => {
+describe("a student's history and My attendance", () => {
   it("gives staff the classes with totals per subject; an instructor only for students they teach", async () => {
     const s = await setUp();
     const h = await studentHistory(db, s.admin, s.anika.id, { from: yesterday, to: today });

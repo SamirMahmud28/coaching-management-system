@@ -38,7 +38,7 @@ const admitBody = z.object({
   temporary_password: z.string().max(200),
 });
 const updateBody = z.object(fields).partial();
-// Set at admission (D15) or by their own action; an edit naming them is refused with the reason.
+// Set at admission or by their own action; an edit naming them is refused with the reason.
 const LOCKED = {
   student_code: { reason: "The student ID is issued at admission and never changes." },
   admission_date: { reason: "The admission date sets the year in the student ID, so it can't change after admission." },
@@ -75,7 +75,7 @@ const toFields = (b: z.infer<typeof updateBody>): Partial<service.StudentFields>
   photoFileId: b.photo_file_id,
 });
 
-/** Guardian and student mobile numbers and the address are for viewers with students.contact.view (D24). */
+/** Guardian and student mobile numbers and the address are for viewers with students.contact.view. */
 function withContacts<T extends { guardianPhone: string | null; phone: string | null; address?: string | null }>(row: T, canSee: boolean): T {
   return canSee ? row : { ...row, guardianPhone: null, phone: null, ...("address" in row ? { address: null } : {}) };
 }

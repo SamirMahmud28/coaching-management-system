@@ -27,7 +27,7 @@ export interface Pagination {
 type Sort = { key: string; dir: "asc" | "desc" } | null;
 
 /**
- * The shared list (D152): a table on wider screens and, when `card` is given, a stack of tappable cards on phones, so
+ * The shared list: a table on wider screens and, when `card` is given, a stack of tappable cards on phones, so
  * no list scrolls sideways on a phone. Only one of the two is rendered. Loading, error and empty states are built in.
  */
 export function DataTable<T>({

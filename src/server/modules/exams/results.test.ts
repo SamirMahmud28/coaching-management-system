@@ -75,7 +75,7 @@ async function setUp() {
 
 const row = (res: Awaited<ReturnType<typeof getResults>>, name: string) => res.rows.find((r) => r.fullName === name)!;
 
-describe("results and the combined merit list (D103, D108, D109)", () => {
+describe("results and the combined merit list", () => {
   it("grades each student, adds the optional bonus, and ranks all batches together", async () => {
     const s = await setUp();
     await saveMarks(db, s.admin, s.phyPaper.id, { entries: [s.physicsMark(s.anika.id, "50", "22"), s.physicsMark(s.bushra.id, "60", "25"), s.physicsMark(s.chaity.id, "50", "22")] });
@@ -105,7 +105,7 @@ describe("results and the combined merit list (D103, D108, D109)", () => {
   });
 });
 
-describe("publishing (D110, D112, D113)", () => {
+describe("publishing", () => {
   it("is refused while a compulsory mark is missing, naming who; an empty optional paper is fine", async () => {
     const s = await setUp();
     await saveMarks(db, s.admin, s.phyPaper.id, { entries: [s.physicsMark(s.anika.id, "50", "20"), { studentId: s.bushra.id, absent: true }] });
@@ -130,7 +130,7 @@ describe("publishing (D110, D112, D113)", () => {
   });
 });
 
-describe("students and printing (D27)", () => {
+describe("students and printing", () => {
   it("shows a student only published results, with their position", async () => {
     const s = await setUp();
     await saveMarks(db, s.admin, s.phyPaper.id, { entries: [s.physicsMark(s.anika.id, "60", "22"), s.physicsMark(s.bushra.id, "50", "20"), s.physicsMark(s.chaity.id, "40", "15")] });

@@ -5,9 +5,9 @@ import { Parallax } from "../../motion/parallax";
 import { CarouselNav } from "../carousel-nav";
 import { imageUrl, mediaClass, SectionHeading, sectionWords, type SectionProps, type Site } from "./shared";
 
-// The sections filled from the institute's own lists: About (D131), Courses (Core), Notices (D128), Gallery (D125)
-// and Testimonials (D130), drawn with the site's tokens (D135, D136), in the layout chosen for each (D135) and with the
-// labels in the site's language (D140).
+// The sections filled from the institute's own lists: About, Courses (Core), Notices, Gallery
+// and Testimonials, drawn with the site's tokens, in the layout chosen for each and with the
+// labels in the site's language.
 
 /** A row that scrolls sideways and snaps to each item; swipeable on phones without any script, with arrows for a mouse. */
 function Carousel({ children, label, id, t }: { children: ReactNode; label: string; id: string; t: SectionProps["t"] }) {
@@ -161,7 +161,7 @@ const PinnedBadge = ({ t }: { t: SectionProps["t"] }) => (
   </span>
 );
 
-/** Public notices (D128): pinned first, then the newest; a long notice opens with "Read more" (no script needed). */
+/** Public notices: pinned first, then the newest; a long notice opens with "Read more" (no script needed). */
 export function Notices(props: SectionProps) {
   const { site, sig, t } = props;
   const words = sectionWords(props, "NOTICES");
@@ -213,7 +213,7 @@ export function Notices(props: SectionProps) {
   );
 }
 
-/** The gallery (D125): photos in the order set, each opening full size, as a grid, masonry or a swipeable row. */
+/** The gallery: photos in the order set, each opening full size, as a grid, masonry or a swipeable row. */
 export function Gallery(props: SectionProps) {
   const { site, sig } = props;
   const words = sectionWords(props, "GALLERY");
@@ -306,7 +306,7 @@ function TestimonialCard({ q }: { q: Site["testimonials"][number] }) {
   );
 }
 
-/** Testimonials entered by the office (D130): cards, a swipeable row, or one in the spotlight with the rest below. */
+/** Testimonials entered by the office: cards, a swipeable row, or one in the spotlight with the rest below. */
 export function Testimonials(props: SectionProps) {
   const { site, sig } = props;
   const words = sectionWords(props, "TESTIMONIALS");

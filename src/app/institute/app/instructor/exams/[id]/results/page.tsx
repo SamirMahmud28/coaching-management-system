@@ -6,7 +6,7 @@ import { requireModulePage } from "@/server/modules/institute/current-user";
 
 export const metadata: Metadata = { title: "Results" };
 
-// Their own batches, with combined positions; instructors can't publish (D24).
+// Their own batches, with combined positions; instructors can't publish.
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   if (!isUuid(id)) notFound();

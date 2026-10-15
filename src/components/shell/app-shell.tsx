@@ -86,9 +86,9 @@ export function AppShell({
   actions?: PaletteAction[];
   search?: PaletteSearch;
   changePasswordHref?: string;
-  /** The app theme (D156, D157): the institute's, or the platform admin's own. */
+  /** The app theme: the institute's, or the platform admin's own. */
   theme?: AppTheme;
-  /** The paper background (D158): on, off, or "auto" to follow the theme (on with Classic Amber). */
+  /** The paper background: on, off, or "auto" to follow the theme (on with Classic Amber). */
   paper?: boolean | "auto";
   /** Where the theme is changed (Settings → Appearance), shown in the account menu. */
   themeHref?: string;
@@ -167,7 +167,7 @@ export function AppShell({
         Skip to content
       </a>
 
-      {/* A floating panel resting on the page (D162): inset from the edges, rounded, with a soft shadow. */}
+      {/* A floating panel resting on the page: inset from the edges, rounded, with a soft shadow. */}
       <aside className="sticky top-0 hidden h-screen shrink-0 py-3 pl-3 lg:flex print:hidden">
         <div
           className={cn(
@@ -195,7 +195,7 @@ export function AppShell({
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        {/* A floating bar matching the sidebar panel (D162): inset 12 px, rounded, aligned with the sidebar's brand row. */}
+        {/* A floating bar matching the sidebar panel: inset 12 px, rounded, aligned with the sidebar's brand row. */}
         {/* The gap above the bar blurs content out as it scrolls up behind it. */}
         <div className="sticky top-0 z-30 px-3 pt-3 print:hidden">
           {/* No colour of its own: it only blurs what passes behind, fading out downwards, so it takes the paper's colour. */}

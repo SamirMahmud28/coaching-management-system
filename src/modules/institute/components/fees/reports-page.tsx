@@ -27,7 +27,7 @@ const REPORTS: { kind: FeeReportKind; label: string }[] = [
   { kind: "refunds", label: "Refunds" },
 ];
 
-/** Fee reports with date range, course and batch filters (D75–D78), each printable on A4. */
+/** Fee reports with date range, course and batch filters, each printable on A4. */
 export function ReportsPage({ nav }: { nav: FeesNav }) {
   const today = todayInDhaka();
   const [kind, setKind] = useState<FeeReportKind>("collections");

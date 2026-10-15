@@ -14,7 +14,7 @@ import { formatAmount } from "@/lib/format";
 import { feesApi, type StudentFeeAmountRow } from "../../api";
 import { instituteKeys } from "../../keys";
 
-/** A student's own amounts for the fees of their current courses (D29); used by charges generated from now on. */
+/** A student's own amounts for the fees of their current courses; used by charges generated from now on. */
 export function StudentFeeAmountsCard({ studentId, canAdjust }: { studentId: string; canAdjust: boolean }) {
   const queryClient = useQueryClient();
   const query = useQuery({ queryKey: instituteKeys.studentFeeAmounts(studentId), queryFn: () => feesApi.studentAmounts(studentId) });

@@ -29,7 +29,7 @@ import { GENDER_LABEL, RELATION_LABEL, StudentFieldsForm, studentFieldsFrom, stu
 import { HowThisWorks } from "@/modules/institute/help/how-this-works";
 
 const STATUS_LABEL: Record<StudentStatus, string> = { ACTIVE: "Active", ON_HOLD: "On hold", COMPLETED: "Completed", LEFT: "Left" };
-// The decided moves (D9, D10, D18); the server enforces the same table.
+// The decided moves; the server enforces the same table.
 const NEXT: Record<StudentStatus, StudentStatus[]> = { ACTIVE: ["ON_HOLD", "COMPLETED", "LEFT"], ON_HOLD: ["ACTIVE", "COMPLETED", "LEFT"], COMPLETED: ["ACTIVE"], LEFT: ["ACTIVE"] };
 const STATUS_EFFECT: Record<StudentStatus, string> = {
   ACTIVE: "They can sign in again. Past batches stay closed; add them to batches again if needed.",

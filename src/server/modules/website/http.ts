@@ -129,7 +129,7 @@ export function createWebsiteHandlers({ db, auth, host, storage }: WebsiteHttpDe
 
   const noContent = () => new Response(null, { status: 204 });
 
-  /** Whether the request comes from a signed-in website editor of this institute (the live preview, D144). */
+  /** Whether the request comes from a signed-in website editor of this institute (the live preview). */
   const canPreview = async (request: Request, tenantId: string) => {
     try {
       return (await authorize(request, "website.manage")).tenantId === tenantId;
@@ -146,7 +146,7 @@ export function createWebsiteHandlers({ db, auth, host, storage }: WebsiteHttpDe
         return json(await withBrand(actor.tenantId, await getWebsiteSettings(db, actor.tenantId)));
       }),
 
-    // PUT /api/v1/website/settings — public at once (D126)
+    // PUT /api/v1/website/settings — public at once
     saveSettings: (request: Request) =>
       handle(async () => {
         const actor = await authorize(request, "website.manage");
@@ -161,7 +161,7 @@ export function createWebsiteHandlers({ db, auth, host, storage }: WebsiteHttpDe
         return json(await withBrand(actor.tenantId, saved));
       }),
 
-    // --- faculty and achievers (D141) -----------------------------------------------------------------------------
+    // --- faculty and achievers -----------------------------------------------------------------------------
 
     // GET /api/v1/website/faculty — the instructors on the website, and those that can be added
     listFaculty: (request: Request) =>
@@ -244,7 +244,7 @@ export function createWebsiteHandlers({ db, auth, host, storage }: WebsiteHttpDe
         return noContent();
       }),
 
-    // --- notices (D128) ---------------------------------------------------------------------------------------
+    // --- notices ---------------------------------------------------------------------------------------
 
     // GET /api/v1/website/notices — every notice with its status today
     listNotices: (request: Request) =>
@@ -283,7 +283,7 @@ export function createWebsiteHandlers({ db, auth, host, storage }: WebsiteHttpDe
         return json(await content.setNoticeHidden(db, actor, pathId(params.id, "NOTICE"), false));
       }),
 
-    // --- gallery (D125) ---------------------------------------------------------------------------------------
+    // --- gallery ---------------------------------------------------------------------------------------
 
     // GET /api/v1/website/gallery
     listGallery: (request: Request) =>
@@ -324,7 +324,7 @@ export function createWebsiteHandlers({ db, auth, host, storage }: WebsiteHttpDe
         return noContent();
       }),
 
-    // --- testimonials (D130) ----------------------------------------------------------------------------------
+    // --- testimonials ----------------------------------------------------------------------------------
 
     // GET /api/v1/website/testimonials
     listTestimonials: (request: Request) =>
@@ -365,7 +365,7 @@ export function createWebsiteHandlers({ db, auth, host, storage }: WebsiteHttpDe
         return noContent();
       }),
 
-    // --- enquiries (D22, D129) ---------------------------------------------------------------------------------
+    // --- enquiries ---------------------------------------------------------------------------------
 
     // GET /api/v1/website/enquiries?status=
     listEnquiries: (request: Request) =>
@@ -374,7 +374,7 @@ export function createWebsiteHandlers({ db, auth, host, storage }: WebsiteHttpDe
         return json(await enquiries.listEnquiries(db, actor.tenantId, parseQuery(request, enquiriesQuery)));
       }),
 
-    // GET /api/v1/website/enquiries/:id — also what admission pre-fills from (D129)
+    // GET /api/v1/website/enquiries/:id — also what admission pre-fills from
     getEnquiry: (request: Request, params: { id: string }) =>
       handle(async () => {
         const actor = await authorize(request, "website.manage");
@@ -423,7 +423,7 @@ export function createWebsiteHandlers({ db, auth, host, storage }: WebsiteHttpDe
         const id = pathId(params.id, "FILE");
         if (!(await isModuleActive(db, tenantId, "website"))) throw new NotFoundError("FILE");
         // A picture not yet on the website is shown only to the institute's own website editors, for the live preview
-        // (D144), and never cached; everyone else gets 404, as before.
+        //, and never cached; everyone else gets 404, as before.
         const inUse = await isPublicWebsiteImage(db, tenantId, id);
         const preview = !inUse && (await canPreview(request, tenantId));
         const row = inUse || preview ? await getFileInTenant(db, tenantId, id) : null;

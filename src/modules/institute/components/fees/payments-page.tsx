@@ -28,7 +28,7 @@ const STATUS_FILTERS = [
   { value: "VOID", label: "Void" },
 ] as const;
 
-/** Every receipt in a date range (D99): reprint any of them, and void one with a reason (Owner/Admin, D35). */
+/** Every receipt in a date range: reprint any of them, and void one with a reason (Owner/Admin). */
 export function PaymentsPage({ nav, canVoid }: { nav: FeesNav; canVoid: boolean }) {
   const queryClient = useQueryClient();
   const today = todayInDhaka();

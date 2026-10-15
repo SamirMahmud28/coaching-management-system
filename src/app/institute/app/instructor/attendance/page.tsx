@@ -5,7 +5,7 @@ import { requireModulePage } from "@/server/modules/institute/current-user";
 
 export const metadata: Metadata = { title: "Attendance" };
 
-// The instructor's own classes only (D24, D81).
+// The instructor's own classes only.
 export default async function Page({ searchParams }: { searchParams: Promise<{ date?: string }> }) {
   const { permissions } = await requireModulePage("attendance.view", "instructor");
   const { date } = await searchParams;

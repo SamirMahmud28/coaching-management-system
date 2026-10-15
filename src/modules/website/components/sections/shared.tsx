@@ -6,18 +6,18 @@ import type { SocialNetwork } from "@/server/modules/website/site-content";
 import type { SiteLabels } from "../../i18n";
 import type { HeadingMark, ThemeSignature } from "../../themes";
 
-// Pieces every website section shares (D135, D136, D140).
+// Pieces every website section shares.
 
 export type Site = PublicWebsite;
 
 export interface SectionProps {
   site: Site;
   sig: ThemeSignature;
-  /** The built-in labels in the site's language (D140). */
+  /** The built-in labels in the site's language. */
   t: SiteLabels;
 }
 
-/** A section's heading and the line under it: the office's own words when set (D140), else the built-in ones. */
+/** A section's heading and the line under it: the office's own words when set, else the built-in ones. */
 export function sectionWords({ site, t }: SectionProps, key: WebsiteSectionKey): { title: string; subtitle: string | undefined } {
   const own = site.settings.content.sectionTitles[key];
   return { title: own?.title ?? t.title[key], subtitle: own?.subtitle ?? t.subtitle[key] };

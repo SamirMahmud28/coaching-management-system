@@ -25,7 +25,7 @@ const config: ChartConfig = {
 const shortTaka = (taka: number) => (taka >= 100_000 ? `৳${(taka / 100_000).toFixed(taka >= 1_000_000 ? 0 : 1)}L` : taka >= 1000 ? `৳${Math.round(taka / 1000)}K` : `৳${taka}`);
 
 /**
- * Monthly fee collection against what was billed (D163): the faint bar is the month's charges, the solid bar what was
+ * Monthly fee collection against what was billed: the faint bar is the month's charges, the solid bar what was
  * collected, coloured by band and labelled with its percentage so colour is never the only cue.
  */
 export function FeeCollectionChart() {

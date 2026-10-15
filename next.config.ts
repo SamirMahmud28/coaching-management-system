@@ -1,6 +1,6 @@
 import type { NextConfig } from "next";
 
-// The dev server only serves its scripts to localhost (and its subdomains) unless told otherwise. When .env points
+// The dev server only serves its scripts to localhost (and its subdomains) unless told otherwise. When.env points
 // APP_BASE_DOMAIN at a LAN name for phone testing (e.g. 192.168.0.173.sslip.io:3000), allow that name and its subdomains.
 const baseHost = process.env.APP_BASE_DOMAIN?.split(":")[0];
 const devOrigins = baseHost && baseHost !== "localhost" ? [baseHost, `*.${baseHost}`] : [];

@@ -8,12 +8,12 @@ import { todayInDhaka } from "../../../lib/dates";
 import { getWebsiteSettings } from "./settings";
 import { listAchievers, publicFaculty } from "./showcase";
 
-// What visitors see at `<sub>.<domain>/` while the Website module is on (D21, D124–D133). Callers check the institute's
-// public-page visibility (D58) first, exactly as for the Core page.
+// What visitors see at `<sub>.<domain>/` while the Website module is on. Callers check the institute's
+// public-page visibility first, exactly as for the Core page.
 
 export type PublicWebsite = NonNullable<Awaited<ReturnType<typeof getPublicWebsite>>>;
 
-/** The institute's themed website, or null while the Website module is off (the Core page is shown instead, D21). */
+/** The institute's themed website, or null while the Website module is off (the Core page is shown instead). */
 export async function getPublicWebsite(db: DbOrTx, tenantId: string) {
   if (!(await isModuleActive(db, tenantId, "website"))) return null;
   const [settings, catalog, notices, gallery, testimonialRows, courseOptions, faculty, achievers] = await Promise.all([
@@ -31,7 +31,7 @@ export async function getPublicWebsite(db: DbOrTx, tenantId: string) {
       theme: settings.theme,
       headingFont: settings.headingFont,
       design: settings.design,
-      /** The announcement is left out after its last day (D138). */
+      /** The announcement is left out after its last day. */
       content: { ...settings.content, announcement: settings.content.announcement && (!settings.content.announcement.showUntil || settings.content.announcement.showUntil >= todayInDhaka()) ? settings.content.announcement : null },
       sections: settings.sections,
       heroHeading: settings.heroHeading,
@@ -46,10 +46,10 @@ export async function getPublicWebsite(db: DbOrTx, tenantId: string) {
     courses: catalog.courses,
     notices,
     gallery: gallery.map((p) => ({ id: p.id, fileId: p.fileId, caption: p.caption })),
-    /** The enquiry form's course choices (D129). */
+    /** The enquiry form's course choices. */
     courseOptions,
     testimonials: testimonialRows.map((t) => ({ id: t.id, quote: t.quote, name: t.name, line: t.line, photoFileId: t.photoFileId })),
-    /** Instructors the office shows (D141): name, photo, subjects and line only. */
+    /** Instructors the office shows: name, photo, subjects and line only. */
     faculty,
     achievers: achievers.map((a) => ({ id: a.id, name: a.name, result: a.result, exam: a.exam, photoFileId: a.photoFileId })),
   };
@@ -61,7 +61,7 @@ export async function getPublicWebsite(db: DbOrTx, tenantId: string) {
  */
 export async function isPublicWebsiteImage(db: DbOrTx, tenantId: string, fileId: string): Promise<boolean> {
   const [file] = await db.select({ category: files.category }).from(files).where(and(eq(files.tenantId, tenantId), eq(files.id, fileId)));
-  // An instructor's photo is public only while they are shown on the website and active (D141).
+  // An instructor's photo is public only while they are shown on the website and active.
   if (file?.category === "INSTRUCTOR_PHOTO") {
     const [shown] = await db
       .select({ id: websiteFaculty.id })
@@ -77,7 +77,7 @@ export async function isPublicWebsiteImage(db: DbOrTx, tenantId: string, fileId:
     .from(websiteSettings)
     .where(and(eq(websiteSettings.tenantId, tenantId), or(eq(websiteSettings.heroImageFileId, fileId), eq(websiteSettings.aboutImageFileId, fileId))));
   if (inSettings) return true;
-  // A banner slide's picture (D147).
+  // A banner slide's picture.
   const [inSlides] = await db
     .select({ id: websiteSettings.tenantId })
     .from(websiteSettings)

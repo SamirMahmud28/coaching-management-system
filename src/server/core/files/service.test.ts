@@ -115,7 +115,7 @@ describe("permissions", () => {
     const viewer = (permissions: string[]) => ({ tenantId: actor.tenantId, userId: actor.userId, permissions: new Set(permissions) });
     const studentPhoto = await uploadFile(db, storage, actor, { category: "STUDENT_PHOTO", filename: "s.jpg", bytes: await image(100, 100) });
     expect(await canViewFile(db, viewer(["students.view"]), studentPhoto)).toBe(true);
-    // Instructors see only their own batches' students' photos (D24; covered with real batches in students/http.test.ts).
+    // Instructors see only their own batches' students' photos (covered with real batches in students/http.test.ts).
     expect(await canViewFile(db, viewer(["batches.own.view"]), studentPhoto)).toBe(false);
     expect(await canViewFile(db, viewer([]), studentPhoto)).toBe(false);
 

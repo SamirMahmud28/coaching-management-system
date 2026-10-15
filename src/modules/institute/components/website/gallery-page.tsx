@@ -18,7 +18,7 @@ import { websiteContentApi, type GalleryPhotoRow } from "../../api";
 import { instituteKeys } from "../../keys";
 import { WebsiteTabs } from "./website-tabs";
 
-/** The website gallery (D125): up to 60 photos, each with a caption, in the order set. */
+/** The website gallery: up to 60 photos, each with a caption, in the order set. */
 export function WebsiteGalleryPage() {
   const queryClient = useQueryClient();
   const gallery = useQuery({ queryKey: instituteKeys.website("gallery"), queryFn: websiteContentApi.gallery });

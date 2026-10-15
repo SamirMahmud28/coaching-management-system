@@ -7,7 +7,7 @@ import { requireModulePage } from "@/server/modules/institute/current-user";
 
 export const metadata: Metadata = { title: "Results" };
 
-// The student's own published results (D27). 404 when Exams is off.
+// The student's own published results. 404 when Exams is off.
 export default async function Page() {
   const { session } = await requireModulePage("exams.self.view", "student");
   const data = toSnakeCaseKeys(await myResults(db, session.tenant.id, session.userId)) as MyResultsWire;

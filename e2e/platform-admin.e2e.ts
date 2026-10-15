@@ -37,7 +37,7 @@ test("create an institute through the New institute wizard, with paid modules ch
   await expect(page.getByText("Available")).toBeVisible();
   await page.getByRole("button", { name: "Next", exact: true }).click();
 
-  // Core is always included; paid modules are independent of each other (D2).
+  // Core is always included; paid modules are independent of each other.
   await expect(page.getByLabel("Core")).toBeDisabled();
   await page.getByLabel("Fees & Payments").check();
   await page.getByLabel("Exams & Results").check();
@@ -78,7 +78,7 @@ test("switch a module on and off, set the paid-until date, suspend and reactivat
   await expect(page.getByRole("switch", { name: "Disable Attendance & Leave" })).toBeChecked();
 
   await page.getByRole("switch", { name: "Disable Fees & Payments" }).click();
-  await expect(page.getByText(/Its data is kept/)).toBeVisible(); // D5
+  await expect(page.getByText(/Its data is kept/)).toBeVisible();
   await page.getByRole("button", { name: "Disable", exact: true }).click();
   await expect(page.getByRole("switch", { name: "Enable Fees & Payments" })).not.toBeChecked();
 

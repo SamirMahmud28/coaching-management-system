@@ -26,14 +26,14 @@ import { FaqCard, FeaturesCard, SlidesCard, StatsCard, TickerCard, VideosCard } 
 import { HeroThumb, Segmented } from "./design-controls";
 import type { EditorValues } from "./editor-schema";
 
-// The editor's Layout, Content and Sections tabs (D131, D135, D138, D140). The Look tab is in website-editor-page.tsx.
+// The editor's Layout, Content and Sections tabs. The Look tab is in website-editor-page.tsx.
 
 type Form = UseFormReturn<EditorValues>;
 type DesignField = <K extends keyof WebsiteDesignWire>(key: K) => { value: WebsiteDesignWire[K]; onChange: (v: WebsiteDesignWire[K]) => void };
 
 const Bar = ({ className }: { className?: string }) => <span className={cn("block rounded-sm bg-foreground/40", className)} />;
 
-/** Tiny drawings of each layout, so the choice is visible before saving (D139). */
+/** Tiny drawings of each layout, so the choice is visible before saving. */
 const DRAW: Record<string, React.ReactNode> = {
   "header:SOLID": <span className="flex h-6 w-16 items-center gap-1 rounded border px-1"><Bar className="h-1.5 w-4" /><span className="flex-1" /><Bar className="h-1 w-6" /></span>,
   "header:GLASS": <span className="flex h-6 w-16 items-center gap-1 rounded border bg-gradient-to-r from-sky-200/60 to-pink-200/60 px-1 backdrop-blur"><Bar className="h-1.5 w-4" /><span className="flex-1" /><Bar className="h-1 w-6" /></span>,

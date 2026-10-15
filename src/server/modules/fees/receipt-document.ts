@@ -6,7 +6,7 @@ import { isUuid } from "../../core/db/tenant-scope";
 import { takaInWords, toPoisha } from "@/lib/money";
 import { getPayment } from "./payments";
 
-/** What a printed receipt shows (D69): the payment as recorded, never recomputed. */
+/** What a printed receipt shows: the payment as recorded, never recomputed. */
 export interface FeeReceiptRecord {
   receiptLabel: string;
   paidOn: string;
@@ -27,7 +27,7 @@ export interface FeeReceiptRecord {
 
 /**
  * One payment's receipt, printed or reprinted from the stored payment (printing never creates a record). Staff with
- * fees.view print any; a student with fees.self.view only their own (D27). Voided receipts print with a VOID mark (D71).
+ * fees.view print any; a student with fees.self.view only their own. Voided receipts print with a VOID mark.
  */
 export const feeReceiptDocument: DocumentTypeDefinition<FeeReceiptRecord, { paymentId: string }> = {
   key: "fee-receipt",

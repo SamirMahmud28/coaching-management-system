@@ -44,7 +44,7 @@ export async function getActivePermissions(
 
 /**
  * The guard for every institute API handler. The module is derived from the permission, so a route can neither
- * forget the module check nor pass the wrong module (an EMS gap, docs/00-master/EMS-INVESTIGATION-REPORT.md F2).
+ * forget the module check nor pass the wrong module.
  */
 export async function withAuthorization(params: RequestParams & { permission: PermissionName }): Promise<AuthorizedTenantContext> {
   return authenticateTenantRequest({ ...params, module: moduleOfPermission(params.permission), require: params.permission });

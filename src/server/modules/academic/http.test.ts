@@ -17,7 +17,7 @@ const host = { baseDomain: "localhost:3000", platformHost: "admin.localhost:3000
 const auth = createTenantAuth(db, { secret: "test-secret-".padEnd(40, "x"), host, protocol: "http" });
 const h = createAcademicHandlers({ db, auth, host });
 
-// Stands in for another module's table that refers to batches (students' memberships, M6).
+// Stands in for another module's table that refers to batches (students' memberships).
 let batchInUse: string | null = null;
 academicReferences.register("BATCH", "TEST_MEMBERSHIP", async (_db, _tenantId, id) => (id === batchInUse ? 3 : 0));
 
@@ -225,7 +225,7 @@ describe("academic API: courses and subjects", () => {
 });
 
 describe("academic API: batches", () => {
-  it("adds only the course's own subjects to a batch, once each (D25)", async () => {
+  it("adds only the course's own subjects to a batch, once each", async () => {
     const a = await institute("inst-a");
     const { batch, physics, chemistry } = await setUp(a);
     const other = (await createCourse(a, { name: "SSC 2026", code: "SSC26" })).body;

@@ -1,4 +1,4 @@
-// Runs a command with an env file loaded first, e.g. `node scripts/with-env.mjs .env.test drizzle-kit migrate`.
+// Runs a command with an env file loaded first, e.g. `node scripts/with-env.mjs.env.test drizzle-kit migrate`.
 // Variables already set win over the file, and drizzle.config.ts's own `dotenv/config` doesn't override them either.
 import { spawnSync } from "node:child_process";
 import { config } from "dotenv";

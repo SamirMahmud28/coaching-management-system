@@ -13,7 +13,7 @@ const TONES: Record<StatTone, string> = {
 };
 
 /**
- * A KPI card (D152): a label, a big number, an optional trend (up is good unless `trendGoodWhen` says otherwise), an
+ * A KPI card: a label, a big number, an optional trend (up is good unless `trendGoodWhen` says otherwise), an
  * optional hint line and an optional extra (e.g. a progress bar). With `href`, the whole card links to the detail page.
  */
 export function StatCard({

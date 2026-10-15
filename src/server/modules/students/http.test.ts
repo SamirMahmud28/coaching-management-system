@@ -169,7 +169,7 @@ describe("students API: access", () => {
 });
 
 describe("students API: admission and student IDs", () => {
-  it("admits a student whose login signs in by student ID into the student portal (D17)", async () => {
+  it("admits a student whose login signs in by student ID into the student portal", async () => {
     const a = await institute("inst-a");
     const res = await admit(a);
     expect(res.status).toBe(201);
@@ -186,7 +186,7 @@ describe("students API: admission and student IDs", () => {
     expect((await testDb.select().from(auditLogs).where(eq(auditLogs.action, "STUDENT_ADMITTED")))).toHaveLength(1);
   });
 
-  it("requires the name, gender and guardian contacts (D12, D55), and validates numbers and dates", async () => {
+  it("requires the name, gender and guardian contacts, and validates numbers and dates", async () => {
     const a = await institute("inst-a");
     const code = async (b: object) => (await admit(a, b)).body.error.code;
     expect(await code({ full_name: " " })).toBe("VALIDATION_REQUIRED");
@@ -201,7 +201,7 @@ describe("students API: admission and student IDs", () => {
     expect(await testDb.select().from(students)).toHaveLength(0); // nothing half-created
   });
 
-  it("builds IDs from the pattern: course code, admission year, a number per course per year (D15, D16)", async () => {
+  it("builds IDs from the pattern: course code, admission year, a number per course per year", async () => {
     const a = await institute("inst-a");
     await testDb.insert(studentIdSettings).values({ tenantId: a.tenant.id, prefix: "KC", includeCourseCode: true, separator: "-", sequenceWidth: 4 });
     const hsc = await a.course("HSC 2026", "HSC26");
@@ -220,7 +220,7 @@ describe("students API: admission and student IDs", () => {
     expect((await admit(a, { course_id: hsc.id, student_code: "KC-HSC26-2026-0001" })).body.error.code).toBe("CONFLICT_STUDENT_CODE");
     expect((await admit(a, { course_id: hsc.id, student_code: "01711000111" })).body.error.code).toBe("VALIDATION_STUDENT_CODE");
     expect((await admit(a, { course_id: hsc.id, student_code: "a@b" })).body.error.code).toBe("VALIDATION_STUDENT_CODE");
-    // The admission course can't then be deleted or have its code changed (D15, D50).
+    // The admission course can't then be deleted or have its code changed.
     const del = await call(academicHandlers.deleteCourse(req("inst-a", "DELETE", "/x", { cookie: a.cookie }), { id: ssc.id }));
     expect(del.body.error.code).toBe("CONFLICT_COURSE_IN_USE");
     const recode = await call(academicHandlers.updateCourse(req("inst-a", "PATCH", "/x", { cookie: a.cookie, body: { code: "SSC27" } }), { id: ssc.id }));
@@ -234,7 +234,7 @@ describe("students API: admission and student IDs", () => {
     expect(results.map((r) => r.body.student.student_code).sort()).toEqual([1, 2, 3, 4, 5, 6].map((n) => `${year}-000${n}`));
   });
 
-  it("admits into batches of any course, optionally (D56, D57), refusing archived batches", async () => {
+  it("admits into batches of any course, optionally, refusing archived batches", async () => {
     const a = await institute("inst-a");
     const hsc = await a.course("HSC", "HSC");
     const ict = await a.course("ICT", "ICT");
@@ -269,7 +269,7 @@ describe("students API: admission and student IDs", () => {
   });
 });
 
-describe("students API: status (D9, D10, D14, D18, D26)", () => {
+describe("students API: status", () => {
   it("only lets Active students sign in; On Hold blocks sign-in and keeps memberships", async () => {
     const a = await institute("inst-a");
     const morning = await a.batch((await a.course("HSC", "HSC")).id, "Morning");
@@ -303,7 +303,7 @@ describe("students API: status (D9, D10, D14, D18, D26)", () => {
 
     const back = await setStatus(a, student.id, "ACTIVE", "Came back for the test batch");
     expect(back.body.status).toBe("ACTIVE");
-    expect(back.body.memberships.every((m: { status: string }) => m.status === "LEFT")).toBe(true); // stay closed (D14)
+    expect(back.body.memberships.every((m: { status: string }) => m.status === "LEFT")).toBe(true); // stay closed
     expect(back.body.status_history.map((h: { to_status: string; reason: string }) => [h.to_status, h.reason])).toEqual([
       ["ACTIVE", "Came back for the test batch"],
       ["LEFT", "Moved to Chattogram"],
@@ -313,7 +313,7 @@ describe("students API: status (D9, D10, D14, D18, D26)", () => {
   });
 });
 
-describe("students API: batch memberships (D11, D14)", () => {
+describe("students API: batch memberships", () => {
   it("adds, numbers and ends memberships; ending one doesn't change the overall status", async () => {
     const a = await institute("inst-a");
     const hsc = await a.course("HSC", "HSC");
@@ -353,7 +353,7 @@ describe("students API: batch memberships (D11, D14)", () => {
 });
 
 describe("student photos", () => {
-  it("are visible to staff, the student themself, and instructors who teach the student's batch (D24)", async () => {
+  it("are visible to staff, the student themself, and instructors who teach the student's batch", async () => {
     const a = await institute("inst-a");
     const storage = new LocalDiskStorage(await mkdtemp(path.join(os.tmpdir(), "cms-files-")));
     const bytes = await sharp({ create: { width: 60, height: 80, channels: 3, background: "#888" } }).jpeg().toBuffer();

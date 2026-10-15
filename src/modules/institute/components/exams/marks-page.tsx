@@ -36,7 +36,7 @@ function draftOf(row: Roster["rows"][number]): Draft {
 const same = (a: Draft, b: Draft) => a.absent === b.absent && JSON.stringify(Object.entries(a.values).filter(([, v]) => v.trim()).sort()) === JSON.stringify(Object.entries(b.values).filter(([, v]) => v.trim()).sort());
 
 /**
- * Marks entry for one paper (D104, D106, D107): one row per student with a box per part (or one for the paper) and
+ * Marks entry for one paper: one row per student with a box per part (or one for the paper) and
  * Absent. Draft exams: whoever may enter marks; published: Owner/Admin with a reason. Used by the admin panel and the
  * instructor portal (`base` is the exams list there).
  */

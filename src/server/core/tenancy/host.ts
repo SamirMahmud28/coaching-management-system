@@ -6,7 +6,7 @@ export type HostKind =
   | { kind: "unknown" };
 
 export interface HostConfig {
-  // e.g. the product domain (not decided yet, O15), or "localhost:3000" in dev.
+  // e.g. the product domain (not decided yet), or "localhost:3000" in dev.
   baseDomain: string;
   // e.g. "admin.<domain>".
   platformHost: string;

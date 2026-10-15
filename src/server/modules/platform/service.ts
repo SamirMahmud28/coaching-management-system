@@ -256,7 +256,7 @@ export async function transitionTenantStatus(
 }
 
 /** A real YYYY-MM-DD calendar date (2026-02-30 isn't). */
-/** Display-only "paid until" date (D4): nothing is enforced from it in Phase 1. `null` clears it. */
+/** Display-only "paid until" date: nothing is enforced from it in Phase 1. `null` clears it. */
 export async function setTenantPaidUntil(db: DbOrTx, params: { tenantId: string; paidUntil: string | null; platformUserId: string }) {
   if (params.paidUntil !== null && !isCalendarDate(params.paidUntil)) {
     throw new ValidationError("VALIDATION_DATE", "Enter a date as YYYY-MM-DD.", { field: "paidUntil" });
@@ -283,12 +283,12 @@ export async function setTenantPaidUntil(db: DbOrTx, params: { tenantId: string;
   });
 }
 
-/** Sets an institute's app theme from its page (D157); audited as the platform admin. The institute can change it later. */
+/** Sets an institute's app theme from its page; audited as the platform admin. The institute can change it later. */
 export async function setTenantAppTheme(db: DbOrTx, params: { tenantId: string; theme: AppTheme; paper?: boolean | null; platformUserId: string }) {
   return setAppTheme(db, { tenantId: params.tenantId, theme: params.theme, paper: params.paper, actor: { type: "PLATFORM_USER", platformUserId: params.platformUserId } });
 }
 
-/** A platform admin's own panel theme (D157): a personal preference, so not audited. */
+/** A platform admin's own panel theme: a personal preference, so not audited. */
 export async function setPlatformAdminTheme(db: DbOrTx, params: { platformUserId: string; theme: AppTheme }): Promise<{ appTheme: AppTheme }> {
   if (!isAppTheme(params.theme)) throw new ValidationError("VALIDATION_FAILED", "Choose one of the listed themes.", { field: "appTheme" });
   const [row] = await db.update(platformUsers).set({ appTheme: params.theme, updatedAt: new Date() }).where(eq(platformUsers.id, params.platformUserId)).returning({ appTheme: platformUsers.appTheme });

@@ -26,7 +26,7 @@ import { HowThisWorks } from "@/modules/institute/help/how-this-works";
 export const KIND_LABEL: Record<FeeItemKind, string> = { ADMISSION: "Admission (one-time)", MONTHLY: "Monthly", ONE_TIME: "Other one-time" };
 const dueDayText = (day: number | null) => (day === null ? "due day not set" : day === 31 ? "due on the last day" : `due on day ${day}`);
 
-/** Fee items per course (D28) and the receipt prefix (D38). */
+/** Fee items per course and the receipt prefix. */
 export function FeeItemsPage({ canConfigure, nav }: { canConfigure: boolean; nav: FeesNav }) {
   const queryClient = useQueryClient();
   const items = useQuery({ queryKey: instituteKeys.feeItems(), queryFn: () => feesApi.items() });

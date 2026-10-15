@@ -20,7 +20,7 @@ import { audit } from "../audit/service";
 import { hundredths } from "./result-engine";
 import "./references";
 
-// Exam setup (D101, D102, D108): an exam of one course for some of its batches, with subject papers and their parts.
+// Exam setup: an exam of one course for some of its batches, with subject papers and their parts.
 // The structure of a paper is locked once it has marks, and a published exam keeps its batches and papers.
 
 export interface Viewer {
@@ -55,7 +55,7 @@ export interface ExamInput {
   papers: PaperInput[];
 }
 
-/** Staff who see every batch see every exam; an instructor sees the exams of batches they teach (D24). */
+/** Staff who see every batch see every exam; an instructor sees the exams of batches they teach. */
 export const seesAllExams = (viewer: Viewer) => viewer.permissions.has("exams.manage") || viewer.permissions.has("academic.view");
 
 /** The batches this instructor teaches any subject of. */
@@ -189,7 +189,7 @@ export async function setupOptions(db: DbOrTx, tenantId: string) {
   }));
 }
 
-/** The viewer's exams, newest first (D24 scope). */
+/** The viewer's exams, newest first ( scope). */
 export async function listExams(db: DbOrTx, viewer: Viewer, filter: { courseId?: string; state?: "DRAFT" | "PUBLISHED" } = {}) {
   const scope = seesAllExams(viewer) ? null : await taughtBatchIds(db, viewer.tenantId, viewer.userId);
   if (scope && !scope.length) return [];
@@ -247,7 +247,7 @@ export async function getExam(db: DbOrTx, viewer: Viewer, id: string) {
     .where(and(eq(examBatches.tenantId, viewer.tenantId), eq(examBatches.examId, id)))
     .orderBy(asc(batches.name));
   // The subjects whose marks the viewer can open: all for the office; for an instructor, those they teach in one of
-  // the exam's batches (D24).
+  // the exam's batches.
   let taughtSubjects: Set<string> | null = null;
   if (!seesAllExams(viewer)) {
     const taught = new Set(await taughtBatchIds(db, viewer.tenantId, viewer.userId));
@@ -372,7 +372,7 @@ export async function updateExam(db: DbOrTx, actor: Viewer, id: string, input: O
   });
 }
 
-/** A draft exam without any marks can be deleted; otherwise it stays (D5). */
+/** A draft exam without any marks can be deleted; otherwise it stays. */
 export async function deleteExam(db: DbOrTx, actor: Viewer, id: string) {
   return inTransaction(db, async (tx) => {
     const exam = await getExam(tx, actor, id);

@@ -23,13 +23,13 @@ interface CategoryRule {
 
 const MB = 1024 * 1024;
 
-// FILE-STORAGE-ARCHITECTURE.md §4 / VALIDATION.md: jpg, png or webp in; at most 2 MB. Sized for print (~300 dpi at card size).
+// Accepted uploads: jpg, png or webp in; at most 2 MB. Sized for print (~300 dpi at card size).
 export const FILE_RULES: Record<FileCategory, CategoryRule> = {
   STUDENT_PHOTO: { maxBytes: 2 * MB, maxWidth: 600, maxHeight: 750, output: "jpg", uploadPermissions: ["students.create", "students.update"] },
   INSTRUCTOR_PHOTO: { maxBytes: 2 * MB, maxWidth: 600, maxHeight: 750, output: "jpg", uploadPermissions: ["instructors.manage"] },
   LOGO: { maxBytes: 2 * MB, maxWidth: 800, maxHeight: 800, output: "png", uploadPermissions: ["settings.manage"] },
   SIGNATURE: { maxBytes: 1 * MB, maxWidth: 800, maxHeight: 300, output: "png", uploadPermissions: ["settings.manage"] },
-  // Hero, about, gallery and testimonial pictures on the public website (D125).
+  // Hero, about, gallery and testimonial pictures on the public website.
   WEBSITE_IMAGE: { maxBytes: 5 * MB, maxWidth: 1600, maxHeight: 1600, output: "jpg", uploadPermissions: ["website.manage"] },
 };
 
@@ -122,7 +122,7 @@ export async function readFileBytes(storage: StorageProvider, row: FileRow): Pro
 
 /**
  * Who may view a file. Photos: whoever may view that kind of person, the person themself, and instructors for students
- * currently in a batch they teach (D24). Logos and signatures print on documents anyone in the institute can open; website pictures are public.
+ * currently in a batch they teach. Logos and signatures print on documents anyone in the institute can open; website pictures are public.
  */
 export async function canViewFile(db: DbOrTx, viewer: { tenantId: string; userId: string; permissions: ReadonlySet<string> }, file: FileRow): Promise<boolean> {
   switch (file.category) {

@@ -21,7 +21,7 @@ import { websiteContentApi, type FacultyRow } from "../../api";
 import { instituteKeys } from "../../keys";
 import { WebsiteTabs } from "./website-tabs";
 
-/** Instructors the office shows on the website (D141): opt-in, with name, photo, subjects and a line; never contacts. */
+/** Instructors the office shows on the website: opt-in, with name, photo, subjects and a line; never contacts. */
 export function WebsiteFacultyPage() {
   const queryClient = useQueryClient();
   const list = useQuery({ queryKey: instituteKeys.website("faculty"), queryFn: websiteContentApi.faculty });

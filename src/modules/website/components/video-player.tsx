@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Play } from "lucide-react";
 
-// The website's YouTube video (D138) as a light "facade": a thumbnail and a play button, and the real player only after
+// The website's YouTube video as a light "facade": a thumbnail and a play button, and the real player only after
 // a visitor taps it. Nothing from YouTube loads until then except the thumbnail, which keeps the page fast on mobile
 // data. The address is rebuilt from the validated id, on the privacy-enhanced youtube-nocookie.com domain.
 

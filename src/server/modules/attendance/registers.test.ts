@@ -67,7 +67,7 @@ async function setUp() {
 const at = (bs: string, date = today, startsAt = "09:00") => ({ batchSubjectId: bs, date, startsAt });
 const statusOf = (reg: Awaited<ReturnType<typeof getRegister>>, id: string) => reg.rows.find((r) => r.studentId === id)?.effective;
 
-describe("a day's classes (D80, D81)", () => {
+describe("a day's classes", () => {
   it("lists the weekly schedule's classes for everyone at the office, and only their own to an instructor", async () => {
     const s = await setUp();
     const all = await classesOn(db, s.admin, today);
@@ -91,7 +91,7 @@ describe("a day's classes (D80, D81)", () => {
   });
 });
 
-describe("taking a register (D83, D91, D26)", () => {
+describe("taking a register", () => {
   it("starts everyone Present, leaves On Hold students off, and shows approved leave as Excused", async () => {
     const s = await setUp();
     const anika = await s.admit("Anika");
@@ -147,7 +147,7 @@ describe("taking a register (D83, D91, D26)", () => {
   });
 });
 
-describe("the class-day rule (D82, D84)", () => {
+describe("the class-day rule", () => {
   it("lets an instructor take or change a register only on its day", async () => {
     const s = await setUp();
     await s.admit("Anika");
@@ -176,7 +176,7 @@ describe("the class-day rule (D82, D84)", () => {
   });
 });
 
-describe("no class held (D86) and extra classes (D85)", () => {
+describe("no class held and extra classes", () => {
   it("records a class that didn't happen, with a reason, and lets it be taken after all", async () => {
     const s = await setUp();
     await s.admit("Anika");

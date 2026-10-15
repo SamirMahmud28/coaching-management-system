@@ -1,10 +1,10 @@
 import { SECTION_PAGE, SITE_PAGES, type SitePage, type WebsiteSectionKey } from "@/server/modules/website/design";
 import type { PublicWebsite } from "@/server/modules/website/public";
 
-// Which sections and pages the public website shows (D142, D143). Pure, so the page route (404s, titles) and the
+// Which sections and pages the public website shows. Pure, so the page route (404s, titles) and the
 // renderer agree.
 
-/** Whether a section has anything to show; an empty one is left out together with its link (D131). */
+/** Whether a section has anything to show; an empty one is left out together with its link. */
 export function hasContent(key: WebsiteSectionKey, site: PublicWebsite): boolean {
   const { settings: s, profile } = site;
   switch (key) {

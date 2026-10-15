@@ -7,7 +7,7 @@ import { notFound } from "next/navigation";
 
 export const metadata: Metadata = { title: "Website preview" };
 
-// The live preview inside the website editor (D144): the institute's website without the office app's shell, redrawn
+// The live preview inside the website editor: the institute's website without the office app's shell, redrawn
 // with the editor's unsaved values as they change. Same guard as the editor (website.manage, module on).
 export default async function WebsitePreviewPage() {
   const ctx = await requireModulePage("website.manage");

@@ -31,7 +31,7 @@ const addDays = (date: string, days: number) => new Date(Date.parse(`${date}T00:
 export const percent = (t: Pick<AttendanceTallyWire, "percentage">) => (t.percentage === null ? "—" : `${t.percentage}%`);
 
 /**
- * Attendance reports (D87, D88): a batch's register for a month (printable), students below a percentage, and who
+ * Attendance reports: a batch's register for a month (printable), students below a percentage, and who
  * was absent on a day. The office sees every batch; an instructor the subjects they teach, without guardian mobiles.
  */
 export function AttendanceReportsPage({ base, canManageLeave = false, canViewStudents = false, fullGuide = true }: { base: string; canManageLeave?: boolean; canViewStudents?: boolean; fullGuide?: boolean }) {

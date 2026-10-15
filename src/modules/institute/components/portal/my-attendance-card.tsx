@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import type { AttendanceHistory } from "../../api";
 import { AttendanceSummary } from "../attendance/student-attendance-card";
 
-/** The student's own attendance (D27, D87): percentage overall and per subject, and each class. */
+/** The student's own attendance: percentage overall and per subject, and each class. */
 export function MyAttendanceCard({ data }: { data: AttendanceHistory }) {
   return (
     <Card data-testid="my-attendance">

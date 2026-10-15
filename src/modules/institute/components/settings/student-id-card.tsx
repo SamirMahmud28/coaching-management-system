@@ -18,7 +18,7 @@ import { instituteKeys } from "../../keys";
 const SEPARATOR_LABELS: Record<StudentIdPattern["separator"], string> = { "-": "Dash (KC-2026-0001)", "/": "Slash (KC/2026/0001)", "": "None (KC20260001)" };
 const NONE = "none"; // Radix Select values can't be empty strings.
 
-/** The student ID pattern (D15, D16): applies to IDs issued from now on; existing IDs never change. */
+/** The student ID pattern: applies to IDs issued from now on; existing IDs never change. */
 export function StudentIdCard() {
   const query = useQuery({ queryKey: instituteKeys.studentIdPattern(), queryFn: settingsApi.studentIdPattern });
   return (

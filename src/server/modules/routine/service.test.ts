@@ -64,7 +64,7 @@ async function setUp() {
 
 const at = (cs: { date: string; startsAt: string; subjectName: string; status: string }[], date: string) => cs.filter((c) => c.date === date).map((c) => [c.startsAt, c.subjectName, c.status]);
 
-describe("the timetable views (D114, D24)", () => {
+describe("the timetable views", () => {
   it("shows a batch's week, an instructor's week and the institute's day", async () => {
     const s = await setUp();
     const week = await batchWeek(db, s.admin, s.morning.id, { from: today });
@@ -87,7 +87,7 @@ describe("the timetable views (D114, D24)", () => {
   });
 });
 
-describe("changes (D114, D115, D122)", () => {
+describe("changes", () => {
   it("cancels a class with a reason, and withdrawing it brings the class back", async () => {
     const s = await setUp();
     await expect(createChange(db, s.admin, { batchSubjectId: s.phy.id, classDate: tomorrow, startsAt: "09:00", kind: "CANCEL" })).rejects.toMatchObject({ code: "VALIDATION_REASON_REQUIRED" });
@@ -144,7 +144,7 @@ describe("changes (D114, D115, D122)", () => {
   });
 });
 
-describe("holidays (D114)", () => {
+describe("holidays", () => {
   it("closes every class on those days, can't overlap another, and can be withdrawn", async () => {
     const s = await setUp();
     const holiday = await createHoliday(db, s.admin, { name: "Eid", fromDate: tomorrow, toDate: addDays(tomorrow, 1) });

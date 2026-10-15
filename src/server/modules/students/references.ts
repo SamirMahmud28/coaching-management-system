@@ -3,7 +3,7 @@ import { batchMemberships, students } from "../../core/db/schema";
 import { academicReferences } from "../academic/references";
 
 // Students refer to courses (the admission course, whose code may be in their ID) and to batches (memberships), so
-// neither can be deleted, nor a course's code changed, once students use them (D15, D50). Imported by the academic
+// neither can be deleted, nor a course's code changed, once students use them. Imported by the academic
 // composition root (academic/instance.ts) and by the students service, so the guard is always registered.
 
 academicReferences.register("COURSE", "STUDENT", async (db, tenantId, courseId) => {

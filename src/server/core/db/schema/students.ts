@@ -4,7 +4,7 @@ import { batches, courses } from "./academic";
 import { files, tenants, users } from "./core";
 import { genderEnum } from "./instructors";
 
-// Students (D8–D12, D14–D18, D26, D54–D57). Never deleted; Completed and Left keep the full history.
+// Students. Never deleted; Completed and Left keep the full history.
 
 export const studentStatusEnum = pgEnum("student_status", ["ACTIVE", "ON_HOLD", "COMPLETED", "LEFT"]);
 export const membershipStatusEnum = pgEnum("membership_status", ["ACTIVE", "COMPLETED", "LEFT"]);
@@ -13,19 +13,19 @@ export const guardianRelationEnum = pgEnum("guardian_relation", ["FATHER", "MOTH
 export const students = pgTable("students", {
   id: uuid("id").primaryKey().defaultRandom(),
   tenantId: uuid("tenant_id").notNull().references(() => tenants.id),
-  // The login; its username is the student ID (D17). Only ACTIVE students' logins are unbanned (D26).
+  // The login; its username is the student ID. Only ACTIVE students' logins are unbanned.
   userId: uuid("user_id").notNull(),
-  // Issued at admission from the institute's pattern (or typed by an Admin, D8); never changes (D15).
+  // Issued at admission from the institute's pattern (or typed by an Admin); never changes.
   studentCode: varchar("student_code", { length: 30 }).notNull(),
   fullName: varchar("full_name", { length: 100 }).notNull(),
   gender: genderEnum("gender").notNull(),
   dateOfBirth: date("date_of_birth"),
-  // The student's own mobile (D54): contact only, not a sign-in identifier.
+  // The student's own mobile: contact only, not a sign-in identifier.
   phone: varchar("phone", { length: 11 }),
   schoolName: varchar("school_name", { length: 150 }),
   schoolClass: varchar("school_class", { length: 50 }),
   address: text("address"),
-  // Staff-only note; never shown to the student or instructors (D54).
+  // Staff-only note; never shown to the student or instructors.
   adminNote: text("admin_note"),
   guardianName: varchar("guardian_name", { length: 100 }).notNull(),
   guardianRelation: guardianRelationEnum("guardian_relation").notNull(),
@@ -33,7 +33,7 @@ export const students = pgTable("students", {
   // Single-column on purpose: ON DELETE SET NULL on a composite key would null tenant_id. Checked by assertFileReference.
   photoFileId: uuid("photo_file_id").references(() => files.id, { onDelete: "set null" }),
   admissionDate: date("admission_date").notNull(),
-  // The course chosen at admission; its code is in the ID when the pattern includes it (D15).
+  // The course chosen at admission; its code is in the ID when the pattern includes it.
   admissionCourseId: uuid("admission_course_id"),
   status: studentStatusEnum("status").notNull().default("ACTIVE"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
@@ -52,7 +52,7 @@ export const students = pgTable("students", {
 ]);
 
 /**
- * The running number of generated student IDs (D16): per (institute, scope, admission year), where the scope is the
+ * The running number of generated student IDs: per (institute, scope, admission year), where the scope is the
  * course id when the pattern includes the course code, otherwise "ALL". The row is locked while a number is taken.
  */
 export const studentIdCounters = pgTable("student_id_counters", {
@@ -62,7 +62,7 @@ export const studentIdCounters = pgTable("student_id_counters", {
   nextValue: integer("next_value").notNull().default(1),
 }, (t) => [primaryKey({ name: "student_id_counters_pk", columns: [t.tenantId, t.scope, t.year] })]);
 
-/** Every overall status change, with its reason (D9, D10). Append-only. */
+/** Every overall status change, with its reason. Append-only. */
 export const studentStatusHistory = pgTable("student_status_history", {
   id: uuid("id").primaryKey().defaultRandom(),
   tenantId: uuid("tenant_id").notNull(),
@@ -79,8 +79,8 @@ export const studentStatusHistory = pgTable("student_status_history", {
 ]);
 
 /**
- * A student's place in a batch (D11): its own status and dates. A closed membership stays closed; rejoining adds a new
- * one (D14). The roll number is optional and unique among the batch's active members (D8).
+ * A student's place in a batch: its own status and dates. A closed membership stays closed; rejoining adds a new
+ * one. The roll number is optional and unique among the batch's active members.
  */
 export const batchMemberships = pgTable("batch_memberships", {
   id: uuid("id").primaryKey().defaultRandom(),

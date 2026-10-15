@@ -5,8 +5,8 @@ export const instructorStatusEnum = pgEnum("instructor_status", ["ACTIVE", "INAC
 export const genderEnum = pgEnum("gender", ["MALE", "FEMALE", "OTHER"]);
 
 /**
- * An instructor (D1): always has a login (D17: signs in with mobile number or email, which live on `users`). Never
- * deleted; INACTIVE bans the login. Staff codes, salary and HR fields are out of Phase 1 scope (O9).
+ * An instructor: always has a login (signs in with mobile number or email, which live on `users`). Never
+ * deleted; INACTIVE bans the login. Staff codes, salary and HR fields are out of Phase 1 scope.
  */
 export const instructors = pgTable("instructors", {
   id: uuid("id").primaryKey().defaultRandom(),

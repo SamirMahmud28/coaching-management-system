@@ -69,7 +69,7 @@ async function setUp() {
   return { tenant, owner, actor, hsc, ict, morning, evening, anika, bushra, chaity, dina, charge, pay };
 }
 
-describe("collection report (D75, D77, D78)", () => {
+describe("collection report", () => {
   it("lists valid payments with totals per method, subtracts refunds, and lists voids apart", async () => {
     const s = await setUp();
     // Anika pays June tuition and the ICT fee together, by bKash.
@@ -114,11 +114,11 @@ describe("collection report (D75, D77, D78)", () => {
   });
 });
 
-describe("dues report (D42, D76, D77)", () => {
+describe("dues report", () => {
   it("lists current students most overdue first, with mobiles only when allowed, and former students apart", async () => {
     const s = await setUp();
     await s.pay(s.bushra.id, [(await s.charge(s.bushra.id, "2026-06")).id, (await s.charge(s.bushra.id, "2026-07")).id], "CASH", "2026-08-02");
-    await addFine(db, s.actor, s.chaity.id, { amount: "50", reason: "Late", dueDate: "2026-01-15" }); // overdue; generated charges are due today (D44)
+    await addFine(db, s.actor, s.chaity.id, { amount: "50", reason: "Late", dueDate: "2026-01-15" }); // overdue; generated charges are due today
     await students.setStudentStatus(db, s.actor, s.dina.id, { status: "LEFT", reason: "Moved" });
 
     const current = await duesReport(db, s.tenant.id, { withContacts: true });

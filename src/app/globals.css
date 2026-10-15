@@ -2,12 +2,12 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-/* .theme-light pins a subtree to the light theme. */
+/*.theme-light pins a subtree to the light theme. */
 @custom-variant dark (&:is(.dark *):not(.theme-light, .theme-light *));
 
 /*
- * Design tokens, v3 (D152, D155, D156; docs/05-frontend/DESIGN-SYSTEM.md). Brand colours are PROVISIONAL (O15).
- * Five app themes: Midnight & Gold on :root (the default), the others under [data-app-theme]. Text and links use
+ * Design tokens, v3. Brand colours are PROVISIONAL.
+ * Five app themes: Midnight & Gold on:root (the default), the others under [data-app-theme]. Text and links use
  * --primary-strong, never --primary (a light primary such as gold fails contrast as text).
  */
 
@@ -15,7 +15,7 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-jakarta), var(--font-noto-bengali), ui-sans-serif, system-ui, sans-serif;
-  /* Type scale (D152): page titles, section headings and big numbers. */
+  /* Type scale: page titles, section headings and big numbers. */
   --text-display: 2.25rem;
   --text-display--line-height: 2.6rem;
   --text-display--letter-spacing: -0.025em;
@@ -91,7 +91,7 @@
 .theme-light,
 [data-app-theme="midnight"] {
   --radius: 0.75rem;
-  /* Midnight & Gold, the default app theme (D155). Every theme's text pairs are AA-checked in design-tokens.test.ts. */
+  /* Midnight & Gold, the default app theme. Every theme's text pairs are AA-checked in design-tokens.test.ts. */
   --background: #f5f6fa;
   --foreground: #141a33;
   --card: #ffffff;
@@ -138,7 +138,7 @@
   --elevation-lg: 0 16px 40px -12px rgb(15 22 49 / 0.18);
   --elevation-xl: 0 28px 60px -16px rgb(15 22 49 / 0.25);
   --elevation-soft: 0 10px 35px rgb(15 22 49 / 0.07);
-  /* Glass (D159): the sidebar's tint and how opaque it is; tested over the brightest backdrop. */
+  /* Glass: the sidebar's tint and how opaque it is; tested over the brightest backdrop. */
   --sidebar-glass-tint: #0f1631;
   --sidebar-glass-alpha: 88%;
   --glass-edge: rgb(255 255 255 / 0.6);
@@ -191,7 +191,7 @@
   --elevation-lg: 0 16px 40px -12px rgb(0 0 0 / 0.6);
   --elevation-xl: 0 28px 60px -16px rgb(0 0 0 / 0.7);
   --elevation-soft: 0 10px 35px rgb(0 0 0 / 0.35);
-  /* Glass (D159): the sidebar's tint and how opaque it is; tested over the brightest backdrop. */
+  /* Glass: the sidebar's tint and how opaque it is; tested over the brightest backdrop. */
   --sidebar-glass-tint: #080c1a;
   --sidebar-glass-alpha: 82%;
   --glass-edge: rgb(255 255 255 / 0.08);
@@ -199,7 +199,7 @@
 }
 
 /*
- * The other app themes (D156). The attribute sits on the shell and on <html> (for dialogs and pop-ups); dark blocks are
+ * The other app themes. The attribute sits on the shell and on <html> (for dialogs and pop-ups); dark blocks are
  * more specific so a theme's dark values win over its light ones. Tokens are generated and checked together.
  */
 
@@ -243,7 +243,7 @@
   --sidebar-ring: #fbbf24;
   --brand-gradient: linear-gradient(135deg, #feac00, #f97316);
   --brand-glow: radial-gradient(60rem 30rem at 0% 0%, rgb(254 172 0 / 0.14), transparent 60%), radial-gradient(50rem 26rem at 100% 0%, rgb(249 115 22 / 0.08), transparent 60%);
-  /* Glass (D159): the sidebar's tint and how opaque it is; tested over the brightest backdrop. */
+  /* Glass: the sidebar's tint and how opaque it is; tested over the brightest backdrop. */
   --sidebar-glass-tint: #2a1f17;
   --sidebar-glass-alpha: 92%;
 }
@@ -288,7 +288,7 @@
   --sidebar-border: rgb(255 255 255 / 0.09);
   --sidebar-ring: #fbbf24;
   --brand-glow: radial-gradient(60rem 30rem at 0% 0%, rgb(254 172 0 / 0.1), transparent 60%), radial-gradient(50rem 26rem at 100% 0%, rgb(249 115 22 / 0.06), transparent 60%);
-  /* Glass (D159): the sidebar's tint and how opaque it is; tested over the brightest backdrop. */
+  /* Glass: the sidebar's tint and how opaque it is; tested over the brightest backdrop. */
   --sidebar-glass-tint: #1a130d;
   --sidebar-glass-alpha: 88%;
 }
@@ -333,7 +333,7 @@
   --sidebar-ring: #a5b4fc;
   --brand-gradient: linear-gradient(135deg, #4f46e5, #7c3aed);
   --brand-glow: radial-gradient(60rem 30rem at 0% 0%, rgb(79 70 229 / 0.12), transparent 60%), radial-gradient(50rem 26rem at 100% 0%, rgb(168 85 247 / 0.1), transparent 60%);
-  /* Glass (D159): the sidebar's tint and how opaque it is; tested over the brightest backdrop. */
+  /* Glass: the sidebar's tint and how opaque it is; tested over the brightest backdrop. */
   --sidebar-glass-tint: #1b1d3a;
   --sidebar-glass-alpha: 92%;
 }
@@ -379,7 +379,7 @@
   --sidebar-ring: #a5b4fc;
   --brand-gradient: linear-gradient(135deg, #6366f1, #8b5cf6);
   --brand-glow: radial-gradient(60rem 30rem at 0% 0%, rgb(99 102 241 / 0.14), transparent 60%), radial-gradient(50rem 26rem at 100% 0%, rgb(168 85 247 / 0.08), transparent 60%);
-  /* Glass (D159): the sidebar's tint and how opaque it is; tested over the brightest backdrop. */
+  /* Glass: the sidebar's tint and how opaque it is; tested over the brightest backdrop. */
   --sidebar-glass-tint: #0f1024;
   --sidebar-glass-alpha: 88%;
 }
@@ -424,7 +424,7 @@
   --sidebar-ring: #f5a700;
   --brand-gradient: linear-gradient(135deg, #0f766e, #14b8a6);
   --brand-glow: radial-gradient(60rem 30rem at 0% 0%, rgb(13 148 136 / 0.12), transparent 60%), radial-gradient(50rem 26rem at 100% 0%, rgb(245 167 0 / 0.08), transparent 60%);
-  /* Glass (D159): the sidebar's tint and how opaque it is; tested over the brightest backdrop. */
+  /* Glass: the sidebar's tint and how opaque it is; tested over the brightest backdrop. */
   --sidebar-glass-tint: #0b3b36;
   --sidebar-glass-alpha: 88%;
 }
@@ -470,7 +470,7 @@
   --sidebar-ring: #fbbf24;
   --brand-gradient: linear-gradient(135deg, #14b8a6, #0d9488);
   --brand-glow: radial-gradient(60rem 30rem at 0% 0%, rgb(45 212 191 / 0.1), transparent 60%), radial-gradient(50rem 26rem at 100% 0%, rgb(251 191 36 / 0.06), transparent 60%);
-  /* Glass (D159): the sidebar's tint and how opaque it is; tested over the brightest backdrop. */
+  /* Glass: the sidebar's tint and how opaque it is; tested over the brightest backdrop. */
   --sidebar-glass-tint: #04100e;
   --sidebar-glass-alpha: 82%;
 }
@@ -515,7 +515,7 @@
   --sidebar-ring: #fb7185;
   --brand-gradient: linear-gradient(135deg, #7c3aed, #fb7185);
   --brand-glow: radial-gradient(60rem 30rem at 0% 0%, rgb(124 58 237 / 0.12), transparent 60%), radial-gradient(50rem 26rem at 100% 0%, rgb(251 113 133 / 0.1), transparent 60%);
-  /* Glass (D159): the sidebar's tint and how opaque it is; tested over the brightest backdrop. */
+  /* Glass: the sidebar's tint and how opaque it is; tested over the brightest backdrop. */
   --sidebar-glass-tint: #2e1065;
   --sidebar-glass-alpha: 88%;
 }
@@ -561,7 +561,7 @@
   --sidebar-ring: #fda4af;
   --brand-gradient: linear-gradient(135deg, #8b5cf6, #f472b6);
   --brand-glow: radial-gradient(60rem 30rem at 0% 0%, rgb(139 92 246 / 0.14), transparent 60%), radial-gradient(50rem 26rem at 100% 0%, rgb(251 113 133 / 0.07), transparent 60%);
-  /* Glass (D159): the sidebar's tint and how opaque it is; tested over the brightest backdrop. */
+  /* Glass: the sidebar's tint and how opaque it is; tested over the brightest backdrop. */
   --sidebar-glass-tint: #0d0616;
   --sidebar-glass-alpha: 82%;
 }
@@ -583,7 +583,7 @@
 }
 
 /*
- * Paper background (D158): a fine paper grain and a soft edge glow in the theme's own colours behind the page. Cards,
+ * Paper background: a fine paper grain and a soft edge glow in the theme's own colours behind the page. Cards,
  * tables, inputs and the sidebar keep their solid surfaces, so text contrast is unchanged. Not printed.
  */
 :root {
@@ -615,7 +615,7 @@
 }
 
 /*
- * The app backdrop (D160): fixed behind the shell so frosted glass always has colour to blur. Static soft glows in the
+ * The app backdrop: fixed behind the shell so frosted glass always has colour to blur. Static soft glows in the
  * theme's colours; the paper grain and an edge vignette when the paper switch is on.
  */
 .app-backdrop {
@@ -654,7 +654,7 @@
 }
 
 /*
- * Glass surfaces (D159). Text sits on the resulting colour, which design-tokens.test.ts checks over the brightest
+ * Glass surfaces. Text sits on the resulting colour, which design-tokens.test.ts checks over the brightest
  * backdrop. Inputs and buttons stay solid.
  */
 @utility surface-glass {
@@ -728,7 +728,7 @@
 }
 
 /*
- * Register lines for the record lists (ported from the EMS, whose beige lines are #d6c7a1 with a #f7f1e6 header):
+ * Register lines for the record lists (a ruled, paper-register look):
  * drawn from the theme's primary so the ruled table follows every app theme.
  */
 :root {
@@ -747,7 +747,6 @@
 :lang(bn) .tracking-latin {
   letter-spacing: normal;
 }
-
 
 @layer base {
   * {

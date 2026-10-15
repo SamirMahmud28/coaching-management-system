@@ -5,7 +5,7 @@ import {
 import { THEMES } from "./themes";
 import { DARK_BG, LIGHT_BG, contrast, ensureContrast, siteColours, siteVariables, textOn, textOnAll } from "./tokens";
 
-describe("design catalogue (D135, D136)", () => {
+describe("design catalogue", () => {
   it("has twelve themes, each with a signature and a preset of valid values", () => {
     expect(WEBSITE_THEMES).toHaveLength(12);
     for (const theme of WEBSITE_THEMES) {

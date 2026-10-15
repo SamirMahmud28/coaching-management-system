@@ -4,7 +4,7 @@ import {
 } from "next/font/google";
 import type { WebsiteFont } from "@/server/modules/website/design";
 
-// Fonts for the public website (D124, D135). Self-hosted by next/font and only the public site imports them. Nothing is
+// Fonts for the public website. Self-hosted by next/font and only the public site imports them. Nothing is
 // preloaded: a browser downloads only the faces the institute's chosen fonts actually use. Every stack ends with the
 // app's Bengali font, so Bangla text is always shaped correctly.
 

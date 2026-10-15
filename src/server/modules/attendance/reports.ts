@@ -6,9 +6,9 @@ import { isCalendarDate, todayInDhaka } from "@/lib/dates";
 import { effectiveStatus, tally, type AttendanceStatus, type AttendanceTally } from "./rules";
 import { scopedBatchSubjects, type Viewer } from "./registers";
 
-// Attendance reports (D87, D88) and the student's own attendance (D27). Only taken classes count; classes not held
-// count for nobody (D86). Reports follow the register scope: the office sees every batch subject, an instructor the
-// ones they teach (D24). Guardian mobiles appear only with students.contact.view.
+// Attendance reports and the student's own attendance. Only taken classes count; classes not held
+// count for nobody. Reports follow the register scope: the office sees every batch subject, an instructor the
+// ones they teach. Guardian mobiles appear only with students.contact.view.
 
 const hhmm = (t: string) => t.slice(0, 5);
 const MAX_RANGE_DAYS = 366;
@@ -87,7 +87,7 @@ export async function reportOptions(db: DbOrTx, viewer: Viewer) {
 }
 
 /**
- * A batch's register for a month (D88): one column per taken class (date, time, subject), one row per student who was
+ * A batch's register for a month: one column per taken class (date, time, subject), one row per student who was
  * on any of them or is a current member, each cell the effective status, and each student's totals and percentage.
  */
 export async function monthlyRegister(db: DbOrTx, viewer: Viewer, input: { batchId: string; month: string; batchSubjectId?: string | null }) {
@@ -144,7 +144,7 @@ export async function monthlyRegister(db: DbOrTx, viewer: Viewer, input: { batch
   };
 }
 
-/** Students below a percentage over a date range (D88), lowest first. Guardian mobiles only with contact access. */
+/** Students below a percentage over a date range, lowest first. Guardian mobiles only with contact access. */
 export async function lowAttendance(
   db: DbOrTx,
   viewer: Viewer,
@@ -172,7 +172,7 @@ export async function lowAttendance(
   };
 }
 
-/** Who was absent on a day (D88): each student with the classes they missed. Excused (leave) isn't absent. */
+/** Who was absent on a day: each student with the classes they missed. Excused (leave) isn't absent. */
 export async function dailyAbsentees(db: DbOrTx, viewer: Viewer, input: { date: string; batchId?: string }) {
   if (!isCalendarDate(input.date)) throw new ValidationError("VALIDATION_DATE", "Enter a valid date.", { field: "date" });
   const scope = (await scopedBatchSubjects(db, viewer, undefined, { includeArchived: true })).filter((s) => !input.batchId || s.batchId === input.batchId);
@@ -214,7 +214,7 @@ function summarise(entries: HistoryEntry[]) {
   };
 }
 
-/** A student's classes in a range, newest first, with totals overall and per subject (D88). */
+/** A student's classes in a range, newest first, with totals overall and per subject. */
 async function historyOf(db: DbOrTx, tenantId: string, studentId: string, scope: Awaited<ReturnType<typeof scopedBatchSubjects>>, range: DateRange) {
   const byId = new Map(scope.map((s) => [s.id, s]));
   const marks = await marksIn(db, tenantId, scope.map((s) => s.id), range, [studentId]);
@@ -242,7 +242,7 @@ export async function studentHistory(db: DbOrTx, viewer: Viewer, studentId: stri
   return historyOf(db, viewer.tenantId, studentId, scope, range);
 }
 
-/** The signed-in student's own attendance (D27, D87): every batch subject they belong or belonged to, all their history. */
+/** The signed-in student's own attendance: every batch subject they belong or belonged to, all their history. */
 export async function myAttendance(db: DbOrTx, tenantId: string, userId: string, range?: DateRange) {
   const [student] = await db.select({ id: students.id }).from(students).where(and(eq(students.tenantId, tenantId), eq(students.userId, userId)));
   if (!student) throw new NotFoundError("STUDENT");

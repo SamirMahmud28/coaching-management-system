@@ -6,7 +6,7 @@ import { requireModulePage } from "@/server/modules/institute/current-user";
 
 export const metadata: Metadata = { title: "Register" };
 
-// One class's register; the server decides who may see or change it (D24, D82).
+// One class's register; the server decides who may see or change it.
 export default async function Page({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   await requireModulePage("attendance.view");
   const at = classParams(await searchParams);

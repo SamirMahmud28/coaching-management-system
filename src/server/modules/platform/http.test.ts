@@ -196,7 +196,7 @@ describe("tenants", () => {
     expect((await call("31/01/2027")).status).toBe(422);
   });
 
-  it("PATCH /tenants/:id/app-theme sets the institute's theme, audited as the platform admin; bad values 422, unknown ids 404 (D157)", async () => {
+  it("PATCH /tenants/:id/app-theme sets the institute's theme, audited as the platform admin; bad values 422, unknown ids 404", async () => {
     const { cookie } = await signedInAdmin();
     const tenant = await createTenantViaApi(cookie);
     const call = (id: string, app_theme: string) => h.setTenantAppTheme(req("PATCH", `/tenants/${id}/app-theme`, { body: { app_theme }, cookie }), { id });
@@ -217,7 +217,7 @@ describe("tenants", () => {
     expect((await h.setTenantAppTheme(req("PATCH", `/tenants/${tenant.id}/app-theme`, { body: { app_theme: "PLUM" } }), { id: tenant.id })).status).toBe(401);
   });
 
-  it("PATCH /me/app-theme saves the signed-in admin's own panel theme only (D157)", async () => {
+  it("PATCH /me/app-theme saves the signed-in admin's own panel theme only", async () => {
     const { cookie } = await signedInAdmin();
     const res = await h.setMyAppTheme(req("PATCH", "/me/app-theme", { body: { app_theme: "INDIGO" }, cookie }));
     expect((await res.json()).app_theme).toBe("INDIGO");

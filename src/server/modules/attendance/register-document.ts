@@ -11,7 +11,7 @@ interface Selection {
 
 export type AttendanceRegisterRecord = Awaited<ReturnType<typeof monthlyRegister>>;
 
-/** The monthly batch register on A4 (D88), exactly as the report screen shows it. Needs attendance.report.view. */
+/** The monthly batch register on A4, exactly as the report screen shows it. Needs attendance.report.view. */
 export const attendanceRegisterDocument: DocumentTypeDefinition<AttendanceRegisterRecord, Selection> = {
   key: "attendance-register",
   label: "Attendance register",
@@ -24,7 +24,7 @@ export const attendanceRegisterDocument: DocumentTypeDefinition<AttendanceRegist
     return { batchId: query.batch_id, month: monthRange(query.month).month, batchSubjectId: query.batch_subject_id || undefined };
   },
   describeSelection: (s) => ({ batchId: s.batchId, month: s.month, batchSubjectId: s.batchSubjectId ?? null }),
-  // Scoped like the screen: an instructor prints only the subjects they teach (D24).
+  // Scoped like the screen: an instructor prints only the subjects they teach.
   load: async (db, { tenantId, selection, permissions, userId }) => {
     const data = await monthlyRegister(db, { tenantId, userId, permissions }, selection);
     return { records: [{ id: `${selection.batchId}-${selection.month}`, data }] };

@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import { clearRateLimits, instituteUrl, seedInstitute, seedTeaching, setInstituteModules } from "./helpers";
 
-// One serial story for the Exams & Results module; each milestone (E2–E4) adds its steps.
+// One serial story for the Exams & Results module; each milestone adds its steps.
 test.describe.configure({ mode: "serial" });
 
 const INSTITUTE = {
@@ -50,7 +50,7 @@ test("the Owner signs in for the first time", async ({ page }) => {
   expect(codes).toHaveLength(3);
 });
 
-test("E2: the Owner creates a model test with a split paper and an optional paper (D101, D108)", async ({ page }) => {
+test("the Owner creates a model test with a split paper and an optional paper", async ({ page }) => {
   await signInAsOwner(page);
   await page.getByRole("link", { name: "Exams", exact: true }).click();
   await page.getByRole("link", { name: "New exam" }).click();
@@ -83,7 +83,7 @@ test("E2: the Owner creates a model test with a split paper and an optional pape
   await expect(page.getByText("Draft", { exact: true })).toBeVisible();
 });
 
-test("E2: a wrong split is refused with a clear message, and the exam can be edited", async ({ page }) => {
+test("a wrong split is refused with a clear message, and the exam can be edited", async ({ page }) => {
   await signInAsOwner(page);
   await page.goto(url("/app/exams"));
   await page.getByTestId("exams-list").getByRole("link", { name: /Model test 1/ }).click();
@@ -97,7 +97,7 @@ test("E2: a wrong split is refused with a clear message, and the exam can be edi
   await expect(page.getByRole("heading", { name: "Model test 1 (SSC)", level: 1 })).toBeVisible();
 });
 
-test("E2: the grading scale can be changed and set back to Bangladesh 5.0 (D102, D112)", async ({ page }) => {
+test("the grading scale can be changed and set back to Bangladesh 5.0", async ({ page }) => {
   await signInAsOwner(page);
   await page.goto(url("/app/exams"));
   await page.getByRole("link", { name: "Grading scale" }).click();
@@ -112,7 +112,7 @@ test("E2: the grading scale can be changed and set back to Bangladesh 5.0 (D102,
   await expect(page.getByLabel("From percent 1")).toHaveValue("80");
 });
 
-test("E3: the instructor enters Physics marks in their batch — parts, decimals and Absent (D24, D104, D106)", async ({ page }) => {
+test("the instructor enters Physics marks in their batch — parts, decimals and Absent", async ({ page }) => {
   await signIn(page, TEACHER.email, TEACHER.password);
   await expect(page).toHaveURL(url("/app/instructor"));
   await page.getByRole("link", { name: "Exams", exact: true }).click();
@@ -136,7 +136,7 @@ test("E3: the instructor enters Physics marks in their batch — parts, decimals
   await expect(page.getByText("Anika Rahman's MCQ mark can't be more than 30.")).toBeVisible();
 });
 
-test("E3: the Owner enters Chemistry marks; Physics is now locked in the exam form (D101)", async ({ page }) => {
+test("the Owner enters Chemistry marks; Physics is now locked in the exam form", async ({ page }) => {
   await signInAsOwner(page);
   await page.goto(url("/app/exams"));
   await page.getByTestId("exams-list").getByRole("link", { name: /Model test 1/ }).click();
@@ -154,7 +154,7 @@ test("E3: the Owner enters Chemistry marks; Physics is now locked in the exam fo
 
 // By now: Physics — Anika 60 + 25, Bushra Absent, Chaity 20 + 9.5 (below both part pass marks);
 // Chemistry (optional) — Anika 40, Bushra 30, Chaity not taken.
-test("E4: the Owner reviews the combined merit list and publishes the whole exam (D103, D108, D110)", async ({ page }) => {
+test("the Owner reviews the combined merit list and publishes the whole exam", async ({ page }) => {
   await signInAsOwner(page);
   await page.goto(url("/app/exams"));
   await page.getByTestId("exams-list").getByRole("link", { name: /Model test 1/ }).click();
@@ -181,7 +181,7 @@ test("E4: the Owner reviews the combined merit list and publishes the whole exam
   await expect(sheet.getByText("1 of 3")).toBeVisible();
 });
 
-test("E4: the instructor sees the results of their batch but can't publish or change marks (D24, D107)", async ({ page }) => {
+test("the instructor sees the results of their batch but can't publish or change marks", async ({ page }) => {
   await signIn(page, TEACHER.email, TEACHER.password);
   await expect(page).toHaveURL(url("/app/instructor"));
   await page.goto(url("/app/instructor/exams"));
@@ -194,7 +194,7 @@ test("E4: the instructor sees the results of their batch but can't publish or ch
   await expect(page.getByText(/Ask an Owner or Admin to correct a mark/)).toBeVisible();
 });
 
-test("E4: the student sees the published result with position and prints the marksheet (D27)", async ({ page }) => {
+test("the student sees the published result with position and prints the marksheet", async ({ page }) => {
   await signIn(page, codes[0], "Student123");
   await expect(page).toHaveURL(url("/app/student"));
   await page.getByRole("link", { name: "Results", exact: true }).click();
@@ -205,7 +205,7 @@ test("E4: the student sees the published result with position and prints the mar
   await expect(sheet.getByTestId("marksheet-result")).toHaveText("Passed");
 });
 
-test("E4: the Owner corrects a published mark with a reason; the result and positions update (D107)", async ({ page }) => {
+test("the Owner corrects a published mark with a reason; the result and positions update", async ({ page }) => {
   await signInAsOwner(page);
   await page.goto(url("/app/exams"));
   await page.getByTestId("exams-list").getByRole("link", { name: /Model test 1/ }).click();
@@ -224,7 +224,7 @@ test("E4: the Owner corrects a published mark with a reason; the result and posi
   await expect(page.getByTestId("results").getByRole("row").nth(2)).toContainText("Chaity Das"); // now second
 });
 
-test("Exams disappear while the module is off (D5)", async ({ page }) => {
+test("Exams disappear while the module is off", async ({ page }) => {
   await setInstituteModules(INSTITUTE.subdomain, { exams: false });
   try {
     await signInAsOwner(page);

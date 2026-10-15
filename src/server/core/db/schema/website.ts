@@ -6,8 +6,8 @@ import { instructors } from "./instructors";
 import { students } from "./students";
 import { WEBSITE_FONTS, WEBSITE_THEMES, type WebsiteSectionKey } from "../../../modules/website/design";
 
-// Website (paid module `website`): D13, D19–D23, D124–D133. The themed public site at `<sub>.<domain>/`, its notices,
-// gallery and testimonials, and the admission enquiry inbox. Website Pro (D135–D141) adds the `design` settings. Every save is public at once (D126). Image files are
+// Website (paid module `website`):,. The themed public site at `<sub>.<domain>/`, its notices,
+// gallery and testimonials, and the admission enquiry inbox. Website Pro adds the `design` settings. Every save is public at once. Image files are
 // never deleted, so their composite FKs need no ON DELETE action.
 
 export const websiteThemeEnum = pgEnum("website_theme", WEBSITE_THEMES);
@@ -16,7 +16,7 @@ export const heroButtonEnum = pgEnum("website_hero_button", ["ENQUIRE", "CALL", 
 export const enquiryStatusEnum = pgEnum("enquiry_status", ["NEW", "CONTACTED", "CONVERTED", "CLOSED"]);
 
 export { WEBSITE_SECTIONS, type WebsiteSectionKey } from "../../../modules/website/design";
-/** A section's settings: shown on its page while `enabled` (D20, D142), and on Home too while `onHome` (D143). */
+/** A section's settings: shown on its page while `enabled`, and on Home too while `onHome`. */
 export type WebsiteSectionSetting = { key: WebsiteSectionKey; enabled: boolean; onHome: boolean };
 
 /** One row per institute, created on first save; until then the defaults in `website/settings.ts` apply. */
@@ -32,9 +32,9 @@ export const websiteSettings = pgTable("website_settings", {
   aboutHeading: varchar("about_heading", { length: 120 }),
   aboutText: text("about_text"),
   aboutImageFileId: uuid("about_image_file_id"),
-  /** The look beyond theme and heading font (D135, D136), validated and completed in `website/design.ts`. */
+  /** The look beyond theme and heading font, validated and completed in `website/design.ts`. */
   design: jsonb("design").$type<object>().notNull().default({}),
-  /** Section titles, the announcement bar and social links (D138, D140), validated and completed in `website/site-content.ts`. */
+  /** Section titles, the announcement bar and social links, validated and completed in `website/site-content.ts`. */
   content: jsonb("content").$type<object>().notNull().default({}),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   updatedBy: uuid("updated_by"),
@@ -45,7 +45,7 @@ export const websiteSettings = pgTable("website_settings", {
   check("website_settings_about_text", sql`${t.aboutText} IS NULL OR length(${t.aboutText}) <= 3000`),
 ]);
 
-/** A public notice (D23, D128): shown from its date until "show until"; hidden rather than deleted. */
+/** A public notice: shown from its date until "show until"; hidden rather than deleted. */
 export const websiteNotices = pgTable("website_notices", {
   id: uuid("id").primaryKey().defaultRandom(),
   tenantId: uuid("tenant_id").notNull(),
@@ -72,7 +72,7 @@ export const websiteNotices = pgTable("website_notices", {
   check("website_notices_hidden", sql`(${t.hiddenAt} IS NULL) = (${t.hiddenBy} IS NULL)`),
 ]);
 
-/** A gallery photo (D125): at most 60 per institute, shown in `sort_order`. Removing one deletes the row. */
+/** A gallery photo: at most 60 per institute, shown in `sort_order`. Removing one deletes the row. */
 export const galleryPhotos = pgTable("gallery_photos", {
   id: uuid("id").primaryKey().defaultRandom(),
   tenantId: uuid("tenant_id").notNull(),
@@ -89,7 +89,7 @@ export const galleryPhotos = pgTable("gallery_photos", {
   foreignKey({ name: "gallery_photos_created_by_fk", columns: [t.tenantId, t.createdBy], foreignColumns: [users.tenantId, users.id] }),
 ]);
 
-/** A testimonial entered by the office (D130), shown in `sort_order`. Removing one deletes the row. */
+/** A testimonial entered by the office, shown in `sort_order`. Removing one deletes the row. */
 export const testimonials = pgTable("testimonials", {
   id: uuid("id").primaryKey().defaultRandom(),
   tenantId: uuid("tenant_id").notNull(),
@@ -110,7 +110,7 @@ export const testimonials = pgTable("testimonials", {
 ]);
 
 /**
- * An admission enquiry from the public form (D22, D129). The sender's IP is kept only for the per-IP limit. "Convert"
+ * An admission enquiry from the public form. The sender's IP is kept only for the per-IP limit. "Convert"
  * links the student that admission created.
  */
 export const enquiries = pgTable("enquiries", {
@@ -139,7 +139,7 @@ export const enquiries = pgTable("enquiries", {
 ]);
 
 /**
- * An instructor the office shows on the website (D141): opt-in, with an optional line such as "BUET, 8 years". The
+ * An instructor the office shows on the website: opt-in, with an optional line such as "BUET, 8 years". The
  * public site shows the name, photo and subjects only, and only while the instructor is active. Removing one deletes
  * the row, never the instructor.
  */
@@ -161,7 +161,7 @@ export const websiteFaculty = pgTable("website_faculty", {
   foreignKey({ name: "website_faculty_updated_by_fk", columns: [t.tenantId, t.updatedBy], foreignColumns: [users.tenantId, users.id] }),
 ]);
 
-/** A top result typed in by the office (D141), like a testimonial (D130); not linked to a student record. */
+/** A top result typed in by the office, like a testimonial; not linked to a student record. */
 export const websiteAchievers = pgTable("website_achievers", {
   id: uuid("id").primaryKey().defaultRandom(),
   tenantId: uuid("tenant_id").notNull(),

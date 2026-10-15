@@ -13,7 +13,7 @@ import { seedBaselineRoles } from "../rbac/service";
 import * as students from "../students/service";
 import { createChange, createHoliday, type Viewer } from "./service";
 
-// Attendance follows the routine when both modules are on (D116), and a substitute takes that register (D121).
+// Attendance follows the routine when both modules are on, and a substitute takes that register.
 
 const { db: testDb, reset, close } = createTestDb();
 const db = testDb as unknown as Db;
@@ -65,7 +65,7 @@ async function setUp(modules: ("attendance" | "routine")[] = ["attendance", "rou
 
 const at = (bs: string, startsAt: string) => ({ batchSubjectId: bs, date: today, startsAt });
 
-describe("Attendance follows the routine (D116)", () => {
+describe("Attendance follows the routine", () => {
   it("shows a cancelled class as not held with the reason, and refuses its register", async () => {
     const s = await setUp();
     await createChange(db, s.admin, { batchSubjectId: s.phy.id, classDate: today, startsAt: "09:00", kind: "CANCEL", reason: "Instructor ill" });
@@ -107,7 +107,7 @@ describe("Attendance follows the routine (D116)", () => {
   });
 });
 
-describe("a substitute takes that register (D121)", () => {
+describe("a substitute takes that register", () => {
   it("shows the substitute only the class they cover and lets both them and the regular instructor take it", async () => {
     const s = await setUp();
     await createChange(db, s.admin, { batchSubjectId: s.phy.id, classDate: today, startsAt: "09:00", kind: "SUBSTITUTE", substituteInstructorId: s.salma.id });

@@ -41,7 +41,7 @@ type Dialog =
   | { kind: "refund"; charge: ChargeRow }
   | null;
 
-/** One student's fees: what's due, collecting it, receipts, and corrections (D31–D37, D43, D69–D74). */
+/** One student's fees: what's due, collecting it, receipts, and corrections. */
 export function StudentFeesPage({ studentId, perms }: { studentId: string; perms: StudentFeesPermissions }) {
   const queryClient = useQueryClient();
   const student = useQuery({ queryKey: instituteKeys.student(studentId), queryFn: () => studentsApi.get(studentId), enabled: perms.canViewStudent });

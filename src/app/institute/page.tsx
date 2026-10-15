@@ -18,8 +18,8 @@ export async function generateMetadata(): Promise<Metadata> {
   return site ? websiteMetadata(site, "home") : { title: institute.name };
 }
 
-// The institute's public page. With the Website module on, its themed website's Home (D20, D124–D147); otherwise the basic
-// Core page (D21): default theme, profile and contact details, and active courses with their batches' class times (D59).
+// The institute's public page. With the Website module on, its themed website's Home; otherwise the basic
+// Core page: default theme, profile and contact details, and active courses with their batches' class times.
 export default async function InstitutePublicPage() {
   const institute = await getCurrentInstitute();
   if (!publicPageVisible(institute.status)) {

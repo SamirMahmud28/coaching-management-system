@@ -22,7 +22,7 @@ import { websiteContentApi, type AchieverRow } from "../../api";
 import { instituteKeys } from "../../keys";
 import { WebsiteTabs } from "./website-tabs";
 
-/** Top results typed in by the office (D141), shown in the Achievers section in the order set. */
+/** Top results typed in by the office, shown in the Achievers section in the order set. */
 export function WebsiteAchieversPage() {
   const queryClient = useQueryClient();
   const list = useQuery({ queryKey: instituteKeys.website("achievers"), queryFn: websiteContentApi.achievers });

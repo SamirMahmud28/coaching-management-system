@@ -26,9 +26,9 @@ import { HowThisWorks } from "@/modules/institute/help/how-this-works";
 const NO_COURSE = "none"; // Radix Select values can't be empty strings.
 
 /**
- * Admission (D12, D15, D54–D57): profile, guardian, then the course (required when the ID pattern includes its code) and
- * any batches. The student ID is generated from the pattern unless an Admin types one (D8). Opened from a website
- * enquiry ("Convert", D129), it starts with the enquiry's name, mobile number and course, and marks the enquiry
+ * Admission: profile, guardian, then the course (required when the ID pattern includes its code) and
+ * any batches. The student ID is generated from the pattern unless an Admin types one. Opened from a website
+ * enquiry ("Convert"), it starts with the enquiry's name, mobile number and course, and marks the enquiry
  * Converted once the student is admitted.
  */
 export function AdmitStudentPage({ canJoinBatches, enquiryId = null }: { canJoinBatches: boolean; enquiryId?: string | null }) {
@@ -58,7 +58,7 @@ export function AdmitStudentPage({ canJoinBatches, enquiryId = null }: { canJoin
   const courses = useQuery({ queryKey: instituteKeys.courses({ status: "ACTIVE" }), queryFn: () => academicApi.courses({ status: "ACTIVE" }) });
   const batches = useQuery({ queryKey: instituteKeys.batches({ status: "ACTIVE" }), queryFn: () => academicApi.batches({ status: "ACTIVE" }), enabled: canJoinBatches });
   const needsCourse = !!pattern.data?.include_course_code && !typeId;
-  // The chosen course's batches first, then the rest (a student may join batches of any course, D57).
+  // The chosen course's batches first, then the rest (a student may join batches of any course).
   const batchOptions = [...(batches.data ?? [])].sort((a, b) => Number(b.course_id === courseId) - Number(a.course_id === courseId));
 
   const missing = studentFormMissing(values, true) || !password || !admissionDate || (needsCourse && courseId === NO_COURSE) || (typeId && !studentCode.trim());

@@ -19,7 +19,7 @@ const dateQuery = z.object({ date: z.string().optional() });
 const yearQuery = z.object({ year: z.coerce.number().int().optional() });
 
 /**
- * The dashboard's API (U3, D163). Single-module widgets go through the guard with their own permission; the composite
+ * The dashboard's API. Single-module widgets go through the guard with their own permission; the composite
  * ones (summary, pending actions, coming up, set-up) only need a signed-in user of the institute and include each
  * section only for the permissions held, which are already limited to the institute's active modules.
  */

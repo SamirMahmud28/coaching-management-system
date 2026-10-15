@@ -58,7 +58,7 @@ async function setUp() {
   return { tenantId: tenant.id, admin, rahim, salma, mPhy, ePhy, student };
 }
 
-describe("portal routine views (D27, D117)", () => {
+describe("portal routine views", () => {
   it("shows a student the changes to their own batches only, in the next two weeks", async () => {
     const s = await setUp();
     await createChange(db, s.admin, { batchSubjectId: s.mPhy.id, classDate: addDays(today, 1), startsAt: "09:00", kind: "CANCEL", reason: "Instructor ill" });

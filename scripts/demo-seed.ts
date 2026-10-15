@@ -36,7 +36,7 @@ import { DEFAULT_SECTIONS, saveWebsiteSettings } from "../src/server/modules/web
 // npm run demo:seed [-- --subdomain=demo]
 //
 // Builds a realistic demo institute in the LOCAL development database through the real services, for the owner's
-// walkthrough (docs/manual/OWNER-WALKTHROUGH.md, D134): courses, batches, instructors, students, fees, attendance,
+// walkthrough: courses, batches, instructors, students, fees, attendance,
 // leave, an exam with published results, routine changes, lesson plans, and a filled-in website with enquiries.
 // Demo passwords are printed at the end; they are for local demo data only. Refuses to run in production.
 
@@ -150,7 +150,7 @@ async function main() {
     const period = today.slice(0, 7);
     await feeCharges.confirmGeneration(db, actor, { feeItemId: sscFee.id, period });
     await feeCharges.confirmGeneration(db, actor, { feeItemId: hscFee.id, period });
-    // The previous five months too, paid on a day in that month, mostly in full: the dashboard's fee chart (D163).
+    // The previous five months too, paid on a day in that month, mostly in full: the dashboard's fee chart.
     for (let back = 5; back >= 1; back--) {
       const first = new Date(Date.UTC(Number(today.slice(0, 4)), Number(today.slice(5, 7)) - 1 - back, 1));
       const past = first.toISOString().slice(0, 7);
@@ -171,7 +171,7 @@ async function main() {
       await feePayments.collectPayment(db, owner, s.id, { chargeIds: charges.map((c) => c.id), method: i % 2 ? "BKASH" : "CASH", reference: i % 2 ? `TX${8800 + i}` : null, idempotencyKey: randomUUID() });
     }
 
-    // --- Attendance: about three weeks for every batch, each at its own level (dashboard bands, D163) -------------
+    // --- Attendance: about three weeks for every batch, each at its own level (dashboard bands) -------------
     const classDays: string[] = [];
     for (let d = addDays(today, -1); classDays.length < 16; d = addDays(d, -1)) if (weekdayOf(d) !== "FRI") classDays.push(d);
     const morningStudents = admitted.filter((s) => s.batch === sscMorning);
@@ -243,7 +243,7 @@ async function main() {
     const upload = async (label: string, from: string, to: string, w?: number, h?: number) =>
       (await uploadFile(db, storage, actor, { category: "WEBSITE_IMAGE", filename: `${label}.jpg`, bytes: await picture(label, from, to, w, h) })).id;
     await saveWebsiteSettings(db, actor, {
-      // Website Pro (D135–D141): the Aurora theme in the Padma palette, with every showcase section filled except the video.
+      // Website Pro: the Aurora theme in the Padma palette, with every showcase section filled except the video.
       theme: "AURORA", headingFont: THEME_PRESETS.AURORA.headingFont, design: completeDesign({ ...THEME_PRESETS.AURORA, palette: "PADMA" }), sections: DEFAULT_SECTIONS,
       content: {
         ...DEFAULT_CONTENT,
@@ -259,7 +259,7 @@ async function main() {
           { icon: "HeartHandshake", title: "Guardians kept informed", text: "A call when a student misses class." },
           { icon: "FlaskConical", title: "Practical science", text: "Lab demonstrations for Physics and Chemistry." },
         ],
-        // D147: two more banner slides (a photo slider) and the toppers ticker under the banner.
+        // two more banner slides (a photo slider) and the toppers ticker under the banner.
         heroSlides: [
           { imageFileId: await upload("Admission 2027", "#b45309", "#be123c"), heading: "Admission open for HSC 2027", subheading: "Morning and evening batches, at most 25 students each." },
           { imageFileId: await upload("312 GPA 5", "#1e3a8a", "#7c3aed"), heading: "312 GPA 5 holders since 2012", subheading: null },
@@ -315,7 +315,7 @@ Demo institute "Alo Coaching Centre" is ready: http://${subdomain}.localhost:300
   Student:      ${studentLogin}   (Nusrat Jahan, SSC Morning)
   Password for all of them: ${PASSWORD}   (local demo data only)
   ${admitted.length} students, 3 batches, ${owing} students still owing this month, 1 published exam, 3 enquiries.
-Walkthrough: docs/manual/OWNER-WALKTHROUGH.md`);
+`);
   } finally {
     await client.end();
   }

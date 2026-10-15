@@ -84,7 +84,7 @@ describe("DatePicker", () => {
   });
 });
 
-describe("glass surfaces (D159)", () => {
+describe("glass surfaces", () => {
   it("cards are frosted glass and tables sit on the denser frost", async () => {
     const { Card } = await import("@/components/ui/card");
     const { DataTable } = await import("./data-table");

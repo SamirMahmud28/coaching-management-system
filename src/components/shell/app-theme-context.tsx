@@ -10,7 +10,7 @@ export interface AppThemeControl {
   shown: AppTheme;
   /** Shows a theme across the app without saving it; `null` goes back to the saved one. */
   preview: (theme: AppTheme | null) => void;
-  /** Whether the paper background is on screen now (D158). */
+  /** Whether the paper background is on screen now. */
   paper: boolean;
   /** Shows the paper background on or off without saving; `null` goes back to the saved setting. */
   previewPaper: (on: boolean | null) => void;

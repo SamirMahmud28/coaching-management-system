@@ -68,7 +68,7 @@ describe("ThemePicker", () => {
     await waitFor(() => expect(document.documentElement.dataset.appTheme).toBe("indigo"));
   });
 
-  it("the paper switch is automatic (on with Classic Amber), previews on the shell, and saves the explicit choice (D158)", async () => {
+  it("the paper switch is automatic (on with Classic Amber), previews on the shell, and saves the explicit choice", async () => {
     const onSave = vi.fn(async () => {});
     inShell(<ThemePicker value="MIDNIGHT" onSave={onSave} livePreview />);
     const paper = screen.getByRole("switch", { name: "Paper background" });

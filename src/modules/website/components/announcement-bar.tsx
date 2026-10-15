@@ -3,7 +3,7 @@
 import { useSyncExternalStore, useState } from "react";
 import { Megaphone, X } from "lucide-react";
 
-// The strip at the top of the website (D138): one line from the office, an optional link, and a close button. Closing
+// The strip at the top of the website: one line from the office, an optional link, and a close button. Closing
 // hides this announcement for the rest of the visit; a new announcement shows again.
 
 const storageKey = (text: string) => `site-announcement:${text.length}:${text.slice(0, 40)}`;

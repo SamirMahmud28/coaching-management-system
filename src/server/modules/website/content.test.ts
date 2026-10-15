@@ -38,7 +38,7 @@ async function institute() {
   return { tenantId: tenant.id, actor, picture };
 }
 
-describe("notices (D128)", () => {
+describe("notices", () => {
   it("shows a notice from its date until 'show until', pinned first then newest; hidden ones stay in the office list", async () => {
     const s = await institute();
     const old = await content.createNotice(db, s.actor, { title: "Old", body: "x", noticeDate: addDays(today, -10) });
@@ -88,7 +88,7 @@ describe("notices (D128)", () => {
   });
 });
 
-describe("gallery (D125)", () => {
+describe("gallery", () => {
   it("adds website pictures at the end, edits captions, reorders and removes", async () => {
     const s = await institute();
     const [a, b, c] = [await s.picture(), await s.picture(), await s.picture()];
@@ -127,7 +127,7 @@ describe("gallery (D125)", () => {
   });
 });
 
-describe("testimonials (D130)", () => {
+describe("testimonials", () => {
   it("adds them in order with an optional line and photo, edits, reorders and removes", async () => {
     const s = await institute();
     const photo = await s.picture();

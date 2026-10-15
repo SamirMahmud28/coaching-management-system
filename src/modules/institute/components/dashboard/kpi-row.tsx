@@ -9,7 +9,7 @@ import { formatTaka, toPoisha } from "@/lib/money";
 import { dashboardApi } from "../../api";
 import { instituteKeys } from "../../keys";
 
-/** The KPI row (D163): each card only for someone who may see its figure; the grid closes up around missing ones. */
+/** The KPI row: each card only for someone who may see its figure; the grid closes up around missing ones. */
 export function KpiRow({ showPending }: { showPending: boolean }) {
   const summary = useQuery({ queryKey: instituteKeys.dashboard("summary"), queryFn: dashboardApi.summary });
   const attention = useQuery({ queryKey: instituteKeys.dashboard("attention"), queryFn: dashboardApi.attention, enabled: showPending });

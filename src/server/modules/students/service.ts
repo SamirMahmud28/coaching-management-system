@@ -42,7 +42,7 @@ const record = (tx: DbOrTx, actor: Actor, action: string, resourceId: string, va
   audit.record(tx, { tenantId: actor.tenantId, actorType: "TENANT_USER", userId: actor.userId, action, resourceType: "STUDENT", resourceId, ...values });
 
 // ---------------------------------------------------------------------------
-// Field rules (D12, D54, D55)
+// Field rules
 // ---------------------------------------------------------------------------
 
 export interface StudentFields {
@@ -112,7 +112,7 @@ function cleanFields(input: StudentFields) {
   };
 }
 
-/** An Admin-typed student ID (D8): letters, digits, "-" and "/"; never readable as an email or mobile number (D17). */
+/** An Admin-typed student ID: letters, digits, "-" and "/"; never readable as an email or mobile number. */
 export function cleanStudentCode(value: string): string {
   const code = value.trim().toUpperCase();
   if (!/^[A-Z0-9][A-Z0-9/-]{0,29}$/.test(code)) {
@@ -123,7 +123,7 @@ export function cleanStudentCode(value: string): string {
 }
 
 // ---------------------------------------------------------------------------
-// Student ID generation (D15, D16)
+// Student ID generation
 // ---------------------------------------------------------------------------
 
 async function nextSequence(tx: Tx, tenantId: string, scope: string, year: number): Promise<number> {
@@ -168,7 +168,7 @@ export interface AdmitInput extends StudentFields {
   admissionDate?: string | null;
   courseId?: string | null;
   batchIds?: string[];
-  /** An Admin-typed ID (D8); generated from the pattern when absent. */
+  /** An Admin-typed ID; generated from the pattern when absent. */
   studentCode?: string | null;
   temporaryPassword: string;
 }
@@ -187,7 +187,7 @@ async function activeBatch(tx: DbOrTx, tenantId: string, batchId: string) {
 
 /**
  * One transaction: student ID → login (username = ID, Student role, temporary password) → student → status history →
- * batch memberships → audit. Joining a batch is optional (D56); batches may belong to any course (D57).
+ * batch memberships → audit. Joining a batch is optional; batches may belong to any course.
  */
 export async function admitStudent(db: DbOrTx, actor: Actor, input: AdmitInput) {
   const fields = cleanFields(input);
@@ -235,7 +235,7 @@ export async function admitStudent(db: DbOrTx, actor: Actor, input: AdmitInput) 
   });
 }
 
-/** Profile fields only. The ID, admission date and course are fixed at admission (D15); status has its own action. */
+/** Profile fields only. The ID, admission date and course are fixed at admission; status has its own action. */
 export async function updateStudent(db: DbOrTx, actor: Actor, id: string, input: Partial<StudentFields>) {
   return inTransaction(db, async (tx) => {
     const existing = await getInTenant(tx, students, actor.tenantId, id, "STUDENT");
@@ -280,7 +280,7 @@ export async function resetStudentPassword(db: DbOrTx, actor: Actor, id: string,
 }
 
 // ---------------------------------------------------------------------------
-// Overall status (D9, D10, D14, D18, D26)
+// Overall status
 // ---------------------------------------------------------------------------
 
 const TRANSITIONS: Record<StudentStatus, readonly StudentStatus[]> = {
@@ -290,7 +290,7 @@ const TRANSITIONS: Record<StudentStatus, readonly StudentStatus[]> = {
   LEFT: ["ACTIVE"],
 };
 
-/** Why a status change isn't allowed, or null. Left needs a reason (D9), and so does reactivation (D10). */
+/** Why a status change isn't allowed, or null. Left needs a reason, and so does reactivation. */
 export function statusChangeProblem(from: StudentStatus, to: StudentStatus, reason: string | null): { code: string; message: string } | null {
   if (from === to) return { code: "CONFLICT_STATUS_UNCHANGED", message: "The student already has this status." };
   if (!TRANSITIONS[from].includes(to)) return { code: "CONFLICT_STATUS_TRANSITION", message: "This status change isn't allowed." };
@@ -301,8 +301,8 @@ export function statusChangeProblem(from: StudentStatus, to: StudentStatus, reas
 }
 
 /**
- * Changes the overall status. Only ACTIVE students can sign in (D26), so any other status bans the login and ends its
- * sessions. Completed and Left close every active batch membership with the same status, today (D14).
+ * Changes the overall status. Only ACTIVE students can sign in, so any other status bans the login and ends its
+ * sessions. Completed and Left close every active batch membership with the same status, today.
  */
 export async function setStudentStatus(db: DbOrTx, actor: Actor, id: string, input: { status: StudentStatus; reason?: string | null }) {
   const reason = text(input.reason, 500, "reason", "The reason");
@@ -336,7 +336,7 @@ export async function setStudentStatus(db: DbOrTx, actor: Actor, id: string, inp
 }
 
 // ---------------------------------------------------------------------------
-// Batch memberships (D11, D14)
+// Batch memberships
 // ---------------------------------------------------------------------------
 
 function rollNumber(value: string | null | undefined): string | null {
@@ -347,7 +347,7 @@ function rollNumber(value: string | null | undefined): string | null {
   return roll;
 }
 
-/** Adds a current student (Active or On Hold) to a batch. A Completed or Left student is reactivated first (D14). */
+/** Adds a current student (Active or On Hold) to a batch. A Completed or Left student is reactivated first. */
 export async function addMembership(db: DbOrTx, actor: Actor, studentId: string, input: { batchId: string; startedOn?: string | null; rollNumber?: string | null }) {
   const startedOn = calendarDate(input.startedOn, "startedOn") ?? todayInDhaka();
   const roll = rollNumber(input.rollNumber);
@@ -386,7 +386,7 @@ export async function setMembershipRoll(db: DbOrTx, actor: Actor, id: string, va
   });
 }
 
-/** Ends one membership as Completed or Left. The student's overall status doesn't change (D14). */
+/** Ends one membership as Completed or Left. The student's overall status doesn't change. */
 export async function endMembership(db: DbOrTx, actor: Actor, id: string, input: { status: "COMPLETED" | "LEFT"; endedOn?: string | null }) {
   const endedOn = calendarDate(input.endedOn, "endedOn") ?? todayInDhaka();
   return inTransaction(db, async (tx) => {

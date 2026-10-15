@@ -5,7 +5,7 @@ import { addDays, todayInDhaka } from "@/lib/dates";
 import { lessonOverviewFor, summarise, type TopicStatus } from "./lessons";
 import { timetable, type RoutineClass } from "./service";
 
-// The portals' view of the routine (D27, D117): upcoming changes for a student's batches or an instructor's classes,
+// The portals' view of the routine: upcoming changes for a student's batches or an instructor's classes,
 // and a student's lesson progress.
 
 const UPCOMING_DAYS = 14;
@@ -20,7 +20,7 @@ async function studentBatchIds(db: DbOrTx, tenantId: string, userId: string) {
   return [...new Set(rows.map((r) => r.batchId))];
 }
 
-/** Changes in the next two weeks to a student's classes (D117). */
+/** Changes in the next two weeks to a student's classes. */
 export async function upcomingChangesForStudent(db: DbOrTx, tenantId: string, userId: string) {
   const batchIds = await studentBatchIds(db, tenantId, userId);
   if (!batchIds.length) return [];
@@ -28,7 +28,7 @@ export async function upcomingChangesForStudent(db: DbOrTx, tenantId: string, us
   return (await timetable(db, tenantId, today, addDays(today, UPCOMING_DAYS - 1), { batchIds })).filter(changed);
 }
 
-/** Changes in the next two weeks to the classes an instructor teaches or covers (D117, D121). */
+/** Changes in the next two weeks to the classes an instructor teaches or covers. */
 export async function upcomingChangesForInstructor(db: DbOrTx, tenantId: string, userId: string) {
   const [me] = await db.select({ id: instructors.id }).from(instructors).where(and(eq(instructors.tenantId, tenantId), eq(instructors.userId, userId)));
   if (!me) return [];
@@ -37,7 +37,7 @@ export async function upcomingChangesForInstructor(db: DbOrTx, tenantId: string,
   return all.filter((c) => changed(c) && (c.regularInstructors.some((i) => i.id === me.id) || c.substituteInstructorId === me.id));
 }
 
-/** A student's lesson progress per subject of their current batches (D27, D118). */
+/** A student's lesson progress per subject of their current batches. */
 export async function myLessonProgress(db: DbOrTx, tenantId: string, userId: string) {
   const batchIds = await studentBatchIds(db, tenantId, userId);
   if (!batchIds.length) return [];

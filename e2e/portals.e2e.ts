@@ -104,7 +104,7 @@ test("the Owner sets up an instructor, a batch with a class time, and a student"
   await expect(glance.getByRole("link", { name: /1\s*Active instructors/ })).toBeVisible();
 });
 
-test("the public page lists the course, its batch and class times, without instructor names (D59)", async ({ page }) => {
+test("the public page lists the course, its batch and class times, without instructor names", async ({ page }) => {
   await page.goto(url("/"));
   await expect(page.getByRole("heading", { level: 1, name: INSTITUTE.name })).toBeVisible();
   const course = page.getByTestId("public-course").filter({ hasText: "HSC 2026 Science" });
@@ -115,7 +115,7 @@ test("the public page lists the course, its batch and class times, without instr
   await expect(page.getByRole("link", { name: "Sign in" })).toBeVisible();
 });
 
-test("the instructor sees their batch, its students without contact details, and their week (D24, D60)", async ({ page }) => {
+test("the instructor sees their batch, its students without contact details, and their week", async ({ page }) => {
   await signIn(page, instructor.phone, instructor.password);
   await changePassword(page, instructor.password, "Teach12345");
   await expect(page).toHaveURL(url("/app/instructor"));
@@ -138,7 +138,7 @@ test("the instructor sees their batch, its students without contact details, and
   await expect(page.getByText("Page not found")).toBeVisible();
 });
 
-test("the student sees their batch, subject, instructor and class times (D27)", async ({ page }) => {
+test("the student sees their batch, subject, instructor and class times", async ({ page }) => {
   await signIn(page, student.id, student.password);
   await changePassword(page, student.password, "Student12345");
   await expect(page).toHaveURL(url("/app/student"));
@@ -150,7 +150,7 @@ test("the student sees their batch, subject, instructor and class times (D27)", 
   await expect(page.getByText(student.id)).toBeVisible();
 });
 
-test("a suspended institute keeps its public page; a deactivated one shows it isn't available (D58)", async ({ page }) => {
+test("a suspended institute keeps its public page; a deactivated one shows it isn't available", async ({ page }) => {
   await setInstituteStatus(INSTITUTE.subdomain, "SUSPENDED");
   await page.goto(url("/"));
   await expect(page.getByTestId("public-course")).toContainText("HSC 2026 Science");

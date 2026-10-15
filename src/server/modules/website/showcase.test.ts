@@ -57,7 +57,7 @@ async function institute() {
   return { tenantId: tenant.id, actor, picture, instructor };
 }
 
-describe("faculty (D141)", () => {
+describe("faculty", () => {
   it("shows only the instructors the office adds, in order, with subjects from active batches and never contact details", async () => {
     const s = await institute();
     const photo = await s.picture("INSTRUCTOR_PHOTO");
@@ -128,7 +128,7 @@ describe("faculty (D141)", () => {
   });
 });
 
-describe("achievers (D141)", () => {
+describe("achievers", () => {
   it("adds, edits, orders and removes achievers; their photos are public while used", async () => {
     const s = await institute();
     const photo = await s.picture();

@@ -4,7 +4,7 @@ import { classifyHost, hostConfigFromEnv, type HostConfig } from "./server/core/
 
 /**
  * Host-based routing only, not a security boundary: every route handler re-derives the tenant and checks the
- * session itself. Institute hosts serve the public page at "/", sign-in at "/login" and the app under "/app" (D19).
+ * session itself. Institute hosts serve the public page at "/", sign-in at "/login" and the app under "/app".
  */
 export function proxy(request: NextRequest) {
   return routeRequest(request, hostConfigFromEnv());

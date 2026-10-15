@@ -149,7 +149,7 @@ export function createRoutineHandlers({ db, auth, host }: RoutineHttpDeps) {
         return noContent();
       }),
 
-    // POST /api/v1/lessons/:id/copy — the office (routine.manage) copies another batch's plan (D118)
+    // POST /api/v1/lessons/:id/copy — the office (routine.manage) copies another batch's plan
     copyPlan: (request: Request, params: { id: string }) =>
       handle(async () => {
         const viewer = await authorize(request, "routine.manage");

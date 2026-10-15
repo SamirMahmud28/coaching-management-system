@@ -19,7 +19,7 @@ const GENDERS: { value: Gender; label: string }[] = [
 ];
 const NOT_SET = "none"; // Radix Select values can't be empty strings.
 
-/** Add (with a temporary password) or edit an instructor. Signing in needs a mobile number or an email (D17). */
+/** Add (with a temporary password) or edit an instructor. Signing in needs a mobile number or an email. */
 export function InstructorFormDialog({
   open,
   onOpenChange,

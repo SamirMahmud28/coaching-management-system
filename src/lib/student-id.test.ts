@@ -3,7 +3,7 @@ import { DEFAULT_STUDENT_ID_PATTERN, formatStudentId, studentIdPatternProblem, t
 
 const pattern = (p: Partial<StudentIdPattern>): StudentIdPattern => ({ ...DEFAULT_STUDENT_ID_PATTERN, ...p });
 
-describe("formatStudentId (D15, D16)", () => {
+describe("formatStudentId", () => {
   it("joins prefix, course code, admission year and a padded number", () => {
     expect(formatStudentId(pattern({ prefix: "KC", includeCourseCode: true }), { courseCode: "hsc", year: 2026, sequence: 1 })).toBe("KC-HSC-2026-0001");
   });

@@ -3,7 +3,7 @@ import type { SitePage } from "@/server/modules/website/design";
 import type { PublicWebsite } from "@/server/modules/website/public";
 import { SITE_LABELS } from "./i18n";
 
-// Each page's title and link preview (D142), so a page shared on Facebook or found in a search says what it is.
+// Each page's title and link preview, so a page shared on Facebook or found in a search says what it is.
 
 const clip = (text: string, max = 160) => (text.length > max ? `${text.slice(0, max - 1).trimEnd()}…` : text);
 

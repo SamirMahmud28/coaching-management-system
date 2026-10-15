@@ -105,7 +105,7 @@ test("the Owner admits a student into the batch; the ID comes from the pattern",
   await expect(page.getByRole("link", { name: /Nusrat Jahan/ })).toBeVisible();
 });
 
-test("the student signs in with the student ID and lands in the student portal (D17)", async ({ page }) => {
+test("the student signs in with the student ID and lands in the student portal", async ({ page }) => {
   await signIn(page, student.id, student.password);
   await expect(page).toHaveURL(url("/change-password"));
   await changePassword(page, student.password, "Student12345");
@@ -116,7 +116,7 @@ test("the student signs in with the student ID and lands in the student portal (
   await expect(page).toHaveURL(url("/app/student"));
 });
 
-test("On Hold stops the student signing in; Active lets them back (D26)", async ({ page, browser }) => {
+test("On Hold stops the student signing in; Active lets them back", async ({ page, browser }) => {
   await signInAsOwner(page);
   await page.goto(url("/app/students"));
   await page.getByLabel("Search students").fill(student.id);
@@ -136,7 +136,7 @@ test("On Hold stops the student signing in; Active lets them back (D26)", async 
   await context.close();
 });
 
-test("leaving needs a reason and closes the student's batches (D9, D14)", async ({ page }) => {
+test("leaving needs a reason and closes the student's batches", async ({ page }) => {
   await signInAsOwner(page);
   await page.goto(url("/app/students"));
   await page.getByRole("row", { name: /Nusrat Jahan/ }).click();

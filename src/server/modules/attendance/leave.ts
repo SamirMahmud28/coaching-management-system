@@ -6,8 +6,8 @@ import { ConflictError, NotFoundError, ValidationError } from "../../core/errors
 import { isCalendarDate, todayInDhaka } from "@/lib/dates";
 import { audit } from "../audit/service";
 
-// Leave (D89–D93): a student applies or the office enters it; Owner/Admin decide; approved leave excuses the student's
-// classes on those days (D91) through attendance_marks.leave_id, and revoking it puts them back as they were (D93).
+// Leave: a student applies or the office enters it; Owner/Admin decide; approved leave excuses the student's
+// classes on those days through attendance_marks.leave_id, and revoking it puts them back as they were.
 
 export interface Actor {
   tenantId: string;
@@ -16,7 +16,7 @@ export interface Actor {
 
 export type LeaveStatus = "PENDING" | "APPROVED" | "REJECTED" | "WITHDRAWN" | "REVOKED";
 export const LEAVE_STATUSES: readonly LeaveStatus[] = ["PENDING", "APPROVED", "REJECTED", "WITHDRAWN", "REVOKED"];
-/** How far back a student may apply (D92); the office may enter any date. */
+/** How far back a student may apply; the office may enter any date. */
 export const STUDENT_DAYS_BACK = 7;
 
 const addDays = (date: string, days: number) => new Date(Date.parse(`${date}T00:00:00Z`) + days * 86_400_000).toISOString().slice(0, 10);
@@ -65,7 +65,7 @@ async function assertNoOverlap(tx: DbOrTx, tenantId: string, studentId: string, 
   }
 }
 
-/** D91: the student's classes already taken on those days become Excused through this leave. Returns how many. */
+/** the student's classes already taken on those days become Excused through this leave. Returns how many. */
 async function excuseClasses(tx: DbOrTx, tenantId: string, leave: { id: string; studentId: string; fromDate: string; toDate: string }) {
   const rows = await tx
     .update(attendanceMarks)
@@ -168,16 +168,16 @@ export async function listLeave(db: DbOrTx, tenantId: string, filter: { status?:
   );
 }
 
-/** The signed-in student's own applications (D27). */
+/** The signed-in student's own applications. */
 export async function myLeave(db: DbOrTx, tenantId: string, userId: string) {
   const studentId = await studentOfUser(db, tenantId, userId);
   const rows = await leaveRows(db, and(eq(leaveApplications.tenantId, tenantId), eq(leaveApplications.studentId, studentId)));
-  // Staff names stay with the office; the student sees the decision and its note (D90).
+  // Staff names stay with the office; the student sees the decision and its note.
   const staffOnly = new Set(["appliedByName", "decidedByName"]);
   return rows.map((r) => Object.fromEntries(Object.entries(r).filter(([k]) => !staffOnly.has(k))) as Omit<LeaveRow, "appliedByName" | "decidedByName">);
 }
 
-/** A student applies for leave: up to 7 days back or any future date (D89, D92). It waits for a decision. */
+/** A student applies for leave: up to 7 days back or any future date. It waits for a decision. */
 export async function applyForLeave(db: DbOrTx, actor: Actor, input: { fromDate: string; toDate: string; reason: string }) {
   const { fromDate, toDate } = cleanDates(input);
   const reason = cleanText(input.reason, "reason", true, "a reason")!;
@@ -196,7 +196,7 @@ export async function applyForLeave(db: DbOrTx, actor: Actor, input: { fromDate:
   });
 }
 
-/** A student withdraws their own pending application (D93). Another student's is a 404. */
+/** A student withdraws their own pending application. Another student's is a 404. */
 export async function withdrawLeave(db: DbOrTx, actor: Actor, id: string) {
   return inTransaction(db, async (tx) => {
     const studentId = await studentOfUser(tx, actor.tenantId, actor.userId);
@@ -208,7 +208,7 @@ export async function withdrawLeave(db: DbOrTx, actor: Actor, id: string) {
   });
 }
 
-/** The office enters leave for a student, for any dates; it is approved at once (D89, D90) and takes effect (D91). */
+/** The office enters leave for a student, for any dates; it is approved at once and takes effect. */
 export async function enterLeave(db: DbOrTx, actor: Actor, studentId: string, input: { fromDate: string; toDate: string; reason: string }) {
   const { fromDate, toDate } = cleanDates(input);
   const reason = cleanText(input.reason, "reason", true, "a reason")!;
@@ -228,7 +228,7 @@ export async function enterLeave(db: DbOrTx, actor: Actor, studentId: string, in
   });
 }
 
-/** Owner/Admin approve or reject a pending application, with an optional note the student sees (D90, D91). */
+/** Owner/Admin approve or reject a pending application, with an optional note the student sees. */
 export async function decideLeave(db: DbOrTx, actor: Actor, id: string, input: { decision: "APPROVE" | "REJECT"; note?: string | null }) {
   const note = cleanText(input.note, "note", false, "a note");
   return inTransaction(db, async (tx) => {
@@ -251,7 +251,7 @@ export async function decideLeave(db: DbOrTx, actor: Actor, id: string, input: {
   });
 }
 
-/** Owner/Admin revoke approved leave with a reason; the classes it excused go back to how they were marked (D93). */
+/** Owner/Admin revoke approved leave with a reason; the classes it excused go back to how they were marked. */
 export async function revokeLeave(db: DbOrTx, actor: Actor, id: string, input: { reason: string }) {
   const reason = cleanText(input.reason, "reason", true, "a reason")!;
   return inTransaction(db, async (tx) => {

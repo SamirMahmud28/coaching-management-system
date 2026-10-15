@@ -3,7 +3,7 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 
 /**
- * Static guard checks (CLAUDE.md non-negotiable 2): every institute app page calls the single page guard, and every
+ * Static guard checks: every institute app page calls the single page guard, and every
  * Super Admin page sits under the guarded layout and reads data only through the guarded platform API.
  */
 
@@ -38,8 +38,8 @@ describe("page guards", () => {
       "src/app/institute/[page]/page.tsx",
       "src/app/institute/page.tsx",
     ]);
-    // The website's other pages (D142) show only what the public page may: the institute must be visible (D58), and the
-    // data comes only from the public website, which is empty while the Website module is off (D21).
+    // The website's other pages show only what the public page may: the institute must be visible, and the
+    // data comes only from the public website, which is empty while the Website module is off.
     const websitePage = await readFile(path.join(process.cwd(), "src/app/institute/[page]/page.tsx"), "utf8");
     expect(websitePage).toMatch(/\bpublicPageVisible\(/);
     expect(websitePage).toMatch(/\bloadPublicWebsite\(/);

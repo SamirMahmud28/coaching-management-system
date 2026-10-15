@@ -5,7 +5,7 @@ import { requireModulePage } from "@/server/modules/institute/current-user";
 
 export const metadata: Metadata = { title: "Payments" };
 
-// Every receipt in a date range (D99). 404 when Fees is off or without fees.view.
+// Every receipt in a date range. 404 when Fees is off or without fees.view.
 export default async function Page() {
   const { permissions } = await requireModulePage("fees.view");
   return <PaymentsPage nav={feesNav(permissions)} canVoid={permissions.has("fees.payment.void")} />;

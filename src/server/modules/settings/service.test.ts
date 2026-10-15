@@ -129,7 +129,7 @@ describe("signatures", () => {
   });
 });
 
-describe("student ID pattern (D15, D16)", () => {
+describe("student ID pattern", () => {
   it("starts with the defaults, saves a pattern with an example, and audits the change", async () => {
     const s = await school();
     const before = await getStudentIdPattern(db, s.actor.tenantId);
@@ -155,7 +155,7 @@ describe("student ID pattern (D15, D16)", () => {
   });
 });
 
-describe("app theme (D156)", () => {
+describe("app theme", () => {
   it("is Midnight until chosen; a save keeps the profile's other details and is audited", async () => {
     const { actor } = await school();
     expect(await getAppTheme(db, actor.tenantId)).toBe("MIDNIGHT");
@@ -177,7 +177,7 @@ describe("app theme (D156)", () => {
     ]);
   });
 
-  it("stores the paper background as automatic, on or off; leaving it out keeps it (D158)", async () => {
+  it("stores the paper background as automatic, on or off; leaving it out keeps it", async () => {
     const { actor } = await school();
     const by = { type: "TENANT_USER" as const, userId: actor.userId };
     expect(await getAppearance(db, actor.tenantId)).toEqual({ appTheme: "MIDNIGHT", paperBackground: null });

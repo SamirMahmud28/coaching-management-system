@@ -60,7 +60,7 @@ export function AttendanceSummary({ data, emptyText }: { data: AttendanceHistory
 
 const addDays = (date: string, days: number) => new Date(Date.parse(`${date}T00:00:00Z`) + days * 86_400_000).toISOString().slice(0, 10);
 
-/** A student's attendance on their profile (D88), for staff with attendance.report.view; last 30 days by default. */
+/** A student's attendance on their profile, for staff with attendance.report.view; last 30 days by default. */
 export function StudentAttendanceCard({ studentId }: { studentId: string }) {
   const [from, setFrom] = useState(() => addDays(todayInDhaka(), -29));
   const [to, setTo] = useState(() => todayInDhaka());

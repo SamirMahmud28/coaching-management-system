@@ -6,7 +6,7 @@ import { formatTaka, toPoisha } from "@/lib/money";
 const METHOD_LABEL: Record<string, string> = { CASH: "Cash", BANK_TRANSFER: "Bank transfer", CHEQUE: "Cheque", BKASH: "bKash", NAGAD: "Nagad", ROCKET: "Rocket", OTHER: "Other" };
 const taka = (amount: string) => formatTaka(toPoisha(amount));
 
-/** A full-A4 fee receipt (D69, D70); a voided one carries a large VOID mark with its reason (D71). */
+/** A full-A4 fee receipt; a voided one carries a large VOID mark with its reason. */
 export function FeeReceiptTemplate({ record, branding }: TemplateProps) {
   const r = record as FeeReceiptRecord;
   const signatory = branding.signatories[0];

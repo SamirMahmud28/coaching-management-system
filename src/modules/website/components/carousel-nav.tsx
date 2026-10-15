@@ -2,7 +2,7 @@
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-// Arrows for a swipe row (D135): visitors with a mouse move it one screen at a time; touch screens simply swipe.
+// Arrows for a swipe row: visitors with a mouse move it one screen at a time; touch screens simply swipe.
 
 export function CarouselNav({ targetId, previous, next }: { targetId: string; previous: string; next: string }) {
   const scroll = (direction: 1 | -1) => {

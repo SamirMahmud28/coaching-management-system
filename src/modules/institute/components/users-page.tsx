@@ -21,7 +21,7 @@ import { instituteApi, type RoleRow, type UserRow } from "../api";
 import { instituteKeys } from "../keys";
 import { HowThisWorks } from "@/modules/institute/help/how-this-works";
 
-// Instructors and students get their logins with their records (M5, M6); ownership is changed by a Platform Admin.
+// Instructors and students get their logins with their records; ownership is changed by a Platform Admin.
 const NOT_ASSIGNABLE_HERE = new Set(["Owner", "Instructor", "Student"]);
 const signInId = (u: UserRow) => u.email ?? u.phone ?? u.username ?? "—";
 

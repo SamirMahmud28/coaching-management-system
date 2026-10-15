@@ -3,7 +3,7 @@ import { sql } from "drizzle-orm";
 import { tenants } from "./core";
 import { instructors } from "./instructors";
 
-// Course → Subject → Batch (D7, D25). Records with history are archived, never deleted once in use.
+// Course → Subject → Batch. Records with history are archived, never deleted once in use.
 
 export const academicStatusEnum = pgEnum("academic_status", ["ACTIVE", "ARCHIVED"]);
 // Bangladesh's week starts on Saturday.
@@ -13,10 +13,10 @@ export const courses = pgTable("courses", {
   id: uuid("id").primaryKey().defaultRandom(),
   tenantId: uuid("tenant_id").notNull().references(() => tenants.id),
   name: varchar("name", { length: 100 }).notNull(),
-  // Goes into student IDs when the pattern includes it (D15), so it starts with a letter and can't read as a phone number.
+  // Goes into student IDs when the pattern includes it, so it starts with a letter and can't read as a phone number.
   code: varchar("code", { length: 10 }).notNull(),
   description: text("description"),
-  // Day of the month monthly fees fall due (D44); used by the Fees module. 1–28, or 31 for the last day.
+  // Day of the month monthly fees fall due; used by the Fees module. 1–28, or 31 for the last day.
   dueDay: smallint("due_day"),
   status: academicStatusEnum("status").notNull().default("ACTIVE"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
@@ -41,7 +41,7 @@ export const subjects = pgTable("subjects", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [
   unique("subjects_tenant_id_unique").on(t.tenantId, t.id),
-  // Lets a batch subject require the subject to belong to the batch's course (D25).
+  // Lets a batch subject require the subject to belong to the batch's course.
   unique("subjects_tenant_course_id_unique").on(t.tenantId, t.courseId, t.id),
   uniqueIndex("subjects_tenant_course_name_lower_idx").on(t.tenantId, t.courseId, sql`lower(${t.name})`),
   foreignKey({ name: "subjects_course_fk", columns: [t.tenantId, t.courseId], foreignColumns: [courses.tenantId, courses.id] }),
@@ -65,7 +65,7 @@ export const batches = pgTable("batches", {
   foreignKey({ name: "batches_course_fk", columns: [t.tenantId, t.courseId], foreignColumns: [courses.tenantId, courses.id] }),
 ]);
 
-/** A subject taught in a batch (D25). Both composite FKs carry the course, so the subject must be the batch's course's. */
+/** A subject taught in a batch. Both composite FKs carry the course, so the subject must be the batch's course's. */
 export const batchSubjects = pgTable("batch_subjects", {
   id: uuid("id").primaryKey().defaultRandom(),
   tenantId: uuid("tenant_id").notNull(),
@@ -80,7 +80,7 @@ export const batchSubjects = pgTable("batch_subjects", {
   foreignKey({ name: "batch_subjects_subject_fk", columns: [t.tenantId, t.courseId, t.subjectId], foreignColumns: [subjects.tenantId, subjects.courseId, subjects.id] }),
 ]);
 
-/** Who teaches a subject in a batch (D25). The source of an instructor's "own batches" (D24). */
+/** Who teaches a subject in a batch. The source of an instructor's "own batches". */
 export const batchSubjectInstructors = pgTable("batch_subject_instructors", {
   tenantId: uuid("tenant_id").notNull(),
   batchSubjectId: uuid("batch_subject_id").notNull(),
@@ -92,7 +92,7 @@ export const batchSubjectInstructors = pgTable("batch_subject_instructors", {
   foreignKey({ name: "batch_subject_instructors_instructor_fk", columns: [t.tenantId, t.instructorId], foreignColumns: [instructors.tenantId, instructors.id] }),
 ]);
 
-/** When a subject meets in a batch: the basic schedule, part of Core (D3). The Routine module builds on it. */
+/** When a subject meets in a batch: the basic schedule, part of Core. The Routine module builds on it. */
 export const scheduleSlots = pgTable("schedule_slots", {
   id: uuid("id").primaryKey().defaultRandom(),
   tenantId: uuid("tenant_id").notNull(),

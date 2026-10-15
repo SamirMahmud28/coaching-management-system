@@ -3,7 +3,7 @@ import { statusChangeProblem, type StudentStatus } from "./service";
 
 const ALL: StudentStatus[] = ["ACTIVE", "ON_HOLD", "COMPLETED", "LEFT"];
 
-describe("student status transitions (D9, D10, D18)", () => {
+describe("student status transitions", () => {
   it("allows exactly the decided moves", () => {
     const allowed = ALL.flatMap((from) => ALL.filter((to) => statusChangeProblem(from, to, "a reason") === null).map((to) => `${from}->${to}`));
     expect(allowed.sort()).toEqual(

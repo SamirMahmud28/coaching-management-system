@@ -8,16 +8,16 @@ import { audit } from "../audit/service";
 import type { Actor } from "./settings";
 import "./references";
 
-// Admission enquiries (D22, D129): the public form with spam protection, and the Owner/Admin inbox (D127). The same
-// checks as the EMS demo-request form (`demo-requests/service.ts`): a hidden honeypot field, a minimum fill time and a
-// per-IP limit. No SMS or email alerts (D22).
+// Admission enquiries: the public form with spam protection, and the Owner/Admin inbox. The same
+// checks: a hidden honeypot field, a minimum fill time and a
+// per-IP limit. No SMS or email alerts.
 
 export const MIN_FILL_MS = 3000;
 export const MAX_ENQUIRIES_PER_IP_PER_HOUR = 5;
 
 export type EnquiryStatus = "NEW" | "CONTACTED" | "CONVERTED" | "CLOSED";
 
-/** Status changes by hand; Converted is set only by "Convert" and is final (D22). */
+/** Status changes by hand; Converted is set only by "Convert" and is final. */
 const NEXT: Record<EnquiryStatus, EnquiryStatus[]> = {
   NEW: ["CONTACTED", "CLOSED"],
   CONTACTED: ["NEW", "CLOSED"],

@@ -9,7 +9,7 @@ import { SITE_LABELS } from "@/modules/website/i18n";
 import type { PreviewMessage } from "@/modules/website/components/website-preview";
 import { SITE_PAGES, type SitePage } from "@/server/modules/website/design";
 
-// The editor's live preview (D144): the real website in a frame beside the controls, redrawn with the unsaved values
+// The editor's live preview: the real website in a frame beside the controls, redrawn with the unsaved values
 // as they change. Phone, tablet or desktop width, scaled to fit; a page picker; nothing is saved from here.
 
 const DEVICES = [

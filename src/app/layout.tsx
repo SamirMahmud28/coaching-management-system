@@ -6,7 +6,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { BRAND } from "@/config/brand";
 import "./globals.css";
 
-// The app's typeface (D152): friendly and professional, with clear numbers.
+// The app's typeface: friendly and professional, with clear numbers.
 const jakarta = Plus_Jakarta_Sans({
   variable: "--font-jakarta",
   subsets: ["latin"],
@@ -19,7 +19,7 @@ const inter = Inter({
   preload: false,
 });
 
-// Loaded from the start so Bangla text renders correctly once translations arrive (O12).
+// Loaded from the start so Bangla text renders correctly once translations arrive.
 const notoBengali = Noto_Sans_Bengali({
   variable: "--font-noto-bengali",
   subsets: ["bengali"],

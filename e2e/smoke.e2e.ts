@@ -7,7 +7,7 @@ test("the root domain serves the product site", async ({ page }) => {
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 });
 
-test("an institute's subdomain serves its public page at / (D19)", async ({ page }) => {
+test("an institute's subdomain serves its public page at /", async ({ page }) => {
   await page.goto(instituteUrl(E2E_INSTITUTE.subdomain, "/"));
   await expect(page.getByRole("heading", { level: 1, name: E2E_INSTITUTE.name })).toBeVisible();
 });

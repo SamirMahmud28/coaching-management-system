@@ -7,7 +7,7 @@ const LETTER = { PRESENT: "P", ABSENT: "A", LATE: "L", EXCUSED: "E" } as const;
 const cell: CSSProperties = { padding: "0.8mm 0.6mm", border: "0.2mm solid #d1d5db", textAlign: "center", fontSize: "7pt", fontVariantNumeric: "tabular-nums" };
 const left: CSSProperties = { ...cell, textAlign: "left", whiteSpace: "nowrap" };
 
-/** The monthly batch register (D88): students × taken classes, each cell P/A/L/E, with totals and percentage (D87). */
+/** The monthly batch register: students × taken classes, each cell P/A/L/E, with totals and percentage. */
 export function AttendanceRegisterTemplate({ record, branding }: TemplateProps) {
   const r = record as AttendanceRegisterRecord;
   const filters = [r.monthLabel, r.courseName, r.batchName, r.subjectName ?? "All subjects"].join(" · ");

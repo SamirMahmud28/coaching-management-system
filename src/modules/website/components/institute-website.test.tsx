@@ -13,7 +13,6 @@ vi.mock("../fonts", () => ({ FONT_FAMILY: new Proxy({}, { get: (_, k) => `font-$
 
 afterEach(cleanup);
 
-
 function site(design: Partial<WebsiteDesign> = {}, content: Partial<WebsiteContent> = {}): Site {
   return {
     settings: {
@@ -45,7 +44,7 @@ function site(design: Partial<WebsiteDesign> = {}, content: Partial<WebsiteConte
   } as unknown as Site;
 }
 
-describe("the website's language (D140)", () => {
+describe("the website's language", () => {
   it("has every built-in label in Bangla too", () => {
     const keys = (o: object): string[] => Object.entries(o).flatMap(([k, v]) => (v && typeof v === "object" && typeof v !== "function" ? keys(v).map((c) => `${k}.${c}`) : [k]));
     expect(keys(SITE_LABELS.BN).sort()).toEqual(keys(SITE_LABELS.EN).sort());
@@ -73,7 +72,7 @@ describe("the website's language (D140)", () => {
   });
 });
 
-describe("layouts and extras (D135, D138)", () => {
+describe("layouts and extras", () => {
   it("lays out notices as a timeline, testimonials in the spotlight and the gallery as a swipe row", () => {
     render(<InstituteWebsite site={site({ noticeLayout: "TIMELINE", testimonialLayout: "SPOTLIGHT", galleryLayout: "CAROUSEL" })} />);
     expect(screen.getByTestId("section-notices").querySelector("ol")).not.toBeNull();
@@ -100,7 +99,7 @@ describe("layouts and extras (D135, D138)", () => {
   });
 });
 
-describe("showcase sections (D138, D141)", () => {
+describe("showcase sections", () => {
   it("shows stats, reasons, faculty, achievers, the video and questions, each only when filled", () => {
     const filled = site(
       { faqLayout: "TWO_COLUMN" },
@@ -140,7 +139,7 @@ describe("showcase sections (D138, D141)", () => {
   });
 });
 
-describe("pages (D142, D143)", () => {
+describe("pages", () => {
   /** The default Home set, as a new site gets it. */
   const homeDefault = (o: Partial<WebsiteDesign> = {}) => {
     const sample = site(o, { stats: [{ value: 1200, suffix: "+", label: "Students" }], faqs: [{ question: "When?", answer: "January." }] });
@@ -186,7 +185,7 @@ describe("pages (D142, D143)", () => {
   });
 });
 
-describe("motion strength (D145)", () => {
+describe("motion strength", () => {
   const banner = (motion: WebsiteDesign["motion"]) => {
     const sample = site({ motion, heroLayout: "SPLIT" });
     return sample;
@@ -211,7 +210,7 @@ describe("motion strength (D145)", () => {
   });
 });
 
-describe("banner slider, toppers ticker and video gallery (D147)", () => {
+describe("banner slider, toppers ticker and video gallery", () => {
   it("turns the banner into a slider with one main heading, dots and arrows", () => {
     const sample = site({}, { heroSlides: [{ imageFileId: "s1", heading: "Admission open", subheading: null }, { imageFileId: "s2", heading: null, subheading: "Weekly tests" }] });
     render(<InstituteWebsite site={sample} />);

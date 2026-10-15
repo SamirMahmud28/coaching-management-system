@@ -48,7 +48,7 @@ function tenantCredentialsPlugin(db: Db, config: TenantAuthConfig) {
         {
           method: "POST",
           body: z.object({
-            // Email or mobile number (admins, instructors), or a student ID (D17).
+            // Email or mobile number (admins, instructors), or a student ID.
             identifier: z.string().min(1).max(254),
             password: z.string().min(1).max(200),
           }),
@@ -64,7 +64,7 @@ function tenantCredentialsPlugin(db: Db, config: TenantAuthConfig) {
 
           const identifier = ctx.body.identifier.trim().toLowerCase();
           const phone = normalizeBdMobile(identifier);
-          // Identifiers can't collide across kinds: a student ID is never a valid mobile number or contains "@" (M6).
+          // Identifiers can't collide across kinds: a student ID is never a valid mobile number or contains "@".
           const [user] = await db
             .select()
             .from(users)

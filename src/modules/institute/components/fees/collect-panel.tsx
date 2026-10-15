@@ -29,9 +29,9 @@ interface FineDraft {
 const validAmount = (v: string) => isAmountText(v.trim()) && toPoisha(v.trim()) > 0;
 
 /**
- * Records money received for whole due charges (D31). The total is the ticked charges' remaining amounts — there is no
- * amount box, so nothing is part-paid or overpaid (D32). Waivers on ticked charges and new fines can be added in the
- * same step and are saved with the payment, or not at all (D99). A fresh idempotency key per form makes a double click
+ * Records money received for whole due charges. The total is the ticked charges' remaining amounts — there is no
+ * amount box, so nothing is part-paid or overpaid. Waivers on ticked charges and new fines can be added in the
+ * same step and are saved with the payment, or not at all. A fresh idempotency key per form makes a double click
  * harmless.
  */
 export function CollectPanel({

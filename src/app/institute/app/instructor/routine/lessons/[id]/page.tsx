@@ -6,7 +6,7 @@ import { requireModulePage } from "@/server/modules/institute/current-user";
 
 export const metadata: Metadata = { title: "Lesson plan" };
 
-// Plans of the instructor's batches; they edit the subjects they teach (D120).
+// Plans of the instructor's batches; they edit the subjects they teach.
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   if (!isUuid(id)) notFound();

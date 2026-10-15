@@ -121,14 +121,14 @@ export function createExamsHandlers({ db, auth, host }: ExamsHttpDeps) {
         return json(await grading.saveGradeScale(db, actor, b.bands.map((x) => ({ grade: x.grade, minPercent: x.min_percent, gradePoint: x.grade_point }))));
       }),
 
-    // GET /api/v1/exam-papers/:id/marks — the roster with each student's mark (D24 scope)
+    // GET /api/v1/exam-papers/:id/marks — the roster with each student's mark ( scope)
     getRoster: (request: Request, params: { id: string }) =>
       handle(async () => {
         const viewer = await authorize(request, "exams.view");
         return json(await markEntry.getRoster(db, viewer, pathId(params.id, "EXAM_PAPER")));
       }),
 
-    // PUT /api/v1/exam-papers/:id/marks — after publishing, Owner/Admin only, with a reason (D107)
+    // PUT /api/v1/exam-papers/:id/marks — after publishing, Owner/Admin only, with a reason
     saveMarks: (request: Request, params: { id: string }) =>
       handle(async () => {
         const viewer = await authorize(request, "exams.marks.enter");
@@ -141,7 +141,7 @@ export function createExamsHandlers({ db, auth, host }: ExamsHttpDeps) {
         );
       }),
 
-    // GET /api/v1/exams/:id/results?batch_id= — the combined merit list, scoped to the viewer (D24, D109)
+    // GET /api/v1/exams/:id/results?batch_id= — the combined merit list, scoped to the viewer
     getResults: (request: Request, params: { id: string }) =>
       handle(async () => {
         const viewer = await authorize(request, "exams.view");
@@ -149,7 +149,7 @@ export function createExamsHandlers({ db, auth, host }: ExamsHttpDeps) {
         return json(await results.getResults(db, viewer, pathId(params.id, "EXAM"), { batchId: q.batch_id }));
       }),
 
-    // POST /api/v1/exams/:id/publish — the whole exam, once every mark is in (D110, D113)
+    // POST /api/v1/exams/:id/publish — the whole exam, once every mark is in
     publishExam: (request: Request, params: { id: string }) =>
       handle(async () => {
         const actor = await authorize(request, "exams.publish");

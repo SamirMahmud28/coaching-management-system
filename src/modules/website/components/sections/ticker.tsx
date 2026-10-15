@@ -1,7 +1,7 @@
 import { Trophy } from "lucide-react";
 import type { SectionProps } from "./shared";
 
-// The toppers ticker (D147): a slowly moving strip of the achievers under the Home banner. The list is written twice
+// The toppers ticker: a slowly moving strip of the achievers under the Home banner. The list is written twice
 // so the strip loops without a gap; the copy is hidden from screen readers. It stands still (and scrolls by hand) at
 // Off motion or for visitors who ask for less motion, and pauses under the pointer.
 

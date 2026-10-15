@@ -128,12 +128,12 @@ export async function saveInstitutionProfile(db: DbOrTx, actor: Actor, input: In
 }
 
 // ---------------------------------------------------------------------------
-// App theme (D156, D157): one colour theme for the institute's office and portals
+// App theme: one colour theme for the institute's office and portals
 // ---------------------------------------------------------------------------
 
 export interface Appearance {
   appTheme: AppTheme;
-  /** The paper texture (D158): null = automatic (on with Classic Amber, see resolvePaper), else the admin's choice. */
+  /** The paper texture: null = automatic (on with Classic Amber, see resolvePaper), else the admin's choice. */
   paperBackground: boolean | null;
 }
 
@@ -149,7 +149,7 @@ export async function getAppTheme(db: DbOrTx, tenantId: string): Promise<AppThem
   return (await getAppearance(db, tenantId)).appTheme;
 }
 
-/** Who changes the theme: the institute's own admin, or the Super Admin from the institute's page (D157). */
+/** Who changes the theme: the institute's own admin, or the Super Admin from the institute's page. */
 export type ThemeActor = { type: "TENANT_USER"; userId: string } | { type: "PLATFORM_USER"; platformUserId: string };
 
 /**
@@ -286,7 +286,7 @@ export async function deleteSignature(db: DbOrTx, actor: Actor, id: string) {
 }
 
 // ---------------------------------------------------------------------------
-// Student ID pattern (D8, D15, D16)
+// Student ID pattern
 // ---------------------------------------------------------------------------
 
 export interface StudentIdPatternView extends StudentIdPattern {
@@ -306,7 +306,7 @@ export async function getStudentIdPattern(db: DbOrTx, tenantId: string): Promise
   return { ...pattern, example: exampleId(pattern), isDefault: !row };
 }
 
-/** Changes the pattern for IDs issued from now on; existing IDs never change (D15). */
+/** Changes the pattern for IDs issued from now on; existing IDs never change. */
 export async function saveStudentIdPattern(db: DbOrTx, actor: Actor, input: StudentIdPattern): Promise<StudentIdPatternView> {
   const pattern: StudentIdPattern = { ...input, prefix: input.prefix.trim().toUpperCase() };
   const problem = studentIdPatternProblem(pattern);

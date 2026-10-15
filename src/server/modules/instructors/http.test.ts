@@ -84,7 +84,7 @@ describe("instructors API", () => {
     expect((await h.list(req("inst-a", "GET", "/api/v1/instructors"))).status).toBe(401);
   });
 
-  it("creates an instructor whose login signs in by mobile number into the instructor portal (D17, D24)", async () => {
+  it("creates an instructor whose login signs in by mobile number into the instructor portal", async () => {
     const a = await institute("inst-a");
     const created = await create("inst-a", a.ownerCookie);
     expect(created.status).toBe(201);

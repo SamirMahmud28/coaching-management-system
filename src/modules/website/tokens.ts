@@ -1,7 +1,7 @@
 import type { CSSProperties } from "react";
 import { gradientById, paletteById, type WebsiteDesign } from "@/server/modules/website/design";
 
-// Turns the design settings (D135, D136) into CSS variables on the website's root element. Colours used as text are
+// Turns the design settings into CSS variables on the website's root element. Colours used as text are
 // darkened (light mode) or lightened (dark mode) until they read clearly on the page, so every palette, brand colour or
 // custom colour stays legible (WCAG AA, 4.5:1).
 
@@ -117,7 +117,7 @@ export function siteVariables(design: WebsiteDesign, brandColour: string | null,
     "--site-space-lg": spaceDesktop,
     "--site-heading": headingFamily,
     "--site-body": bodyFamily,
-    // The name the W1–W4 markup used for the main colour.
+    // The name the original markup used for the main colour.
     "--site-brand": primary,
     "--site-on-brand": textOn(primary),
   } as CSSProperties;

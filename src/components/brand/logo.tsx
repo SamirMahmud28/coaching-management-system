@@ -13,7 +13,7 @@ type LogoProps = {
   className?: string;
 };
 
-// Text mark until the brand is decided (O15); swap in the real logo here only.
+// Text mark until the brand is decided; swap in the real logo here only.
 export function Logo({ variant = "full", size = "md", className }: LogoProps) {
   const { mark, text } = SIZES[size];
 

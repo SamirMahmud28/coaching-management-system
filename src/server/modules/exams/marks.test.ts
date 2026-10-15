@@ -69,7 +69,7 @@ async function setUp() {
   return { tenant, admin, instructor, exam, physicsPaper, chemistryPaper, written, mcq, anika, bushra, chaity, dina, late };
 }
 
-describe("the roster (D24, D26, D101)", () => {
+describe("the roster", () => {
   it("lists the exam batches' members on the first day, leaving On Hold students and later joiners off", async () => {
     const s = await setUp();
     const roster = await getRoster(db, s.admin, s.chemistryPaper.id);
@@ -94,7 +94,7 @@ describe("the roster (D24, D26, D101)", () => {
   });
 });
 
-describe("entering marks (D104, D106)", () => {
+describe("entering marks", () => {
   it("saves part marks, a paper mark and Absent; validates; and changes nothing on a repeat", async () => {
     const s = await setUp();
     await saveMarks(db, s.instructor, s.physicsPaper.id, {
@@ -129,7 +129,7 @@ describe("entering marks (D104, D106)", () => {
   });
 });
 
-describe("after publishing (D107)", () => {
+describe("after publishing", () => {
   it("refuses instructors, and lets Owner/Admin correct with a reason, audited with old and new", async () => {
     const s = await setUp();
     await saveMarks(db, s.admin, s.chemistryPaper.id, { entries: [{ studentId: s.anika.id, obtained: "30" }] });

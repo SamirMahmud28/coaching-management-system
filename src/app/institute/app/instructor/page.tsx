@@ -13,7 +13,7 @@ import { upcomingChangesForInstructor } from "@/server/modules/routine/portal";
 
 export const metadata: Metadata = { title: "Instructor portal" };
 
-// The instructor's own batches and week (D24), with a shortcut to today's registers when Attendance is on.
+// The instructor's own batches and week, with a shortcut to today's registers when Attendance is on.
 export default async function Page() {
   const { session, permissions } = await requireModulePage("batches.own.view", "instructor");
   const home = await getInstructorHome(db, session.tenant.id, session.userId);

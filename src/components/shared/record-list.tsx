@@ -12,10 +12,10 @@ import { cn } from "@/lib/utils";
 import { ErrorState, LoadingState } from "./states";
 
 /**
- * The record-list layout of the Students and Instructors pages, ported from the EMS (its Students, Teachers and Staff
- * pages): a titled header with a breadcrumb, a filter card applied with Search, and a ruled table card with
- * entries-per-page, search, numbered pagination and row action icons. The EMS's beige register lines and header tint
- * are drawn from the theme here (`--rule`, `--rule-head`), so the register follows each app theme (D156).
+ * The record-list layout of the Students and Instructors pages: a titled header with a breadcrumb, a filter card
+ * applied with Search, and a ruled table card with
+ * entries-per-page, search, numbered pagination and row action icons. The register lines and header tint
+ * are drawn from the theme here (`--rule`, `--rule-head`), so the register follows each app theme.
  */
 
 const RULE = "border-(--rule)";

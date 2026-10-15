@@ -9,9 +9,9 @@ export const metadata: Metadata = { title: "Help" };
 const AREAS: HelpTopic["area"][] = ["Getting started", "Teaching", "Students", "Staff and access", "Institute", "Fees", "Attendance", "Exams", "Routine", "Website"];
 
 /**
- * The Help centre (D96): a guide for every feature this user can use (permissions are already limited to the
+ * The Help centre: a guide for every feature this user can use (permissions are already limited to the
  * institute's active modules), in setup order, from the same text as each page's "How this works" panel. Each guide is
- * collapsed until clicked (D98).
+ * collapsed until clicked.
  */
 export default async function Page() {
   const { permissions } = await requirePortal("admin");

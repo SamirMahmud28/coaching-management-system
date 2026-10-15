@@ -217,7 +217,7 @@ export function createFeesHandlers({ db, auth, host }: FeesHttpDeps) {
         return json(result.payment, result.repeated ? 200 : 201);
       }),
 
-    // GET /api/v1/fees/payments?from=&to=&status= — every receipt in a date range (D99)
+    // GET /api/v1/fees/payments?from=&to=&status= — every receipt in a date range
     listPayments: (request: Request) =>
       handle(async () => {
         const actor = await authorize(request, "fees.view");
@@ -264,7 +264,7 @@ export function createFeesHandlers({ db, auth, host }: FeesHttpDeps) {
         return json(await reports.collectionReport(db, actor.tenantId, reports.cleanRange(q.from, q.to), { courseId: q.course_id, batchId: q.batch_id }));
       }),
 
-    // GET /api/v1/fees/reports/dues — current students, or former ones with former=true (D42)
+    // GET /api/v1/fees/reports/dues — current students, or former ones with former=true
     duesReport: (request: Request) =>
       handle(async () => {
         const actor = await authorize(request, "fees.report.view");

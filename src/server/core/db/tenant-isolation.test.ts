@@ -2,7 +2,7 @@ import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { createTestDb } from "../testing/db";
 import { permissions, rolePermissions, roles, tenants, userRoles, users } from "./schema";
 
-// Database-level tenant isolation (D8): the composite (tenant_id, x_id) foreign keys must reject
+// Database-level tenant isolation: the composite (tenant_id, x_id) foreign keys must reject
 // a row that links records from two different tenants, even if a service-layer check is missed.
 const { db, reset, close } = createTestDb();
 
@@ -58,7 +58,7 @@ describe("tenant isolation — composite foreign keys", () => {
     ).rejects.toThrow();
   });
 
-  it("allows the same email in two tenants but not twice in one tenant (D10)", async () => {
+  it("allows the same email in two tenants but not twice in one tenant", async () => {
     const { tenantA, tenantB } = await seedTwoTenants();
     await expect(
       db.insert(users).values({ tenantId: tenantB.id, name: "Same person, other school", email: "A@Example.com" }),

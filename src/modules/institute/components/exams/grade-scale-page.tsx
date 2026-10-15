@@ -22,7 +22,7 @@ interface Row {
 }
 const toRows = (bands: GradeBandWire[]): Row[] => bands.map((b) => ({ grade: b.grade, min: String(b.min_percent), point: String(b.grade_point) }));
 
-/** The institute's grading scale (D102): BD 5.0 until changed. Published exams keep the scale they were published with (D112). */
+/** The institute's grading scale: BD 5.0 until changed. Published exams keep the scale they were published with. */
 export function GradeScalePage() {
   const scale = useQuery({ queryKey: instituteKeys.gradeScale(), queryFn: () => examsApi.gradeScale() });
   if (scale.isPending) return <LoadingState rows={6} />;

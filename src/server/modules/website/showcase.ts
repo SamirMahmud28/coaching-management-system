@@ -6,8 +6,8 @@ import { ConflictError, NotFoundError, ValidationError } from "../../core/errors
 import { assertFileReference } from "../../core/files/service";
 import type { Actor } from "./settings";
 
-// The website's showcase lists (D138, D141): Faculty (instructors the office opts in) and Achievers (top results typed
-// in by the office). Every save is public at once (D126). Removing one deletes its website row only: the instructor and
+// The website's showcase lists: Faculty (instructors the office opts in) and Achievers (top results typed
+// in by the office). Every save is public at once. Removing one deletes its website row only: the instructor and
 // any picture file stay.
 
 export const MAX_FACULTY = 40;
@@ -28,7 +28,7 @@ function assertSameSet(ids: string[], existing: string[], field: string) {
 const lock = (tx: DbOrTx, list: string, tenantId: string) => tx.execute(sql`select pg_advisory_xact_lock(hashtext(${`${list}:${tenantId}`}))`);
 
 // ---------------------------------------------------------------------------
-// Faculty (D141)
+// Faculty
 // ---------------------------------------------------------------------------
 
 /** The subjects each instructor teaches in active batches, by name, for the website. */
@@ -62,7 +62,7 @@ export async function listFaculty(db: DbOrTx, tenantId: string) {
   return rows.map((r) => ({ ...r, subjects: taught.get(r.instructorId) ?? [] }));
 }
 
-/** What visitors see (D141): active instructors only, with name, photo, subjects and line. Never contact details. */
+/** What visitors see: active instructors only, with name, photo, subjects and line. Never contact details. */
 export async function publicFaculty(db: DbOrTx, tenantId: string) {
   return (await listFaculty(db, tenantId))
     .filter((f) => f.status === "ACTIVE")
@@ -124,7 +124,7 @@ export async function reorderFaculty(db: DbOrTx, actor: Actor, ids: string[]) {
 }
 
 // ---------------------------------------------------------------------------
-// Achievers (D141)
+// Achievers
 // ---------------------------------------------------------------------------
 
 export interface AchieverInput {

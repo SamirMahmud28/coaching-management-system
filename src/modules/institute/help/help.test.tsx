@@ -12,7 +12,7 @@ import { HowThisWorks } from "./how-this-works";
 
 afterEach(cleanup);
 
-describe("help content (D96)", () => {
+describe("help content", () => {
   it("has a summary and steps for every guide, unique keys, and only real permissions", () => {
     const names = new Set<string>(PERMISSION_CATALOG.map((p) => p.name));
     expect(new Set(HELP_TOPICS.map((t) => t.key)).size).toBe(HELP_TOPICS.length);
@@ -23,7 +23,7 @@ describe("help content (D96)", () => {
     }
   });
 
-  it("is on every admin feature page (D97: a feature isn't done without its help)", async () => {
+  it("is on every admin feature page (a feature isn't done without its help)", async () => {
     const root = path.join(process.cwd(), "src/app/institute/app/(admin)");
     const pages: string[] = [];
     const walk = async (dir: string) => {
@@ -47,7 +47,7 @@ describe("help content (D96)", () => {
   });
 });
 
-describe("How this works panel and guides (D98)", () => {
+describe("How this works panel and guides", () => {
   it("start collapsed and expand when clicked", async () => {
     render(<HowThisWorks topic="fees-student" />);
     expect(screen.queryByText(/Each charge is paid in full/)).not.toBeInTheDocument();

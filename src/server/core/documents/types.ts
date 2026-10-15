@@ -2,7 +2,7 @@ import type { DbOrTx } from "../db/types";
 import type { ModuleKey } from "../modules/registry";
 import type { PermissionName } from "../rbac/catalog";
 
-// The document engine's contract (ported from the EMS without QR codes, verification or card layouts: D64). Modules
+// The document engine's contract. Modules
 // declare document types; the engine checks access, loads records, audits the print and lays them out on A4.
 
 export type DocumentTypeKey = "fee-receipt" | "fee-report" | "attendance-register" | "exam-marksheet" | "exam-merit-list";
@@ -22,9 +22,9 @@ export interface LoadContext<TSelection> {
   selection: TSelection;
   /** Load at most this many records; the pipeline asks for one more than the cap to detect an oversized run. */
   limit: number;
-  /** The viewer's permissions, for fields only some may see (e.g. guardian mobiles, D24). */
+  /** The viewer's permissions, for fields only some may see (e.g. guardian mobiles). */
   permissions: ReadonlySet<string>;
-  /** Who is printing, for documents scoped to what the viewer teaches (an instructor's batch register, D24). */
+  /** Who is printing, for documents scoped to what the viewer teaches (an instructor's batch register). */
   userId: string;
 }
 

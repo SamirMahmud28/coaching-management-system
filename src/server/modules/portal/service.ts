@@ -16,7 +16,7 @@ import { NotFoundError } from "../../core/errors";
 import { WEEKDAYS, type Weekday } from "../academic/service";
 import { getInstitutionProfile } from "../settings/service";
 
-// Read models for the dashboard, the instructor and student portals (D24, D27, D60) and the public page (D58, D59).
+// Read models for the dashboard, the instructor and student portals and the public page.
 // Every query is scoped to the institute, and the portal ones to the signed-in person's own records.
 
 export interface ClassTime {
@@ -97,7 +97,7 @@ function weekOf(items: { subjectName: string; slots: ClassTime[]; batchName: str
 }
 
 // ---------------------------------------------------------------------------
-// Instructor portal (D24, D60)
+// Instructor portal
 // ---------------------------------------------------------------------------
 
 async function instructorOf(db: DbOrTx, tenantId: string, userId: string) {
@@ -157,7 +157,7 @@ export async function getInstructorHome(db: DbOrTx, tenantId: string, userId: st
 
 /**
  * One of the instructor's batches: every subject with its instructors and times, and the current students with only
- * roll, ID, name, photo and school/class (D60). Any other batch is a 404, like another institute's.
+ * roll, ID, name, photo and school/class. Any other batch is a 404, like another institute's.
  */
 export async function getInstructorBatch(db: DbOrTx, tenantId: string, userId: string, batchId: string) {
   const instructor = await instructorOf(db, tenantId, userId);
@@ -185,7 +185,7 @@ export async function getInstructorBatch(db: DbOrTx, tenantId: string, userId: s
 }
 
 // ---------------------------------------------------------------------------
-// Student portal (D27, Core part)
+// Student portal (Core part)
 // ---------------------------------------------------------------------------
 
 /** The signed-in student's own record (no staff note), current batches with subjects, instructors and times, and past batches. */
@@ -250,13 +250,13 @@ export async function getStudentHome(db: DbOrTx, tenantId: string, userId: strin
 }
 
 // ---------------------------------------------------------------------------
-// Public page (D58, D59)
+// Public page
 // ---------------------------------------------------------------------------
 
-/** Active and Suspended institutes show their public page; Pending and Deactivated don't (D58). */
+/** Active and Suspended institutes show their public page; Pending and Deactivated don't. */
 export const publicPageVisible = (status: (typeof tenants.$inferSelect)["status"]) => status === "ACTIVE" || status === "SUSPENDED";
 
-/** Profile and contact details, and each active course with its subjects and active batches' class times. No instructor names (D59). */
+/** Profile and contact details, and each active course with its subjects and active batches' class times. No instructor names. */
 export async function getPublicCatalog(db: DbOrTx, tenantId: string) {
   const [profile, courseRows] = await Promise.all([
     getInstitutionProfile(db, tenantId),

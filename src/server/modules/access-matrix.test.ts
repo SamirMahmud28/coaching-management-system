@@ -42,7 +42,7 @@ import { createStudentHandlers } from "./students/http";
 import * as students from "./students/service";
 
 /**
- * The access matrix (CLAUDE.md "Testing", plan M8): every institute API handler × signed-out × each baseline role ×
+ * The access matrix: every institute API handler × signed-out × each baseline role ×
  * a single-permission role per permission × a suspended institute × another institute's ids. Paid-module columns
  * join with each module. The catalogue of handlers below must name every handler and every route, or this fails.
  */
@@ -129,7 +129,7 @@ const HANDLERS: Entry[] = [
   { factory: "institute", name: "setStatus", method: "PATCH", permission: "users.manage", id: "USER", body: { disabled: true } },
   { factory: "institute", name: "resetPassword", method: "POST", permission: "users.manage", id: "USER", body: { temporary_password: "NewPass123" } },
   // settings
-  // dashboard (U3, D163): composite widgets are signed-in and include only the sections the user's permissions allow
+  // dashboard: composite widgets are signed-in and include only the sections the user's permissions allow
   { factory: "dashboard", name: "summary", method: "GET", permission: "signed-in" },
   { factory: "dashboard", name: "attendance", method: "GET", permission: "attendance.report.view" },
   { factory: "dashboard", name: "classes", method: "GET", permission: "attendance.view" },
@@ -270,7 +270,7 @@ const HANDLERS: Entry[] = [
 ];
 /** Handlers deliberately outside the matrix, with the reason. */
 const OUTSIDE: Partial<Record<Factory, Record<string, string>>> = {
-  files: { publicLogo: "public by design: the host's logo while its public page is shown (D58)" },
+  files: { publicLogo: "public by design: the host's logo while its public page is shown" },
   website: {
     publicImage: "public by design: a picture the website uses, while the module is on and the page is shown (website/settings.test.ts)",
     submitEnquiry: "public by design: the website's enquiry form, spam-checked and rate-limited (website/enquiries.test.ts)",

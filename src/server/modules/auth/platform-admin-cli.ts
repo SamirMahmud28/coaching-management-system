@@ -11,7 +11,7 @@ import { createPlatformLogin } from "./platform-credentials";
 
 // npm run platform:create-admin [--force]
 
-// Repeated rl.question() calls drop buffered lines on piped stdin; one shared iterator doesn't.
+// Repeated rl.question calls drop buffered lines on piped stdin; one shared iterator doesn't.
 function makePrompt(rl: readline.Interface) {
   const lines = rl[Symbol.asyncIterator]();
   return async function prompt(question: string): Promise<string> {

@@ -1,6 +1,6 @@
 import type { WebsiteTheme } from "@/server/modules/website/design";
 
-// Each theme's signature (D136): how section headings look, how alternate sections are tinted, and the welcome
+// Each theme's signature: how section headings look, how alternate sections are tinted, and the welcome
 // banner's composition. Colours, fonts, shapes and spacing come from the design settings, so a theme combines with any
 // palette.
 

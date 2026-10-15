@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { bnDigits } from "../i18n";
 
-// The website's scroll and pointer effects (D137), set up once after the page loads, on the server-rendered markup:
+// The website's scroll and pointer effects, set up once after the page loads, on the server-rendered markup:
 // - sections and their cards rise into view as the visitor scrolls (content is never hidden before this runs);
 // - stats count up from zero when they come into view;
 // - the header gains a shadow once the page scrolls;
@@ -14,7 +14,7 @@ import { bnDigits } from "../i18n";
 const REVEAL_CHILDREN = ".site-section > div > *";
 const REVEAL_ITEMS = ".site-section :is(ul, ol) > li, .site-section .grid > article";
 const TILT = ".site-section :is(li, article).site-card, .site-section li > figure.site-card";
-/** The strongest tilt, in degrees, at Normal and Lively motion (D145). */
+/** The strongest tilt, in degrees, at Normal and Lively motion. */
 const MAX_TILT = { NORMAL: 7, LIVELY: 12 } as const;
 
 export function SiteMotion() {
@@ -38,7 +38,7 @@ export function SiteMotion() {
     onScroll();
     on(window, "scroll", onScroll, { passive: true });
 
-    // Old browsers without these simply keep the page as it is, as does the Off motion level (D145).
+    // Old browsers without these simply keep the page as it is, as does the Off motion level.
     const level = root.dataset.siteMotion ?? "NORMAL";
     const capable = typeof window.matchMedia === "function" && "IntersectionObserver" in window;
     if (level === "OFF" || !capable || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return () => cleanups.forEach((c) => c());

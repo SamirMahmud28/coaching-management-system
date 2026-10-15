@@ -25,8 +25,8 @@ export const resultLabel = (o: StudentOutcomeWire) =>
   o.status === "ABSENT" ? { label: "Absent", tone: "secondary" as const } : o.status === "PENDING" ? { label: "Pending", tone: "warning" as const } : o.passed ? { label: "Passed", tone: "success" as const } : { label: "Failed", tone: "destructive" as const };
 
 /**
- * An exam's results (D103, D109): the combined merit list, filterable by batch; publishing the whole exam once every
- * mark is in (D110, D113); the merit list and marksheets to print.
+ * An exam's results: the combined merit list, filterable by batch; publishing the whole exam once every
+ * mark is in; the merit list and marksheets to print.
  */
 export function ResultsPage({ base, examId, canPublish, fullGuide = true }: { base: string; examId: string; canPublish: boolean; fullGuide?: boolean }) {
   const queryClient = useQueryClient();

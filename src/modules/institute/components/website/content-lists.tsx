@@ -14,7 +14,7 @@ import { FEATURE_ICON } from "@/modules/website/components/sections/showcase";
 import { FEATURE_ICONS, MAX_EXTRA_SLIDES, MAX_FAQS, MAX_FEATURES, MAX_STATS, MAX_VIDEOS } from "@/server/modules/website/site-content";
 import type { EditorValues } from "./editor-schema";
 
-// The Content tab's lists (D138, D147): Stats, Why choose us, FAQ, videos, banner slides and the toppers ticker. Each list section stays hidden on the
+// The Content tab's lists: Stats, Why choose us, FAQ, videos, banner slides and the toppers ticker. Each list section stays hidden on the
 // website while its list is empty.
 
 type Form = UseFormReturn<EditorValues>;
@@ -199,7 +199,7 @@ export function VideosCard({ form }: { form: Form }) {
   );
 }
 
-/** Extra banner slides (D147): the main banner above is the first slide; with any extra, the banner becomes a slider. */
+/** Extra banner slides: the main banner above is the first slide; with any extra, the banner becomes a slider. */
 export function SlidesCard({ form }: { form: Form }) {
   const list = useFieldArray({ control: form.control, name: "hero_slides" });
   const errors = form.formState.errors.hero_slides;
@@ -244,7 +244,7 @@ export function SlidesCard({ form }: { form: Form }) {
   );
 }
 
-/** The toppers ticker (D147): a switch; its content comes from the Achievers tab. */
+/** The toppers ticker: a switch; its content comes from the Achievers tab. */
 export function TickerCard({ form }: { form: Form }) {
   return (
     <Card>

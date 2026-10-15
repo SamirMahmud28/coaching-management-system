@@ -13,7 +13,7 @@ import { instituteKeys } from "../../keys";
 
 const SHOWN = 8;
 
-/** Today's classes with who teaches them and whether the register is taken (in place of staff attendance, D163). */
+/** Today's classes with who teaches them and whether the register is taken (in place of staff attendance). */
 export function TodaysClasses() {
   const query = useQuery({ queryKey: instituteKeys.dashboard("classes"), queryFn: dashboardApi.classes, refetchInterval: 5 * 60_000 });
 

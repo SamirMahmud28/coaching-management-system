@@ -17,7 +17,7 @@ import {
 import { sql } from "drizzle-orm";
 import { fileCategoryEnum, moduleTierEnum, tenantStatusEnum } from "./enums";
 
-// tenants and users reference each other, so they share a file; Drizzle resolves `.references()` lazily.
+// tenants and users reference each other, so they share a file; Drizzle resolves `.references` lazily.
 
 export const tenants = pgTable("tenants", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -25,7 +25,7 @@ export const tenants = pgTable("tenants", {
   subdomain: varchar("subdomain", { length: 63 }).notNull(),
   status: tenantStatusEnum("status").notNull().default("PENDING"),
   ownerUserId: uuid("owner_user_id"),
-  // Display only in Phase 1 (D4): nothing is enforced from it.
+  // Display only in Phase 1: nothing is enforced from it.
   paidUntil: date("paid_until"),
   suspendedAt: timestamp("suspended_at", { withTimezone: true }),
   suspendedReason: text("suspended_reason"),
@@ -39,7 +39,7 @@ export const tenants = pgTable("tenants", {
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
   tenantId: uuid("tenant_id").notNull().references(() => tenants.id),
-  // Sign-in identifiers (D17): instructors and admins by email or phone, students by username (their student ID).
+  // Sign-in identifiers: instructors and admins by email or phone, students by username (their student ID).
   email: varchar("email", { length: 254 }),
   phone: varchar("phone", { length: 20 }),
   username: varchar("username", { length: 40 }),
@@ -48,7 +48,7 @@ export const users = pgTable("users", {
   emailVerified: boolean("email_verified").notNull().default(false),
   image: text("image"),
   mustChangePassword: boolean("must_change_password").notNull().default(false),
-  // Blocks sign-in and drops sessions: a disabled user, or a student who isn't Active (D26).
+  // Blocks sign-in and drops sessions: a disabled user, or a student who isn't Active.
   banned: boolean("banned").notNull().default(false),
   bannedAt: timestamp("banned_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
@@ -136,7 +136,7 @@ export const files = pgTable("files", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [
   index("files_tenant_id_idx").on(t.tenantId),
-  // Unlike the EMS, records can reference a file through a composite (tenant_id, file_id) FK.
+  // Records reference a file through a composite (tenant_id, file_id) FK.
   unique("files_tenant_id_unique").on(t.tenantId, t.id),
   foreignKey({ columns: [t.tenantId, t.uploadedBy], foreignColumns: [users.tenantId, users.id] }),
 ]);

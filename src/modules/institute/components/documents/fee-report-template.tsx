@@ -57,7 +57,7 @@ function Table({ head, rows, foot }: { head: { label: string; numeric?: boolean 
   );
 }
 
-/** Collections, dues and refunds on A4 (D75–D78), headed with the institute and the filters used. */
+/** Collections, dues and refunds on A4, headed with the institute and the filters used. */
 export function FeeReportTemplate({ record, branding }: TemplateProps) {
   const r = record as FeeReportRecord;
   const filters = [r.filters.range ? `${docDate(r.filters.range.from)} – ${docDate(r.filters.range.to)}` : `As of ${docDate(todayInDhaka())}`, r.filters.course, r.filters.batch]

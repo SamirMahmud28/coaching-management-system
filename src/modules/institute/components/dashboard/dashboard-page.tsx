@@ -9,7 +9,7 @@ import { ComingUp, NoticesCard, PendingActions, SetupChecklist } from "./side-wi
 import { TodaysClasses } from "./todays-classes";
 
 /**
- * The admin "Today" dashboard (U3, D163). Every widget appears only for someone holding its permission (already limited
+ * The admin "Today" dashboard. Every widget appears only for someone holding its permission (already limited
  * to the institute's active modules) and loads on its own, so one slow or failing figure never blanks the page.
  */
 export function DashboardPage({ name, subtitle, permissions }: { name: string; subtitle: string; permissions: string[] }) {

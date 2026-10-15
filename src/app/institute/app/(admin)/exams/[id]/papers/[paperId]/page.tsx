@@ -6,7 +6,7 @@ import { requireModulePage } from "@/server/modules/institute/current-user";
 
 export const metadata: Metadata = { title: "Marks" };
 
-// The roster comes from the API, which 404s for another institute's paper or one the viewer doesn't teach (D24).
+// The roster comes from the API, which 404s for another institute's paper or one the viewer doesn't teach.
 export default async function Page({ params }: { params: Promise<{ paperId: string }> }) {
   const { paperId } = await params;
   if (!isUuid(paperId)) notFound();

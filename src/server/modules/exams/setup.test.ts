@@ -55,7 +55,7 @@ async function setUp() {
   return { tenant, actor, admin, instructor, owner, hsc, ssc, physics, chemistry, math, morning, evening, sscBatch, input };
 }
 
-describe("creating an exam (D101, D102, D108)", () => {
+describe("creating an exam", () => {
   it("saves batches, papers and parts, audited", async () => {
     const s = await setUp();
     const exam = await createExam(db, s.admin, s.input());
@@ -88,7 +88,7 @@ describe("creating an exam (D101, D102, D108)", () => {
   });
 });
 
-describe("who sees which exams (D24)", () => {
+describe("who sees which exams", () => {
   it("shows the office every exam, and an instructor only exams of batches they teach (others are 404)", async () => {
     const s = await setUp();
     const both = await createExam(db, s.admin, s.input());

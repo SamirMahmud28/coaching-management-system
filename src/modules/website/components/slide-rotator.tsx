@@ -4,7 +4,7 @@ import { Children, useEffect, useRef, useState, type ReactNode } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-// The banner slider's moving part (D147). The slides themselves are rendered on the server, so the first one shows
+// The banner slider's moving part. The slides themselves are rendered on the server, so the first one shows
 // at once and all of them are in the page; this only fades between them. It turns on its own every few seconds
 // (faster at Lively motion), pauses while the pointer or keyboard focus is on it, and stays put at Off motion or for
 // visitors who ask for less motion. Dots and arrows always work.

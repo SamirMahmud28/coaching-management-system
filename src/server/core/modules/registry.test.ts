@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { MODULE_REGISTRY, closeModuleDependencies, moduleActivationOrder, type ModuleDefinition } from "./registry";
 
 describe("module registry", () => {
-  it("makes every paid module depend on Core only (D2, D21)", () => {
+  it("makes every paid module depend on Core only", () => {
     const deps = Object.fromEntries(MODULE_REGISTRY.map((m) => [m.key, [...m.dependsOn]]));
     expect(deps).toEqual({
       core: [],
@@ -14,7 +14,7 @@ describe("module registry", () => {
     });
   });
 
-  it("has exactly one always-on module, Core (D1)", () => {
+  it("has exactly one always-on module, Core", () => {
     expect(MODULE_REGISTRY.filter((m) => m.alwaysOn).map((m) => m.key)).toEqual(["core"]);
   });
 

@@ -10,7 +10,7 @@ import { audit } from "../audit/service";
 import { chargeView, chargeViewsByIds, type ChargeView } from "./ledger";
 import { cleanAmount, getFeeSettings, receiptLabel, type Actor } from "./setup";
 
-// Collection (D31, D32, D38, D39, D72), voids (D35), waivers (D33, D74) and refunds (D36, D37, D73).
+// Collection, voids, waivers and refunds.
 
 const isUniqueViolation = (err: unknown, constraint: string) => {
   const pg = findPgError(err);
@@ -30,14 +30,14 @@ function text(value: string | null | undefined, max: number, field: string, labe
   return t;
 }
 
-/** A method from the fixed list, with a reference for everything but cash (D39, D73). */
+/** A method from the fixed list, with a reference for everything but cash. */
 function methodAndReference(method: string, reference: string | null | undefined) {
   if (!PAYMENT_METHODS.includes(method as PaymentMethod)) throw new ValidationError("VALIDATION_METHOD", "Choose a payment method.", { field: "method" });
   const ref = text(reference, 100, "reference", "The reference", method !== "CASH");
   return { method: method as PaymentMethod, reference: ref };
 }
 
-/** A date received or refunded: a real date, today or earlier (D72). */
+/** A date received or refunded: a real date, today or earlier. */
 function pastOrToday(value: string | null | undefined, field: string): string {
   const date = value?.trim() || todayInDhaka();
   if (!isCalendarDate(date)) throw new ValidationError("VALIDATION_DATE", "Enter a valid date.", { field });
@@ -77,17 +77,17 @@ export interface CollectInput {
   remarks?: string | null;
   /** Made by the form when it opens: a repeat (double click, retry) returns the payment already recorded. */
   idempotencyKey: string;
-  /** Waivers on ticked charges, saved with the payment (D99); need fees.waive. */
+  /** Waivers on ticked charges, saved with the payment; need fees.waive. */
   waivers?: { chargeId: string; kind: "FIXED" | "PERCENT"; value: string; reason: string }[];
-  /** Fines added and paid in the same step (D99); need fees.adjust. */
+  /** Fines added and paid in the same step; need fees.adjust. */
   fines?: { amount: string; reason: string }[];
 }
 
 const MAX_EXTRA_ROWS = 20;
 
 /**
- * Records money received for whole due charges (D31, D32) — with any waivers on the ticked charges and any new fines,
- * all saved together or not at all (D99). The amount is what the charges still owe after the waivers, plus the fines;
+ * Records money received for whole due charges — with any waivers on the ticked charges and any new fines,
+ * all saved together or not at all. The amount is what the charges still owe after the waivers, plus the fines;
  * charges a waiver clears completely are settled by it and left out of the payment. One idempotency key per form.
  */
 export async function collectPayment(db: DbOrTx, actor: Actor & { permissions?: ReadonlySet<string> }, studentId: string, input: CollectInput) {
@@ -121,7 +121,7 @@ export async function collectPayment(db: DbOrTx, actor: Actor & { permissions?: 
       if (charges.length !== chargeIds.length || charges.some((c) => c.studentId !== studentId)) throw new NotFoundError("FEE_CHARGE");
       charges.forEach(assertDue);
 
-      // Waivers first (D33, D74): each off the charge's amount, never below zero across all of them.
+      // Waivers first: each off the charge's amount, never below zero across all of them.
       const owed = new Map(charges.map((c) => [c.id, toPoisha(c.net)]));
       for (const w of waivers) {
         const charge = charges.find((c) => c.id === w.chargeId)!;
@@ -134,7 +134,7 @@ export async function collectPayment(db: DbOrTx, actor: Actor & { permissions?: 
         await tx.insert(feeWaivers).values({ tenantId: actor.tenantId, chargeId: charge.id, kind: w.kind, value: w.value, amount: fromPoisha(off), reason: w.reason, createdBy: actor.userId });
         await record(tx, actor, "FEE_WAIVER_ADDED", studentId, { chargeId: charge.id, title: charge.title, kind: w.kind, value: w.value, amount: fromPoisha(off), reason: w.reason, withPayment: true });
       }
-      // Fines (D34), due on the payment date and paid with it.
+      // Fines, due on the payment date and paid with it.
       const fineIds: string[] = [];
       for (const f of fines) {
         const [fine] = await tx
@@ -184,7 +184,7 @@ export async function collectPayment(db: DbOrTx, actor: Actor & { permissions?: 
   }
 }
 
-/** Voids a payment with a reason (D35): its receipt shows VOID, its charges are due again, its number is never reused. */
+/** Voids a payment with a reason: its receipt shows VOID, its charges are due again, its number is never reused. */
 export async function voidPayment(db: DbOrTx, actor: Actor, paymentId: string, input: { reason: string }) {
   const reason = text(input.reason, 300, "reason", "A reason", true)!;
   return inTransaction(db, async (tx) => {
@@ -210,7 +210,7 @@ export async function voidPayment(db: DbOrTx, actor: Actor, paymentId: string, i
 // Waivers and refunds
 // ---------------------------------------------------------------------------
 
-/** Takes a fixed amount or a percent of the charge off one unpaid charge, with a reason (D33); several may add up (D74). */
+/** Takes a fixed amount or a percent of the charge off one unpaid charge, with a reason; several may add up. */
 export async function addWaiver(db: DbOrTx, actor: Actor, chargeId: string, input: { kind: "FIXED" | "PERCENT"; value: string; reason: string }) {
   const { value, reason } = cleanWaiver(input, "waiver");
   return inTransaction(db, async (tx) => {
@@ -228,7 +228,7 @@ export async function addWaiver(db: DbOrTx, actor: Actor, chargeId: string, inpu
   });
 }
 
-/** Gives back up to what was paid for a paid charge (D36, D37); the charge stays settled. */
+/** Gives back up to what was paid for a paid charge; the charge stays settled. */
 export async function addRefund(db: DbOrTx, actor: Actor, chargeId: string, input: { amount: string; method: string; reference?: string | null; reason: string; refundedOn?: string | null }) {
   const amount = cleanAmount(input.amount);
   const { method, reference } = methodAndReference(input.method, input.reference);
@@ -283,7 +283,7 @@ export async function getPayment(db: DbOrTx, tenantId: string, id: string) {
   return { ...payment, lines };
 }
 
-/** Every receipt in a date range (D99), newest first: the counter's day book, with reprint and void on screen. */
+/** Every receipt in a date range, newest first: the counter's day book, with reprint and void on screen. */
 export async function listPayments(db: DbOrTx, tenantId: string, filter: { range: { from: string; to: string }; status?: "VALID" | "VOID" }) {
   const rows = await db
     .select({

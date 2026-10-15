@@ -8,8 +8,8 @@ import { cn } from "@/lib/utils";
 import { helpTopic, type HelpTopicKey } from "./content";
 
 /**
- * The "How this works" panel at the top of a feature page (D96): what the feature is for, its steps and the rules the
- * system enforces, with a link to the full guide. Collapsed until clicked (D98). The portals have no Help centre, so
+ * The "How this works" panel at the top of a feature page: what the feature is for, its steps and the rules the
+ * system enforces, with a link to the full guide. Collapsed until clicked. The portals have no Help centre, so
  * their pages pass `fullGuide={false}` and show the common questions in the panel instead.
  */
 export function HowThisWorks({ topic, fullGuide = true }: { topic: HelpTopicKey; fullGuide?: boolean }) {

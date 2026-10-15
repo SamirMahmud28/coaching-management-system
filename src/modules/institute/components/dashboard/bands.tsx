@@ -1,5 +1,5 @@
 /**
- * The dashboard's colour bands (D163): ≥90% Excellent, 80–90% Good, <80% Needs attention. Colour is never the only cue:
+ * The dashboard's colour bands: ≥90% Excellent, 80–90% Good, <80% Needs attention. Colour is never the only cue:
  * every band is shown with its percentage and its name (legend).
  */
 export type Band = "excellent" | "good" | "attention" | "none";

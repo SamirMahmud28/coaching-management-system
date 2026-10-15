@@ -197,7 +197,7 @@ function ProfileTab({ tenant }: { tenant: TenantDetail }) {
     ["Subdomain", <span key="s" className="font-mono">{tenant.subdomain}</span>],
     ["Owner", tenant.owner ? `${tenant.owner.name}${tenant.owner.email ? ` · ${tenant.owner.email}` : ""}` : "—"],
     ["Created", formatDate(tenant.created_at)],
-    // Display only in Phase 1 (D4): nothing is switched off when it passes.
+    // Display only in Phase 1: nothing is switched off when it passes.
     ["Paid until", tenant.paid_until ? formatDate(tenant.paid_until) : "—"],
   ];
   if (tenant.status === "SUSPENDED") rows.push(["Suspended", `${formatDateTime(tenant.suspended_at)} — ${tenant.suspended_reason ?? ""}`]);

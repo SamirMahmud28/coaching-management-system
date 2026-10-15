@@ -14,7 +14,7 @@ export const platformUsers = pgTable("platform_users", {
   image: text("image"),
   status: platformUserStatusEnum("status").notNull().default("ACTIVE"),
   mustChangePassword: boolean("must_change_password").notNull().default(false),
-  // This admin's own panel theme (D157).
+  // This admin's own panel theme.
   appTheme: appThemeEnum("app_theme").notNull().default("MIDNIGHT"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),

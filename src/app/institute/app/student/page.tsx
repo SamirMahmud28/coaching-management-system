@@ -20,14 +20,14 @@ import type { AttendanceHistory } from "@/modules/institute/api";
 
 export const metadata: Metadata = { title: "Student portal" };
 
-// The student's own record, batches and week (D27, Core part). Attendance and fees appear while those modules are on; results join with Exams.
+// The student's own record, batches and week (Core part). Attendance and fees appear while those modules are on; results join with Exams.
 export default async function Page() {
   const { session, permissions } = await requireModulePage("student.self.view", "student");
   const { profile, batches, pastBatches, week } = await getStudentHome(db, session.tenant.id, session.userId);
-  // Permissions are limited to active modules, so My fees appears only while Fees is on (D27).
+  // Permissions are limited to active modules, so My fees appears only while Fees is on.
   const fees = permissions.has("fees.self.view") ? await myFees(db, session.tenant.id, session.userId) : null;
-  // My attendance appears only while Attendance is on (D27, D87); sent in the API's wire shape for the shared summary.
-  // The routine's changes and lesson progress appear only while Routine is on (D27, D117).
+  // My attendance appears only while Attendance is on; sent in the API's wire shape for the shared summary.
+  // The routine's changes and lesson progress appear only while Routine is on.
   const routineOn = permissions.has("routine.self.view");
   const [changes, lessons] = routineOn ? await Promise.all([upcomingChangesForStudent(db, session.tenant.id, session.userId), myLessonProgress(db, session.tenant.id, session.userId)]) : [null, null];
   const attendance = permissions.has("attendance.self.view") ? (toSnakeCaseKeys(await myAttendance(db, session.tenant.id, session.userId)) as AttendanceHistory) : null;

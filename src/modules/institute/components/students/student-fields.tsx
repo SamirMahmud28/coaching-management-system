@@ -10,7 +10,6 @@ import { GENDER_LABEL, RELATION_LABEL } from "../../student-labels";
 
 export { GENDER_LABEL, RELATION_LABEL };
 
-
 /** The editable form state: every field as the input shows it (empty string for "not set"). */
 export interface StudentFormValues {
   full_name: string;
@@ -64,7 +63,7 @@ export function studentFieldsFrom(v: StudentFormValues, withContacts: boolean): 
   return fields;
 }
 
-/** Required before saving (D12, D55). */
+/** Required before saving. */
 export const studentFormMissing = (v: StudentFormValues, withContacts: boolean) =>
   !v.full_name.trim() || !v.gender || !v.guardian_name.trim() || !v.guardian_relation || (withContacts && !v.guardian_phone.trim());
 
@@ -77,7 +76,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-/** The student's profile fields, grouped as on a coaching admission form (D54). */
+/** The student's profile fields, grouped as on a coaching admission form. */
 export function StudentFieldsForm({
   values,
   onChange,

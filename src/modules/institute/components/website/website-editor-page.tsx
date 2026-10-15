@@ -28,7 +28,7 @@ import { ContentTab, LayoutTab, SectionsTab } from "./editor-tabs";
 import { PreviewPanel } from "./preview-panel";
 import { WebsiteTabs } from "./website-tabs";
 
-/** The website's look, layout, words and sections (`website.manage`, D124–D141). Saves are public at once (D126, D139). */
+/** The website's look, layout, words and sections (`website.manage`). Saves are public at once. */
 export function WebsiteEditorPage() {
   const settings = useQuery({ queryKey: instituteKeys.website("settings"), queryFn: websiteApi.settings });
   return (
@@ -77,7 +77,7 @@ function Editor({ settings }: { settings: WebsiteSettingsRow }) {
     form.setValue("heading_font", preset.heading_font, { shouldDirty: true });
     form.setValue("design", preset.design, { shouldDirty: true });
   }
-  /** A ready-made look changes the theme, colours, fonts and layouts together (D146); Undo brings everything back. */
+  /** A ready-made look changes the theme, colours, fonts and layouts together; Undo brings everything back. */
   function pickLook(look: Look) {
     setUndo({ theme, heading_font: headingFont, design: form.getValues("design"), from: "look", note: `Now using the ${look.label} look: change anything you like below.` });
     const next = lookWire(look, form.getValues("design"));

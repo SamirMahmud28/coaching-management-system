@@ -3,8 +3,8 @@ import { cn } from "@/lib/utils";
 import { EnquiryForm } from "../enquiry-form";
 import { SectionHeading, sectionWords, telHref, type SectionProps, type Site } from "./shared";
 
-// How visitors reach the institute: the admission enquiry form (D22, D129) and contact details with a map (D133), with
-// the labels in the site's language (D140).
+// How visitors reach the institute: the admission enquiry form and contact details with a map, with
+// the labels in the site's language.
 
 export function Enquiry(props: SectionProps) {
   const { site, sig, t } = props;
@@ -41,7 +41,7 @@ export function contactsOf({ profile }: Site, t?: SectionProps["t"]) {
   ].filter((c): c is { icon: typeof MapPin; text: string; href?: string } => !!c);
 }
 
-/** Contact details and, when there is an address, a Google Maps embed of it (D133). */
+/** Contact details and, when there is an address, a Google Maps embed of it. */
 export function Contact(props: SectionProps) {
   const { site, sig, t } = props;
   const words = sectionWords(props, "CONTACT");

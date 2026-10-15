@@ -2,7 +2,7 @@ import { and, eq, sql } from "drizzle-orm";
 import { examBatches, examPapers, exams } from "../../core/db/schema";
 import { academicReferences } from "../academic/references";
 
-// A course, subject or batch used by an exam can't be deleted (its results stay, D5); archive it instead. Imported by
+// A course, subject or batch used by an exam can't be deleted (its results stay); archive it instead. Imported by
 // the academic composition root (academic/instance.ts) and by the exam services, so the guard is always registered.
 academicReferences.register("COURSE", "EXAM", async (db, tenantId, courseId) => {
   const [row] = await db.select({ count: sql<number>`count(*)::int` }).from(exams).where(and(eq(exams.tenantId, tenantId), eq(exams.courseId, courseId)));

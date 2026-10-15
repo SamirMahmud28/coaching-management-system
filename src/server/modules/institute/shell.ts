@@ -4,7 +4,7 @@ import { resolvePaper, type AppTheme } from "@/lib/app-themes";
 import { getAppearance, getInstitutionProfile } from "../settings/service";
 
 /**
- * The institute's name, logo, app theme (D156) and paper background (D158) for the app shell (D152). The logo is served by the public logo endpoint, which answers
+ * The institute's name, logo, app theme and paper background for the app shell. The logo is served by the public logo endpoint, which answers
  * for active and suspended institutes: the only ones whose users can be signed in.
  */
 export async function getShellBrand(

@@ -3,11 +3,11 @@
 import { useEffect, useRef, type ReactNode } from "react";
 import { m, useMotionValue, useMotionValueEvent, useScroll, useSpring } from "motion/react";
 
-// Depth on scroll (D137): the wrapped picture drifts slower than the page, by up to `distance` pixels either way.
+// Depth on scroll: the wrapped picture drifts slower than the page, by up to `distance` pixels either way.
 // The server can't know whether the visitor asked for less motion, so both renders start without any offset and only
 // scrolling (in the browser, without "reduce motion") moves it: the markup always matches on hydration.
 
-/** No parallax for visitors who ask for less motion, nor at the Off and Subtle motion levels (D145). */
+/** No parallax for visitors who ask for less motion, nor at the Off and Subtle motion levels. */
 const reducedMotion = () => {
   if (typeof window === "undefined") return true;
   const level = document.querySelector<HTMLElement>("[data-website]")?.dataset.siteMotion;

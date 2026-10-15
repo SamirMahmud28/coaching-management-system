@@ -44,7 +44,7 @@ function renderTable(extra: Partial<React.ComponentProps<typeof RecordTable<Row>
   return props;
 }
 
-describe("record list (EMS layout)", () => {
+describe("record list", () => {
   it("numbers rows across pages and shows the entries summary and page buttons", () => {
     renderTable();
     expect(screen.getAllByRole("row")[1]).toHaveTextContent("11");

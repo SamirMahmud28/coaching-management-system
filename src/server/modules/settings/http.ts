@@ -79,7 +79,7 @@ export function createSettingsHandlers({ db, auth, host }: SettingsHttpDeps) {
         );
       }),
 
-    // GET /api/v1/settings/appearance — the institute's app theme (D156)
+    // GET /api/v1/settings/appearance — the institute's app theme
     getAppearance: (request: Request) =>
       handle(async () => {
         const actor = await authorizeManage(request);
@@ -103,7 +103,7 @@ export function createSettingsHandlers({ db, auth, host }: SettingsHttpDeps) {
         return json({ items: await settings.listSignatures(db, actor.tenantId) });
       }),
 
-    // GET /api/v1/settings/student-id — the pattern new student IDs follow (D15, D16)
+    // GET /api/v1/settings/student-id — the pattern new student IDs follow
     getStudentIdPattern: (request: Request) =>
       handle(async () => {
         const actor = await authorizeManage(request);

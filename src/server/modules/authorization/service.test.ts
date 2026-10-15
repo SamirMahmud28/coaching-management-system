@@ -121,7 +121,7 @@ describe("withAuthorization (real database)", () => {
     expect((await call(cookie, "students.view", "GET", { origin: "http://other.localhost:3000" })).tenant.id).toBe(tenant.id);
   });
 
-  it("drops a banned user's access on the next request (e.g. a student put On Hold, D26)", async () => {
+  it("drops a banned user's access on the next request (e.g. a student put On Hold)", async () => {
     const { user } = await seed();
     const cookie = await signInCookie(HOST, "clerk@inst.test", "Clerk1234");
     await testDb.update(users).set({ banned: true }).where(eq(users.id, user.id));

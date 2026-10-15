@@ -7,10 +7,10 @@ import { FloatingShapes } from "./shapes";
 import type { SitePage } from "@/server/modules/website/design";
 import { imageUrl, mediaClass, telHref, type SectionProps } from "./shared";
 
-// The welcome banner (D131) in the composition of the theme (D136), or another composition chosen in Layout (D135).
+// The welcome banner in the composition of the theme, or another composition chosen in Layout.
 // Every variant keeps the same heading, subheading, picture and button; only the arrangement and colours change.
 
-/** How dark the shade over a banner picture is (D135): over a photo, and over a photo tinted in the main colour. */
+/** How dark the shade over a banner picture is: over a photo, and over a photo tinted in the main colour. */
 const SHADE = { LIGHT: "bg-black/30", MEDIUM: "bg-black/50", STRONG: "bg-black/70" } as const;
 const TINT = { LIGHT: "bg-[color-mix(in_srgb,var(--site-primary)_65%,transparent)]", MEDIUM: "bg-[color-mix(in_srgb,var(--site-primary)_82%,transparent)]", STRONG: "bg-[color-mix(in_srgb,var(--site-primary)_92%,transparent)]" } as const;
 
@@ -55,7 +55,7 @@ const Cta = ({ button }: { button: HeroParts["button"] }) =>
 // eslint-disable-next-line @next/next/no-img-element -- served by the public website-image endpoint
 const Img = ({ src, className }: { src: string; className: string }) => <img src={src} alt="" className={className} />;
 
-/** A full-bleed banner picture: it settles in slowly (Ken Burns) and drifts on scroll (D137). */
+/** A full-bleed banner picture: it settles in slowly (Ken Burns) and drifts on scroll. */
 const Backdrop = ({ src }: { src: string }) => (
   <Parallax className="absolute inset-x-0 -top-[10%] -bottom-[10%] -z-20">
     <Img src={src} className="site-kenburns absolute inset-0 size-full object-cover" />
@@ -240,7 +240,7 @@ export function Hero(props: SectionProps & { enquiryHref: string | null }) {
 }
 
 /**
- * The top of every page except Home (D142): the page's name and a line about it, on a soft tint of the main colour,
+ * The top of every page except Home: the page's name and a line about it, on a soft tint of the main colour,
  * with a link back to Home. Lighter than the banner so visitors reach the content quickly.
  */
 export function PageHeading({ sig, t, page }: SectionProps & { page: Exclude<SitePage, "home"> }) {
@@ -265,7 +265,7 @@ export function PageHeading({ sig, t, page }: SectionProps & { page: Exclude<Sit
 }
 
 /**
- * The banner as a photo slider (D147): the main banner is the first slide and the extra slides follow, each a full
+ * The banner as a photo slider: the main banner is the first slide and the extra slides follow, each a full
  * picture with its heading and line, and the banner's button on all of them. Only the first heading is the page's
  * main heading.
  */

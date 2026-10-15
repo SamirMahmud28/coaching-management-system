@@ -17,7 +17,7 @@ import {
 import type { Db } from "../../core/db/types";
 import { createLogin } from "../auth/credentials";
 
-// The database itself refuses to rewrite financial history (migration 0006_fees_guards; CLAUDE.md non-negotiable 5).
+// The database itself refuses to rewrite financial history (migration 0006_fees_guards).
 
 const { db: testDb, reset, close } = createTestDb();
 const db = testDb as unknown as Db;

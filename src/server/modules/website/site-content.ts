@@ -1,13 +1,13 @@
 import { WEBSITE_SECTIONS, type WebsiteSectionKey } from "./design";
 
-// The website's own words beyond the banner and About (D138, D140): renamed section headings, the announcement bar,
+// The website's own words beyond the banner and About: renamed section headings, the announcement bar,
 // social links, and the Stats, Why choose us, FAQ and Video sections. Pure data, shared by validation, the editor and
 // the public site.
 
 export const SOCIAL_NETWORKS = ["facebook", "youtube", "instagram", "tiktok", "linkedin"] as const;
 export type SocialNetwork = (typeof SOCIAL_NETWORKS)[number];
 
-/** The hosts a link to each network may point at (D138); anything else is refused. */
+/** The hosts a link to each network may point at; anything else is refused. */
 export const SOCIAL_HOSTS: Record<SocialNetwork, readonly string[]> = {
   facebook: ["facebook.com", "fb.com", "fb.me"],
   youtube: ["youtube.com", "youtu.be"],
@@ -24,13 +24,13 @@ export const LINK_LABEL_MAX = 30;
 export const MAX_STATS = 6;
 export const MAX_FEATURES = 8;
 export const MAX_FAQS = 20;
-/** Banner slides besides the main banner (D147): the main banner is always the first slide. */
+/** Banner slides besides the main banner: the main banner is always the first slide. */
 export const MAX_EXTRA_SLIDES = 4;
 export const MAX_VIDEOS = 12;
 /** The largest number a counter shows (e.g. students taught). */
 export const MAX_STAT_VALUE = 10_000_000;
 
-/** Icons offered for "Why choose us" (D138): lucide icon names, drawn by the public site. */
+/** Icons offered for "Why choose us": lucide icon names, drawn by the public site. */
 export const FEATURE_ICONS = [
   "GraduationCap", "BookOpen", "Users", "Trophy", "Clock", "Target", "Award", "Brain", "FlaskConical", "Calculator", "Laptop", "ClipboardCheck",
   "ShieldCheck", "Smile", "Star", "HeartHandshake", "Lightbulb", "MapPin", "Wallet", "Bus", "Microscope", "PenTool", "MessageCircle", "BadgeCheck",
@@ -88,11 +88,11 @@ export interface WebsiteContent {
   stats: Stat[];
   features: Feature[];
   faqs: Faq[];
-  /** The video gallery (D147), in order. */
+  /** The video gallery, in order. */
   videos: Video[];
-  /** Extra banner slides (D147); with any, the banner becomes a photo slider. */
+  /** Extra banner slides; with any, the banner becomes a photo slider. */
   heroSlides: HeroSlide[];
-  /** The moving strip of achievers under the Home banner (D147). */
+  /** The moving strip of achievers under the Home banner. */
   showTicker: boolean;
 }
 

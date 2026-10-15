@@ -5,7 +5,7 @@ import { SITE_PAGES, type SitePage } from "@/server/modules/website/design";
 import { InstituteWebsite } from "./institute-website";
 import type { Site } from "./sections/shared";
 
-// The website as the editor's live preview shows it (D144). The editor (the parent window, same origin only) sends the
+// The website as the editor's live preview shows it. The editor (the parent window, same origin only) sends the
 // unsaved settings and the page to show; this redraws at once. Nothing here is saved, and nothing can be sent: links
 // between pages switch the preview's page, other links do nothing, and forms don't submit.
 

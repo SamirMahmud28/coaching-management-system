@@ -65,7 +65,7 @@ async function setUp() {
   return { tenant, owner, actor, anika, bushra, chargesOf, pay };
 }
 
-describe("collecting payments (D31, D32, D38, D39, D72)", () => {
+describe("collecting payments", () => {
   it("records whole charges at their remaining amount, with the next receipt number", async () => {
     const s = await setUp();
     await saveFeeSettings(db, s.actor, { receiptPrefix: "KC" });
@@ -115,7 +115,7 @@ describe("collecting payments (D31, D32, D38, D39, D72)", () => {
   });
 });
 
-describe("voids (D35)", () => {
+describe("voids", () => {
   it("make the charges due again, keep the receipt number used, and need a reason", async () => {
     const s = await setUp();
     const c = await s.chargesOf(s.anika.id);
@@ -133,7 +133,7 @@ describe("voids (D35)", () => {
   });
 });
 
-describe("waivers (D33, D74) and refunds (D36, D37, D73)", () => {
+describe("waivers and refunds", () => {
   it("waive unpaid charges by amount or percent, several times, never below zero", async () => {
     const s = await setUp();
     const c = await s.chargesOf(s.anika.id);
@@ -160,7 +160,7 @@ describe("waivers (D33, D74) and refunds (D36, D37, D73)", () => {
   });
 });
 
-describe("the receipt (D69, D71)", () => {
+describe("the receipt", () => {
   it("prints the stored payment with amount in words, course and batch; reprints never create a payment", async () => {
     const s = await setUp();
     const c = await s.chargesOf(s.anika.id);
@@ -199,7 +199,7 @@ describe("fines are paid like any charge", () => {
   });
 });
 
-describe("the student's own fees (D27, D79)", () => {
+describe("the student's own fees", () => {
   it("shows what they owe, overdue first, and what they paid with receipts; hides cancelled charges and voided payments", async () => {
     const s = await setUp();
     const c = await s.chargesOf(s.anika.id);
@@ -227,7 +227,7 @@ describe("the student's own fees (D27, D79)", () => {
   });
 });
 
-describe("collecting with waivers and fines in the same step (D99)", () => {
+describe("collecting with waivers and fines in the same step", () => {
   const office = (s: Awaited<ReturnType<typeof setUp>>, permissions = ["fees.collect", "fees.waive", "fees.adjust"]) => ({ ...s.actor, permissions: new Set(permissions) });
 
   it("saves the waivers, the fines and the payment together, paying what is left", async () => {
@@ -280,7 +280,7 @@ describe("collecting with waivers and fines in the same step (D99)", () => {
   });
 });
 
-describe("a fine on its own at the counter (D99)", () => {
+describe("a fine on its own at the counter", () => {
   it("is added and paid in one step; with nothing ticked and no fine there is nothing to record", async () => {
     const s = await setUp();
     const actor = { ...s.actor, permissions: new Set(["fees.collect", "fees.adjust"]) };
@@ -290,7 +290,7 @@ describe("a fine on its own at the counter (D99)", () => {
   });
 });
 
-describe("the payments list (D99)", () => {
+describe("the payments list", () => {
   it("lists every receipt in the dates, newest first, with voids marked and left out of the total", async () => {
     const s = await setUp();
     const a = await s.chargesOf(s.anika.id);

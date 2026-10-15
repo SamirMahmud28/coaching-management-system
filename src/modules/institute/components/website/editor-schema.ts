@@ -11,7 +11,7 @@ import { toCamelCaseKeys } from "@/server/core/http/case";
 import type { PublicWebsite } from "@/server/modules/website/public";
 import type { WebsiteSettingsBody, WebsiteSettingsRow } from "../../api";
 
-// The website editor's form (D124–D141): the settings as text fields, and their conversion to and from the wire.
+// The website editor's form: the settings as text fields, and their conversion to and from the wire.
 
 const hex = z.string().regex(/^#[0-9a-fA-F]{6}$/, "Use a colour like #1d4ed8.").nullable();
 const max = (n: number) => z.string().trim().max(n, `At most ${n} characters.`);
@@ -136,7 +136,7 @@ export function toBody(v: EditorValues): WebsiteSettingsBody {
   };
 }
 
-/** The unsaved values as the public site reads its settings, for the live preview (D144). Nothing here is saved. */
+/** The unsaved values as the public site reads its settings, for the live preview. Nothing here is saved. */
 export function toPreviewSettings(v: EditorValues): PublicWebsite["settings"] {
   const settings = toCamelCaseKeys<PublicWebsite["settings"]>(toBody(v));
   return {

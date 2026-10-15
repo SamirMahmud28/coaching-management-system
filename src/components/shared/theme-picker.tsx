@@ -10,7 +10,7 @@ import { notifyError, notifySuccess } from "@/lib/feedback";
 import { cn } from "@/lib/utils";
 
 /**
- * Picks an app theme (D156, D157) and whether the paper background shows (D158). Each card is a small drawing of the
+ * Picks an app theme and whether the paper background shows. Each card is a small drawing of the
  * app in that theme, made from the theme's real tokens. With `livePreview`, choices show across the whole app until
  * they are saved or cancelled (for the user's own app); without it, only the cards show them (the Super Admin choosing
  * for an institute). The paper switch follows the automatic rule (on with Classic Amber) until it is touched.

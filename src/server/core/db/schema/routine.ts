@@ -4,14 +4,14 @@ import { batchSubjects } from "./academic";
 import { users } from "./core";
 import { instructors } from "./instructors";
 
-// Routine & Lesson Plans (paid module `routine`): D3, D24, D27, D51, D114–D122. The weekly class times stay in Core
+// Routine & Lesson Plans (paid module `routine`):,,. The weekly class times stay in Core
 // (schedule_slots); this module records what changes on particular dates, institute holidays, and lesson plans.
 
 export const routineChangeKindEnum = pgEnum("routine_change_kind", ["CANCEL", "RESCHEDULE", "SUBSTITUTE"]);
 export const lessonTopicStatusEnum = pgEnum("lesson_topic_status", ["PENDING", "ONGOING", "COMPLETED"]);
 
 /**
- * One change to one scheduled class (D114): the class is identified by its batch subject, date and start time (an
+ * One change to one scheduled class: the class is identified by its batch subject, date and start time (an
  * occurrence of a weekly slot). Withdrawn rather than deleted, so the record stays; at most one active change per class.
  */
 export const routineChanges = pgTable("routine_changes", {
@@ -21,7 +21,7 @@ export const routineChanges = pgTable("routine_changes", {
   classDate: date("class_date").notNull(),
   startsAt: time("starts_at").notNull(),
   kind: routineChangeKindEnum("kind").notNull(),
-  // Required for a cancellation, and for any change to a past class (D122).
+  // Required for a cancellation, and for any change to a past class.
   reason: varchar("reason", { length: 300 }),
   newDate: date("new_date"),
   newStartsAt: time("new_starts_at"),
@@ -49,7 +49,7 @@ export const routineChanges = pgTable("routine_changes", {
   check("routine_changes_withdrawn", sql`(${t.withdrawnAt} IS NULL) = (${t.withdrawnBy} IS NULL)`),
 ]);
 
-/** An institute holiday (D114): every class on these dates is cancelled. Withdrawn rather than deleted. */
+/** An institute holiday: every class on these dates is cancelled. Withdrawn rather than deleted. */
 export const holidays = pgTable("holidays", {
   id: uuid("id").primaryKey().defaultRandom(),
   tenantId: uuid("tenant_id").notNull(),
@@ -69,7 +69,7 @@ export const holidays = pgTable("holidays", {
   check("holidays_withdrawn", sql`(${t.withdrawnAt} IS NULL) = (${t.withdrawnBy} IS NULL)`),
 ]);
 
-/** One topic of a batch subject's lesson plan (D118–D120): status set by hand; Overdue is derived (D119). */
+/** One topic of a batch subject's lesson plan: status set by hand; Overdue is derived. */
 export const lessonTopics = pgTable("lesson_topics", {
   id: uuid("id").primaryKey().defaultRandom(),
   tenantId: uuid("tenant_id").notNull(),

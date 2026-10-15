@@ -5,8 +5,8 @@ import { useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import type { EnquiryLabels } from "../i18n";
 
-// The website's admission enquiry form (D22, D129). The hidden "website" field and the time the form was opened let the
-// server drop bot submissions; the server answers the same either way. Labels come in the site's language (D140).
+// The website's admission enquiry form. The hidden "website" field and the time the form was opened let the
+// server drop bot submissions; the server answers the same either way. Labels come in the site's language.
 
 const field = "w-full rounded-md border bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-[var(--site-primary)]";
 

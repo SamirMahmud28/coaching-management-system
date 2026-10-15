@@ -199,7 +199,7 @@ describe("transferOwnership (real database)", () => {
 });
 
 describe("setTenantPaidUntil (real database)", () => {
-  it("sets and clears the display-only date, auditing each change (D4)", async () => {
+  it("sets and clears the display-only date, auditing each change", async () => {
     const platformUser = await seedPlatformUser();
     const { tenant } = await createTenant(db, validTenantInput("green-valley"), { platformUserId: platformUser.id });
 

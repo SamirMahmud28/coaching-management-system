@@ -10,7 +10,7 @@ import { audit } from "../audit/service";
 import { chargeView, chargeViews } from "./ledger";
 import { cleanAmount, type Actor } from "./setup";
 
-// Charge generation (D30, D40, D44, D62, D65, D67, D68), manual fines (D34) and cancellation (D43).
+// Charge generation, manual fines and cancellation.
 
 export type SkipReason = "ON_HOLD" | "COMPLETED" | "LEFT" | "NOT_IN_COURSE" | "JOINED_LATER" | "ALREADY_CHARGED" | "ZERO_AMOUNT" | "EXCLUDED";
 
@@ -36,7 +36,7 @@ export function monthOf(period: string) {
 
 /**
  * A monthly charge is due on the course's due day of that month (31 = the last day); one generated after that day is
- * due on the generation date (D44). A one-time charge is due on the generation date.
+ * due on the generation date. A one-time charge is due on the generation date.
  */
 export function dueDateFor(kind: string, dueDay: number | null, period: string, today: string): string {
   if (kind !== "MONTHLY") return today;
@@ -51,7 +51,7 @@ export interface PreviewRow {
   studentCode: string;
   fullName: string;
   amount: string;
-  /** The student's own amount (D29) is used instead of the fee item's. */
+  /** The student's own amount is used instead of the fee item's. */
   ownAmount: boolean;
 }
 
@@ -65,7 +65,7 @@ export interface Preview {
   total: string;
 }
 
-/** Who a generation would charge and who it skips, with why (D30, D65, D67). Nothing is written. */
+/** Who a generation would charge and who it skips, with why. Nothing is written. */
 export async function previewGeneration(db: DbOrTx, tenantId: string, input: { feeItemId: string; period?: string | null }): Promise<Preview> {
   const item = await getInTenant(db, feeItems, tenantId, input.feeItemId, "FEE_ITEM");
   if (item.status !== "ACTIVE") throw new ConflictError("CONFLICT_FEE_ITEM_ARCHIVED", "This fee is archived. Restore it first.");
@@ -157,9 +157,9 @@ export async function previewGeneration(db: DbOrTx, tenantId: string, input: { f
 export interface ConfirmInput {
   feeItemId: string;
   period?: string | null;
-  /** Students the Admin unticked (D68). */
+  /** Students the Admin unticked. */
   exclude?: string[];
-  /** Lower amounts for this run only, e.g. a mid-month joiner (D40). */
+  /** Lower amounts for this run only, e.g. a mid-month joiner. */
   amounts?: { studentId: string; amount: string }[];
 }
 
@@ -218,7 +218,7 @@ export async function confirmGeneration(db: DbOrTx, actor: Actor, input: Confirm
   });
 }
 
-/** A manual fine on a student (D34), with a reason; due on the given date or today. */
+/** A manual fine on a student, with a reason; due on the given date or today. */
 export async function addFine(db: DbOrTx, actor: Actor, studentId: string, input: { amount: string; reason: string; dueDate?: string | null; courseId?: string | null }) {
   const amount = cleanAmount(input.amount);
   const reason = reasonText(input.reason);
@@ -247,7 +247,7 @@ async function cancelOne(tx: DbOrTx, actor: Actor, chargeId: string, reason: str
   return true;
 }
 
-/** Cancels an unpaid charge with a reason (D43). A paid charge needs its payment voided first (D35). */
+/** Cancels an unpaid charge with a reason. A paid charge needs its payment voided first. */
 export async function cancelCharge(db: DbOrTx, actor: Actor, chargeId: string, input: { reason: string }) {
   const reason = reasonText(input.reason);
   return inTransaction(db, async (tx) => {
@@ -261,7 +261,7 @@ export async function cancelCharge(db: DbOrTx, actor: Actor, chargeId: string, i
   });
 }
 
-/** Cancels every unpaid charge of a generation run (D43); paid ones are kept and counted. */
+/** Cancels every unpaid charge of a generation run; paid ones are kept and counted. */
 export async function cancelRun(db: DbOrTx, actor: Actor, runId: string, input: { reason: string }) {
   const reason = reasonText(input.reason);
   return inTransaction(db, async (tx) => {

@@ -19,8 +19,8 @@ import { isModuleActive } from "../entitlements/service";
 import { expandTimetable, hhmm, overlaps, takesPlace, type Change, type DatedClass, type Holiday, type Slot } from "./timetable";
 import "./references";
 
-// The routine (D114–D122): the dated timetable with its changes and holidays, and making those changes. Only Owner/Admin
-// change the routine (D115); an instructor sees their own batches (D24).
+// The routine: the dated timetable with its changes and holidays, and making those changes. Only Owner/Admin
+// change the routine; an instructor sees their own batches.
 
 export interface Viewer {
   tenantId: string;
@@ -29,7 +29,7 @@ export interface Viewer {
 }
 
 const MAX_RANGE_DAYS = 62;
-/** The office sees every batch; an instructor the batches they teach (D24). */
+/** The office sees every batch; an instructor the batches they teach. */
 export const seesAllRoutine = (v: Viewer) => v.permissions.has("routine.manage") || v.permissions.has("academic.view");
 
 function cleanDate(value: string | null | undefined, field: string, label = "a valid date"): string {
@@ -123,7 +123,7 @@ export interface RoutineClass extends DatedClass {
   substituteName: string | null;
 }
 
-/** The dated timetable of these batch subjects, named, with who teaches each class (D114). */
+/** The dated timetable of these batch subjects, named, with who teaches each class. */
 export async function timetable(db: DbOrTx, tenantId: string, from: string, to: string, filter: { batchIds?: string[]; batchSubjectIds?: string[] } = {}): Promise<RoutineClass[]> {
   const info = await batchSubjectInfo(db, tenantId, filter);
   const inputs = await timetableInputs(db, tenantId, [...info.keys()], from, to);
@@ -173,7 +173,7 @@ export async function routineOptions(db: DbOrTx, viewer: Viewer) {
   return { batches: batchRows, instructors: instructorRows, today: todayInDhaka() };
 }
 
-/** A batch's classes for some days, including changes (D114). An instructor only for a batch they teach (D24). */
+/** A batch's classes for some days, including changes. An instructor only for a batch they teach. */
 export async function batchWeek(db: DbOrTx, viewer: Viewer, batchId: string, input: { from?: string; days?: number }) {
   const range = cleanRange(input.from, input.days ?? 7);
   const { batches: visible } = await routineOptions(db, viewer);
@@ -200,7 +200,7 @@ export async function dayView(db: DbOrTx, viewer: Viewer, dateInput?: string) {
   return { date, classes: visible.length ? await timetable(db, viewer.tenantId, date, date, { batchIds: visible.map((b) => b.id) }) : [] };
 }
 
-/** Changes and holidays from a date on (today by default), newest class first, with names (D117). */
+/** Changes and holidays from a date on (today by default), newest class first, with names. */
 export async function listChanges(db: DbOrTx, viewer: Viewer, input: { from?: string } = {}) {
   const from = cleanDate(input.from ?? addDays(todayInDhaka(), -7), "from");
   const { batches: visible } = await routineOptions(db, viewer);
@@ -233,13 +233,13 @@ export async function listChanges(db: DbOrTx, viewer: Viewer, input: { from?: st
   };
 }
 
-// --- making changes (Owner/Admin, D115) -----------------------------------------------------------------------
+// --- making changes (Owner/Admin) -----------------------------------------------------------------------
 
 /** Routine writes in one institute run one at a time — the same lock as Core's schedule — so clash checks hold. */
 const lockSchedule = (tx: DbOrTx, tenantId: string) => tx.execute(sql`select pg_advisory_xact_lock(hashtext(${`schedule:${tenantId}`}))`);
 
 /**
- * D51 on a date: who among `instructorIds` already teaches a class that takes place on `date` overlapping the time,
+ * on a date: who among `instructorIds` already teaches a class that takes place on `date` overlapping the time,
  * counting reschedules and substitutions. The class being changed is left out.
  */
 async function clashOn(tx: DbOrTx, tenantId: string, instructorIds: string[], date: string, time: { startsAt: string; endsAt: string }, exclude: { batchSubjectId: string; date: string; startsAt: string }) {
@@ -269,8 +269,8 @@ export interface ChangeInput {
 }
 
 /**
- * Changes one scheduled class (D114): cancel (reason), reschedule (new date and time, free of instructor clashes and not
- * on a holiday), or substitute (an active instructor who is free then). A past class needs a reason (D122). Audited.
+ * Changes one scheduled class: cancel (reason), reschedule (new date and time, free of instructor clashes and not
+ * on a holiday), or substitute (an active instructor who is free then). A past class needs a reason. Audited.
  */
 export async function createChange(db: DbOrTx, actor: Viewer, input: ChangeInput) {
   const classDate = cleanDate(input.classDate, "classDate", "the class's date");
@@ -349,7 +349,7 @@ export async function withdrawChange(db: DbOrTx, actor: Viewer, id: string) {
   });
 }
 
-/** An institute holiday (D114): every class on those dates is cancelled. Overlapping holidays are refused. Audited. */
+/** An institute holiday: every class on those dates is cancelled. Overlapping holidays are refused. Audited. */
 export async function createHoliday(db: DbOrTx, actor: Viewer, input: { name: string; fromDate: string; toDate?: string | null }) {
   const name = cleanReason(input.name, true, "Give the holiday a name, e.g. 'Victory Day'.")!;
   if (name.length > 120) throw new ValidationError("VALIDATION_TEXT", "The name can be at most 120 characters.", { field: "name" });
@@ -377,7 +377,7 @@ export async function withdrawHoliday(db: DbOrTx, actor: Viewer, id: string) {
   });
 }
 
-// --- for other modules (D116, D121, D117): only while Routine is on for the institute -------------------------
+// --- for other modules: only while Routine is on for the institute -------------------------
 
 /** The routine's classes of these batch subjects on a date, or null when the Routine module is off. */
 export async function routineClassesOn(db: DbOrTx, tenantId: string, date: string, batchSubjectIds: string[]): Promise<RoutineClass[] | null> {
@@ -385,7 +385,7 @@ export async function routineClassesOn(db: DbOrTx, tenantId: string, date: strin
   return timetable(db, tenantId, date, date, { batchSubjectIds });
 }
 
-/** The classes a user substitutes in on a date (D121); none while the Routine module is off. */
+/** The classes a user substitutes in on a date; none while the Routine module is off. */
 export async function substitutionsOn(db: DbOrTx, tenantId: string, userId: string, date: string): Promise<{ batchSubjectId: string; startsAt: string }[]> {
   if (!(await isModuleActive(db, tenantId, "routine"))) return [];
   const rows = await db

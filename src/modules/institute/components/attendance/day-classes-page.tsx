@@ -31,7 +31,7 @@ export const registerHref = (base: string, c: { batch_subject_id: string; starts
   `${base}/register?bs=${c.batch_subject_id}&date=${date}&at=${c.starts_at}`;
 
 /**
- * A day's classes with the state of each register (D80, D81): everyone at the office sees every class, an instructor
+ * A day's classes with the state of each register: everyone at the office sees every class, an instructor
  * only their own. Used by the admin panel and the instructor portal (`base` is where its register page lives).
  */
 export function DayClassesPage({

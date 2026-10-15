@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import { clearRateLimits, instituteUrl, seedInstitute, seedTeaching, setInstituteModules } from "./helpers";
 
-// One serial story for the Routine & Lesson Plans module; each milestone (R2–R4) adds its steps.
+// One serial story for the Routine & Lesson Plans module; each milestone adds its steps.
 test.describe.configure({ mode: "serial" });
 
 const INSTITUTE = {
@@ -55,7 +55,7 @@ test("the Owner signs in for the first time", async ({ page }) => {
   await expect(page).toHaveURL(url("/app"));
 });
 
-test("R2: the Owner cancels a class with a reason and undoes it (D114, D115)", async ({ page }) => {
+test("the Owner cancels a class with a reason and undoes it", async ({ page }) => {
   await signInAsOwner(page);
   await page.getByRole("link", { name: "Routine", exact: true }).click();
   const tomorrow = day(1);
@@ -76,7 +76,7 @@ test("R2: the Owner cancels a class with a reason and undoes it (D114, D115)", a
   await expect(physics.getByRole("button", { name: "Change" })).toBeVisible();
 });
 
-test("R2: a substitute takes one class and another class moves to a free time (D114, D51)", async ({ page }) => {
+test("a substitute takes one class and another class moves to a free time", async ({ page }) => {
   await signInAsOwner(page);
   const date = day(2);
   await openDay(page, date);
@@ -102,7 +102,7 @@ test("R2: a substitute takes one class and another class moves to a free time (D
   await expect(cls(page, "Chemistry", date, "19:00")).toContainText("Moved here");
 });
 
-test("R2: a holiday closes every class that day and appears in Changes & holidays (D114)", async ({ page }) => {
+test("a holiday closes every class that day and appears in Changes & holidays", async ({ page }) => {
   await signInAsOwner(page);
   await page.goto(url("/app/routine"));
   await page.getByRole("button", { name: "Changes & holidays" }).click();
@@ -123,7 +123,7 @@ test("R2: a holiday closes every class that day and appears in Changes & holiday
   await expect(cls(page, "Chemistry", date, "17:30")).toContainText("Victory Day");
 });
 
-test("R3: the Owner builds a lesson plan; a late topic shows Overdue and completing it counts (D118, D119)", async ({ page }) => {
+test("the Owner builds a lesson plan; a late topic shows Overdue and completing it counts", async ({ page }) => {
   await signInAsOwner(page);
   await page.goto(url("/app/routine"));
   await page.getByRole("link", { name: "Lesson plans" }).click();
@@ -149,7 +149,7 @@ test("R3: the Owner builds a lesson plan; a late topic shows Overdue and complet
 });
 
 // By now: in two days Physics has a substitute (Nasrin) and Chemistry is moved to 19:00; in three days is Victory Day.
-test("R4: the instructor sees changes on the home page and updates their lesson plan (D117, D120)", async ({ page }) => {
+test("the instructor sees changes on the home page and updates their lesson plan", async ({ page }) => {
   await signIn(page, TEACHER.email, TEACHER.password);
   await expect(page).toHaveURL(url("/app/instructor"));
   const changes = page.getByTestId("upcoming-changes");
@@ -164,7 +164,7 @@ test("R4: the instructor sees changes on the home page and updates their lesson 
   await expect(page.getByText(/1 ongoing/)).toBeVisible();
 });
 
-test("R4: the student sees schedule changes and lesson progress (D27, D117)", async ({ page }) => {
+test("the student sees schedule changes and lesson progress", async ({ page }) => {
   await signIn(page, codes[0], "Student123");
   await expect(page).toHaveURL(url("/app/student"));
   await expect(page.getByTestId("upcoming-changes")).toContainText("Victory Day");
@@ -172,7 +172,7 @@ test("R4: the student sees schedule changes and lesson progress (D27, D117)", as
   await expect(page.getByTestId("lesson-progress")).toContainText("1 of 2 topics completed");
 });
 
-test("R4: with Attendance on, the substitute sees the class they cover and holidays show as not held (D116, D121)", async ({ page }) => {
+test("with Attendance on, the substitute sees the class they cover and holidays show as not held", async ({ page }) => {
   await setInstituteModules(INSTITUTE.subdomain, { attendance: true });
   await signIn(page, SUBSTITUTE.email, SUBSTITUTE.password);
   await expect(page).toHaveURL(url("/app/instructor"));
@@ -190,7 +190,7 @@ test("R4: with Attendance on, the substitute sees the class they cover and holid
   await expect(page.getByTestId("day-classes")).toContainText("No class held");
 });
 
-test("Routine disappears while the module is off (D5)", async ({ page }) => {
+test("Routine disappears while the module is off", async ({ page }) => {
   await setInstituteModules(INSTITUTE.subdomain, { routine: false });
   try {
     await signInAsOwner(page);

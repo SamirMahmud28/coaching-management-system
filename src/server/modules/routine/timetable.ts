@@ -1,7 +1,7 @@
 import { addDays, weekdayOf } from "@/lib/dates";
 
 /**
- * The dated timetable (D114, D116): the weekly class times (Core, D3) expanded over a date range, with institute
+ * The dated timetable: the weekly class times (Core) expanded over a date range, with institute
  * holidays and one-off changes applied. Pure — no database — so every rule is table-tested; the routine screens, the
  * portals and Attendance (when both modules are on) all use it.
  */

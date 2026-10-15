@@ -4,7 +4,7 @@ import path from "node:path";
 import { getEnv } from "../config/env";
 
 /**
- * Where uploaded bytes live (FILE-STORAGE-ARCHITECTURE.md §4). Modules never touch this directly — they go
+ * Where uploaded bytes live. Modules never touch this directly — they go
  * through the files service, so switching to an S3-compatible provider later is a configuration change.
  */
 export interface StorageProvider {

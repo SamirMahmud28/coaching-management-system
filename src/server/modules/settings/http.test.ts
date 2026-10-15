@@ -84,7 +84,7 @@ describe("settings API", () => {
     expect((await bad.json()).error).toMatchObject({ code: "VALIDATION_EMAIL", details: { field: "email" } });
   });
 
-  it("reads and saves the student ID pattern for settings managers only (D15, D16)", async () => {
+  it("reads and saves the student ID pattern for settings managers only", async () => {
     const s = await school("inst-a");
     const accountant = await s.login("Accountant");
     const admin = await s.login("Admin");

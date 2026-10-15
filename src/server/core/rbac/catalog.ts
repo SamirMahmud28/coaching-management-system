@@ -2,7 +2,7 @@ import type { ModuleKey } from "../modules/registry";
 
 /**
  * Every permission names the module that owns it. Core is itself an always-on module, so the authorization guard
- * can always derive the module from the permission and never skip the module check (docs/01-architecture/SYSTEM-ARCHITECTURE.md §6).
+ * can always derive the module from the permission and never skip the module check.
  * Paid modules get their full permission sets when each module is built; until then each has a placeholder view.
  */
 export const PERMISSION_CATALOG = [
@@ -13,50 +13,50 @@ export const PERMISSION_CATALOG = [
   { name: "users.manage", module: "core" },
   { name: "roles.manage", module: "core" },
   { name: "settings.manage", module: "core" },
-  // Core: courses, subjects, batches and their schedules (D3, D7, D25)
+  // Core: courses, subjects, batches and their schedules
   { name: "academic.view", module: "core" },
   { name: "academic.manage", module: "core" },
-  // Core: instructors (D1)
+  // Core: instructors
   { name: "instructors.view", module: "core" },
   { name: "instructors.manage", module: "core" },
   { name: "instructors.status", module: "core" },
-  // Core: students (D1, D8–D14). Guardian and contact details are a separate grant (D24: not for instructors).
+  // Core: students. Guardian and contact details are a separate grant (not for instructors).
   { name: "students.view", module: "core" },
   { name: "students.contact.view", module: "core" },
   { name: "students.create", module: "core" },
   { name: "students.update", module: "core" },
   { name: "students.status", module: "core" },
   { name: "students.batches.manage", module: "core" },
-  // Core: portals. An instructor's own batches and their students (D24); a student's own records (D27).
+  // Core: portals. An instructor's own batches and their students; a student's own records.
   { name: "batches.own.view", module: "core" },
   { name: "student.self.view", module: "core" },
   // Paid modules (a placeholder until Website is built; the others are below)
   { name: "website.manage", module: "website" },
-  // Routine & Lesson Plans (D114–D122). Instructors' grants reach only their own batches and subjects (D24).
+  // Routine & Lesson Plans. Instructors' grants reach only their own batches and subjects.
   { name: "routine.view", module: "routine" },
-  // Schedule changes and holidays: Owner/Admin only (D115).
+  // Schedule changes and holidays: Owner/Admin only.
   { name: "routine.manage", module: "routine" },
   { name: "lessons.manage", module: "routine" },
-  // A student's own week with changes and lesson progress (D27, D117).
+  // A student's own week with changes and lesson progress.
   { name: "routine.self.view", module: "routine" },
-  // Exams & Results (D101–D110). Instructors' grants reach only their own batches and subjects (checked per request, D24).
+  // Exams & Results. Instructors' grants reach only their own batches and subjects (checked per request).
   { name: "exams.view", module: "exams" },
   { name: "exams.manage", module: "exams" },
   { name: "exams.marks.enter", module: "exams" },
-  // Only Owner/Admin publish, and correct marks after publishing with a reason (D24, D107).
+  // Only Owner/Admin publish, and correct marks after publishing with a reason.
   { name: "exams.publish", module: "exams" },
-  // A student's own published results (D27).
+  // A student's own published results.
   { name: "exams.self.view", module: "exams" },
-  // Attendance & Leave (D80–D95). Instructors' grants reach only their own batch subjects (checked per request, D24).
+  // Attendance & Leave. Instructors' grants reach only their own batch subjects (checked per request).
   { name: "attendance.view", module: "attendance" },
   { name: "attendance.take", module: "attendance" },
   { name: "attendance.manage", module: "attendance" },
   { name: "attendance.report.view", module: "attendance" },
   { name: "leave.manage", module: "attendance" },
-  // A student's own attendance and leave (D27, D89).
+  // A student's own attendance and leave.
   { name: "attendance.self.view", module: "attendance" },
   { name: "leave.self.apply", module: "attendance" },
-  // Fees & Payments (D28–D44, D62–D65). Waivers, voids and refunds are kept apart for separation of duties (D35, D37, D63).
+  // Fees & Payments. Waivers, voids and refunds are kept apart for separation of duties.
   { name: "fees.view", module: "fees" },
   { name: "fees.configure", module: "fees" },
   { name: "fees.generate", module: "fees" },
@@ -66,7 +66,7 @@ export const PERMISSION_CATALOG = [
   { name: "fees.payment.void", module: "fees" },
   { name: "fees.refund", module: "fees" },
   { name: "fees.report.view", module: "fees" },
-  // A student's own fees, dues and receipts (D27).
+  // A student's own fees, dues and receipts.
   { name: "fees.self.view", module: "fees" },
 ] as const satisfies readonly { name: string; module: ModuleKey }[];
 
@@ -91,8 +91,8 @@ export interface RoleTemplate {
 export const INSTITUTE_OWNER_ROLE = "Owner";
 
 /**
- * System roles created for every new institute. Accountant follows D63 and D95 (and has no exam access, as the exam plan
- * sets), Instructor D24 and D81, Student D27 and D89.
+ * System roles created for every new institute. Accountant follows and (and has no exam access, as the exam plan
+ * sets), Instructor and, Student and.
  */
 export const ROLE_TEMPLATES: readonly RoleTemplate[] = [
   { name: INSTITUTE_OWNER_ROLE, grantsAll: true, permissions: [] },

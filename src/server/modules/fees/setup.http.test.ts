@@ -63,7 +63,7 @@ async function setUp() {
 }
 const createItem = (body: object) => call(h.createItem(req("POST", body)));
 
-describe("fee items (D28)", () => {
+describe("fee items", () => {
   it("creates a course's fees with amounts as exact taka, and refuses bad input", async () => {
     const s = await setUp();
     const tuition = await createItem({ course_id: s.hsc.id, kind: "MONTHLY", name: "Tuition", amount: "2000" });
@@ -96,7 +96,7 @@ describe("fee items (D28)", () => {
     expect((await call(h.setItemStatus(req("PATCH", { status: "ARCHIVED" }), { id: item.id }))).body.status).toBe("ARCHIVED");
     expect((await call(h.listItems(new Request(`http://${HOST}/api/v1/fees/items?status=ACTIVE`, { headers: { host: HOST, cookie } })))).body).toEqual([]);
 
-    // A course with fee items can't be deleted (D50).
+    // A course with fee items can't be deleted.
     await expect(academic.deleteCourse(db, s.actor, s.hsc.id)).rejects.toMatchObject({ code: "CONFLICT_COURSE_IN_USE" });
 
     const { student } = await students.admitStudent(db, s.actor, { fullName: "A", gender: "MALE", guardianName: "G", guardianRelation: "FATHER", guardianPhone: "01711000111", temporaryPassword: "Student123" });
@@ -108,7 +108,7 @@ describe("fee items (D28)", () => {
   });
 });
 
-describe("a student's own amounts (D29)", () => {
+describe("a student's own amounts", () => {
   it("lists the fees of the student's current courses and sets, changes and removes their own amount with a reason", async () => {
     const s = await setUp();
     const tuition = (await createItem({ course_id: s.hsc.id, kind: "MONTHLY", name: "Tuition", amount: "2000" })).body;
@@ -135,7 +135,7 @@ describe("a student's own amounts (D29)", () => {
   });
 });
 
-describe("receipt prefix (D38)", () => {
+describe("receipt prefix", () => {
   it("defaults to R, is saved upper-cased, and labels receipts PREFIX-000123", async () => {
     await setUp();
     expect((await call(h.getSettings(req("GET")))).body).toEqual({ receipt_prefix: "R" });

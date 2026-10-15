@@ -58,7 +58,7 @@ async function setUp() {
   return { tenant, actor, hsc, ict, morning, ictBatch, tuition, admission, admit, pay };
 }
 
-describe("due dates (D44)", () => {
+describe("due dates", () => {
   it("fall on the course's due day of the month, or the generation date once that has passed", () => {
     expect(monthOf("2028-02")).toMatchObject({ first: "2028-02-01", last: "2028-02-29", label: "February 2028" });
     expect(dueDateFor("MONTHLY", 10, "2099-06", "2026-10-12")).toBe("2099-06-10");
@@ -70,7 +70,7 @@ describe("due dates (D44)", () => {
   });
 });
 
-describe("monthly generation (D30, D40, D65, D67, D68)", () => {
+describe("monthly generation", () => {
   it("charges current students who joined by month end and lists everyone skipped, with why", async () => {
     const s = await setUp();
     const anika = await s.admit("Anika", "2026-05-01");
@@ -123,7 +123,7 @@ describe("monthly generation (D30, D40, D65, D67, D68)", () => {
       confirmGeneration(db, s.actor, { feeItemId: s.tuition.id, period: "2099-01", amounts: [{ studentId: a.id, amount: "2500" }] }),
     ).rejects.toMatchObject({ code: "VALIDATION_AMOUNT_RAISED" });
     const run = await confirmGeneration(db, s.actor, { feeItemId: s.tuition.id, period: "2099-01", exclude: [b.id], amounts: [{ studentId: a.id, amount: "1000" }] });
-    expect(run).toMatchObject({ createdCount: 1, total: "1000.00", skipped: { EXCLUDED: 1 }, dueDate: "2099-01-10" }); // a future month (D30)
+    expect(run).toMatchObject({ createdCount: 1, total: "1000.00", skipped: { EXCLUDED: 1 }, dueDate: "2099-01-10" }); // a future month
     expect(await listStudentCharges(db, s.tenant.id, b.id)).toEqual([]);
     expect((await previewGeneration(db, s.tenant.id, { feeItemId: s.tuition.id, period: "2099-01" })).toCharge.map((r) => r.fullName)).toEqual(["Bushra"]);
   });
@@ -149,7 +149,7 @@ describe("monthly generation (D30, D40, D65, D67, D68)", () => {
   });
 });
 
-describe("one-time generation (D62, D67)", () => {
+describe("one-time generation", () => {
   it("charges each current student once, skipping On Hold, due on the generation date", async () => {
     const s = await setUp();
     const a = await s.admit("Anika", "2026-05-01");
@@ -164,7 +164,7 @@ describe("one-time generation (D62, D67)", () => {
   });
 });
 
-describe("fines and cancelling (D34, D43)", () => {
+describe("fines and cancelling", () => {
   it("adds a manual fine with a reason, due today unless a date is given", async () => {
     const s = await setUp();
     const a = await s.admit("Anika", "2026-05-01");

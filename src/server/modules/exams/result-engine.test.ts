@@ -20,19 +20,19 @@ function paper(o: Partial<PaperInput> & { obtained?: number | null }): PaperInpu
   return { paperId: o.name ?? "p", name: "P", optional: false, fullMarks: 100, passMarks: 33, absent: false, obtained: null, parts: [], ...o };
 }
 
-describe("bandFor — percentage boundaries in hundredths (D102)", () => {
+describe("bandFor — percentage boundaries in hundredths", () => {
   it.each([
     [100, 100, "A+"], [80, 100, "A+"], [79, 100, "A"], [70, 100, "A"], [69, 100, "A-"], [60, 100, "A-"],
     [59, 100, "B"], [50, 100, "B"], [49, 100, "C"], [40, 100, "C"], [39, 100, "D"], [33, 100, "D"], [32, 100, "F"], [0, 100, "F"],
     [40, 50, "A+"], [39, 50, "A"], [26, 75, "D"], [24, 75, "F"], [60, 75, "A+"],
-    // Decimal marks (D104): 79.99 of 100 is an A; 39.75 of 50 = 79.5% is an A; 8.25 of 25 = 33% is a D.
+    // Decimal marks: 79.99 of 100 is an A; 39.75 of 50 = 79.5% is an A; 8.25 of 25 = 33% is a D.
     [79.99, 100, "A"], [39.75, 50, "A"], [8.25, 25, "D"],
   ])("%d of %d → %s", (obtained, full, grade) => {
     expect(bandFor(hundredths(obtained), hundredths(full), scale).grade).toBe(grade);
   });
 });
 
-describe("a paper (D105, D106)", () => {
+describe("a paper", () => {
   it("passes on the pass mark and fails just below it, with decimals", () => {
     expect(evaluatePaper(paper({ obtained: 33 }), scale, graded)).toMatchObject({ status: "PASSED", grade: "D", gradePoint: 1 });
     expect(evaluatePaper(paper({ obtained: 32.75 }), scale, graded)).toMatchObject({ status: "FAILED", grade: "F", gradePoint: 0 });
@@ -87,7 +87,7 @@ describe("a paper (D105, D106)", () => {
   });
 });
 
-describe("a student's result (D102, D105, D106, D108)", () => {
+describe("a student's result", () => {
   it("averages compulsory grade points, rounded to two decimals", () => {
     const out = evaluateStudent([paper({ name: "a", obtained: 85 }), paper({ name: "b", obtained: 72 }), paper({ name: "c", obtained: 55 })], scale, graded);
     expect(out).toMatchObject({ status: "COMPLETE", gpa: 4, grade: "A", passed: true, failedPapers: 0, totalObtained: 212, totalFull: 300 });
@@ -109,7 +109,7 @@ describe("a student's result (D102, D105, D106, D108)", () => {
     expect(evaluateStudent([paper({ name: "a", obtained: 50 }), paper({ name: "b", obtained: 40 })], scale, marksOnly)).toMatchObject({ passed: true, gpa: null, grade: null, totalObtained: 90 });
   });
 
-  describe("optional (4th) subject — BD rule (D108)", () => {
+  describe("optional (4th) subject — BD rule", () => {
     const compulsory = [paper({ name: "a", obtained: 72 }), paper({ name: "b", obtained: 72 })]; // 4 + 4 = 8 / 2 = 4.00
 
     it("adds only the grade points above 2.0, capped at the top point", () => {
@@ -142,7 +142,7 @@ describe("gradeForGpa", () => {
   });
 });
 
-describe("merit positions (D103, D106, D109)", () => {
+describe("merit positions", () => {
   const r = (passed: boolean, totalObtained: number, gpa: number | null = null, status: "COMPLETE" | "PENDING" | "ABSENT" = "COMPLETE") => ({ status, passed, totalObtained, gpa });
 
   it("ranks passed students first, then by total marks, then GPA", () => {

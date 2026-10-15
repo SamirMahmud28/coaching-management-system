@@ -6,7 +6,7 @@ import { requireModulePage } from "@/server/modules/institute/current-user";
 
 export const metadata: Metadata = { title: "Marks" };
 
-// Only a paper of a subject the instructor teaches; any other is a 404 from the API (D24).
+// Only a paper of a subject the instructor teaches; any other is a 404 from the API.
 export default async function Page({ params }: { params: Promise<{ paperId: string }> }) {
   const { paperId } = await params;
   if (!isUuid(paperId)) notFound();

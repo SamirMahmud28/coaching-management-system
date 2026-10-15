@@ -39,7 +39,7 @@ function cleanName(value: string | undefined, field = "name"): string {
   return name;
 }
 
-/** Course codes go into student IDs (D15): capital letters and digits, starting with a letter. */
+/** Course codes go into student IDs: capital letters and digits, starting with a letter. */
 export function cleanCourseCode(value: string): string {
   const code = value.trim().toUpperCase();
   if (!/^[A-Z][A-Z0-9]{0,9}$/.test(code)) {
@@ -113,7 +113,7 @@ export async function createCourse(db: DbOrTx, actor: Actor, input: CourseInput)
   });
 }
 
-/** The code can change only while no student ID has been issued with it (checked once students exist, M6). */
+/** The code can change only while no student ID has been issued with it (checked once students exist). */
 export async function updateCourse(db: DbOrTx, actor: Actor, id: string, input: Partial<CourseInput>) {
   return inTransaction(db, async (tx) => {
     const existing = await getInTenant(tx, courses, actor.tenantId, id, "COURSE");
@@ -289,7 +289,7 @@ export async function updateBatch(db: DbOrTx, actor: Actor, id: string, input: {
   });
 }
 
-/** Only an unused batch can be deleted (nothing else refers to it, e.g. students, M6); otherwise archive it. */
+/** Only an unused batch can be deleted (nothing else refers to it, e.g. students); otherwise archive it. */
 export async function deleteBatch(db: DbOrTx, actor: Actor, id: string) {
   return inTransaction(db, async (tx) => {
     const existing = await getInTenant(tx, batches, actor.tenantId, id, "BATCH");
@@ -303,7 +303,7 @@ export async function deleteBatch(db: DbOrTx, actor: Actor, id: string) {
 // Batch subjects, instructors, schedule
 // ---------------------------------------------------------------------------
 
-/** Adds one of the course's active subjects to the batch (D25). */
+/** Adds one of the course's active subjects to the batch. */
 export async function addBatchSubject(db: DbOrTx, actor: Actor, batchId: string, subjectId: string) {
   return inTransaction(db, async (tx) => {
     const batch = await getInTenant(tx, batches, actor.tenantId, batchId, "BATCH");
@@ -383,7 +383,7 @@ async function findClashes(tx: DbOrTx, tenantId: string, instructorIds: string[]
   return rows.map((r) => ({ ...r, startsAt: r.startsAt.slice(0, 5), endsAt: r.endsAt.slice(0, 5) }));
 }
 
-/** An instructor can't teach two classes at overlapping times (owner decision, M4). */
+/** An instructor can't teach two classes at overlapping times (owner decision). */
 function assertNoClashes(clashes: ScheduleClash[]) {
   if (!clashes.length) return;
   const [c] = clashes;

@@ -55,7 +55,7 @@ test("the Owner signs in at the institute's address, must change the password, t
   await expect(page.getByRole("heading", { name: `Welcome, ${INSTITUTE.ownerName}` })).toBeVisible();
 });
 
-test("navigation and direct URLs follow the institute's modules (D5, investigation F3)", async ({ page }) => {
+test("navigation and direct URLs follow the institute's modules (investigation F3)", async ({ page }) => {
   await signIn(page, INSTITUTE.ownerEmail, ownerPassword);
   await expect(page).toHaveURL(url("/app"));
   const nav = page.getByRole("navigation").first();
@@ -73,7 +73,7 @@ test("navigation and direct URLs follow the institute's modules (D5, investigati
   await expect(page.getByRole("heading", { name: "Page not found" })).toBeVisible();
 });
 
-test("settings: the student ID pattern previews the next ID and saves (D15, D16)", async ({ page }) => {
+test("settings: the student ID pattern previews the next ID and saves", async ({ page }) => {
   await signIn(page, INSTITUTE.ownerEmail, ownerPassword);
   await expect(page).toHaveURL(url("/app"));
   await page.goto(url("/app/settings"));
@@ -124,7 +124,7 @@ test("modules: the institute requests a module; only a Super Admin can switch it
   await expect(row.getByRole("button", { name: "Requested" })).toBeDisabled();
 });
 
-test("help: every page explains itself on request, and the Help centre has the guides for what this user can use (D96, D98)", async ({ page }) => {
+test("help: every page explains itself on request, and the Help centre has the guides for what this user can use", async ({ page }) => {
   await signIn(page, INSTITUTE.ownerEmail, ownerPassword);
   await expect(page).toHaveURL(url("/app"));
   const panel = page.getByTestId("how-this-works");

@@ -37,5 +37,3 @@ next-env.d.ts
 .vscode/*
 !.vscode/extensions.json
 !.vscode/settings.json
-
-# NOTE: docs/ IS committed (unlike the EMS). It is the shared context between the owner's two Claude accounts.

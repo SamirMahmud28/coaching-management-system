@@ -12,7 +12,7 @@ describe("app themes", () => {
     expect(themeAttribute("PLUM")).toBe("plum");
   });
 
-  it("paper is automatic on with Classic Amber only; an explicit choice wins (D158)", () => {
+  it("paper is automatic on with Classic Amber only; an explicit choice wins", () => {
     expect(APP_THEME_KEYS.filter((k) => resolvePaper(k, null))).toEqual(["AMBER"]);
     expect(resolvePaper("MIDNIGHT", true)).toBe(true);
     expect(resolvePaper("AMBER", false)).toBe(false);

@@ -14,7 +14,7 @@ const NOT_SET = "none"; // Radix Select values can't be empty strings.
 const DUE_DAYS = [...Array.from({ length: 28 }, (_, i) => i + 1), 31];
 export const dueDayLabel = (day: number | null) => (day === null ? "Not set" : day === 31 ? "Last day of the month" : `Day ${day}`);
 
-/** Add or edit a course. The code goes into student IDs when the ID pattern includes it (D15). */
+/** Add or edit a course. The code goes into student IDs when the ID pattern includes it. */
 export function CourseFormDialog({
   open,
   onOpenChange,

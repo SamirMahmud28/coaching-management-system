@@ -69,7 +69,7 @@ async function institute(sub: string) {
   return { tenant, actor, hsc, physics, morning, evening, old, rahim, karim, admit };
 }
 
-describe("instructor portal (D24, D60)", () => {
+describe("instructor portal", () => {
   it("lists only the active batches the instructor teaches, the subjects they teach there, and their week", async () => {
     const a = await institute("inst-a");
     await a.admit("Anika", [a.morning.id]);
@@ -110,7 +110,7 @@ describe("instructor portal (D24, D60)", () => {
   });
 });
 
-describe("student portal (D27)", () => {
+describe("student portal", () => {
   it("shows the student's own record without the staff note, their batches with instructors and times, and their week", async () => {
     const a = await institute("inst-a");
     const me = await a.admit("Anika", [a.morning.id, a.evening.id], { adminNote: "Pays late", phone: "01811000222" });
@@ -155,7 +155,7 @@ describe("dashboard counts", () => {
   });
 });
 
-describe("public page (D58, D59)", () => {
+describe("public page", () => {
   it("lists active courses, subjects and batches with class times, but no instructor names", async () => {
     const a = await institute("inst-a");
     const archived = await academic.createCourse(db, a.actor, { name: "Old course", code: "OLD" });

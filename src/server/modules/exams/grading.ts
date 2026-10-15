@@ -6,8 +6,8 @@ import { ValidationError } from "../../core/errors";
 import { audit } from "../audit/service";
 import { DEFAULT_GRADE_SCALE, sortScale, validateGradeScale, type GradeBand } from "./result-engine";
 
-// The institute's grading scale (D102): the BD 5.0 scale until it saves its own. A change applies to draft exams and
-// exams published later; a published exam keeps the scale it was published with (D112, `exams.published_scale`).
+// The institute's grading scale: the BD 5.0 scale until it saves its own. A change applies to draft exams and
+// exams published later; a published exam keeps the scale it was published with (`exams.published_scale`).
 
 export interface Actor {
   tenantId: string;
@@ -23,7 +23,7 @@ export async function getGradeScale(db: DbOrTx, tenantId: string): Promise<{ ban
   return { bands: sortScale(row.bands as GradeBand[]), isDefault: false };
 }
 
-/** Saves the institute's own scale, after the same checks as the EMS (every mark gets one grade; F is the only 0). */
+/** Saves the institute's own scale, after checking it (every mark gets one grade; F is the only 0). */
 export async function saveGradeScale(db: DbOrTx, actor: Actor, input: readonly GradeBand[]) {
   const bands = clean(input);
   const problem = validateGradeScale(bands);

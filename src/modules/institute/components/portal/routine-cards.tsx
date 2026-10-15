@@ -21,7 +21,7 @@ function note(c: RoutineClass) {
   return c.substituteName ? `Substitute: ${c.substituteName}` : null;
 }
 
-/** Changes to the viewer's classes in the next two weeks (D117), on the portal home pages. */
+/** Changes to the viewer's classes in the next two weeks, on the portal home pages. */
 export function UpcomingChangesCard({ changes }: { changes: RoutineClass[] }) {
   return (
     <Card data-testid="upcoming-changes">
@@ -53,7 +53,7 @@ export function UpcomingChangesCard({ changes }: { changes: RoutineClass[] }) {
   );
 }
 
-/** A student's lesson progress per subject (D27, D118). */
+/** A student's lesson progress per subject. */
 export function LessonProgressCard({ plans }: { plans: Awaited<ReturnType<typeof myLessonProgress>> }) {
   return (
     <Card data-testid="lesson-progress">

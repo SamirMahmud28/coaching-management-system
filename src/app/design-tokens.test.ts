@@ -4,8 +4,7 @@ import { describe, expect, it } from "vitest";
 import { APP_THEMES } from "@/lib/app-themes";
 
 /**
- * Every app theme's text pairs meet WCAG AA (4.5:1 for text; 3:1 for the focus ring), in light and dark mode (D152,
- * D155, D156). Read from globals.css so a token change that breaks contrast fails here.
+ * Every app theme's text pairs meet WCAG AA (4.5:1 for text; 3:1 for the focus ring), in light and dark mode (*). Read from globals.css so a token change that breaks contrast fails here.
  */
 const css = readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8").replace(/\r\n/g, "\n");
 
@@ -82,7 +81,7 @@ function mix(a: string, b: string, amount: number): string {
   return `#${[0, 1, 2].map((i) => Math.round(ch(a, i) * amount + ch(b, i) * (1 - amount)).toString(16).padStart(2, "0")).join("")}`;
 }
 
-describe.each(CASES)("paper background, app theme %s (%s) (D158)", (theme, mode) => {
+describe.each(CASES)("paper background, app theme %s (%s)", (theme, mode) => {
   const t = tokens(theme, mode);
   // Worst case on the page: the 3% tinted base under the strongest 8% primary glow (titles and hints sit on it; cards are solid).
   const paper = mix(t.primary!, mix(t.primary!, t.background!, 0.03), 0.08);
@@ -93,7 +92,7 @@ describe.each(CASES)("paper background, app theme %s (%s) (D158)", (theme, mode)
 });
 
 /**
- * The backdrop's brightest or most tinted spots (D160): the paper base under each colour glow at full strength, and
+ * The backdrop's brightest or most tinted spots: the paper base under each colour glow at full strength, and
  * under the edge vignette. Glass is composited over each of them.
  */
 function backdropSpots(t: Record<string, string>, mode: "light" | "dark"): string[] {
@@ -102,7 +101,7 @@ function backdropSpots(t: Record<string, string>, mode: "light" | "dark"): strin
   return [base, mix(t.primary!, base, a), mix(t["chart-2"]!, base, b), mix(t["chart-3"]!, base, c), mix(t.foreground!, base, 0.04)];
 }
 
-describe.each(CASES)("glass surfaces, app theme %s (%s) (D159)", (theme, mode) => {
+describe.each(CASES)("glass surfaces, app theme %s (%s)", (theme, mode) => {
   const t = tokens(theme, mode);
   const spots = backdropSpots(t, mode);
   const alpha = parseFloat(t["sidebar-glass-alpha"]!) / 100;

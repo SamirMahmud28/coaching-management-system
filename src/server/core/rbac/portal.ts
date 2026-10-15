@@ -3,7 +3,7 @@ import { ROLE_TEMPLATES } from "./catalog";
 /** Which experience an institute user lands in. Derived from permissions, so custom roles work too. */
 export type PortalKind = "admin" | "instructor" | "student";
 
-// The institute app lives under /app (D19).
+// The institute app lives under /app.
 export const PORTAL_HOME: Record<PortalKind, string> = {
   admin: "/app",
   instructor: "/app/instructor",

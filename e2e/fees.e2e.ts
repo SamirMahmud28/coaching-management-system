@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import { clearRateLimits, instituteUrl, seedInstitute, setInstituteModules } from "./helpers";
 
-// One serial story for the Fees module; each milestone (F2–F6) adds its steps.
+// One serial story for the Fees module; each milestone adds its steps.
 test.describe.configure({ mode: "serial" });
 test.use({ permissions: ["clipboard-read", "clipboard-write"] });
 
@@ -76,7 +76,7 @@ test("the Owner sets up a course with a batch and a student", async ({ page }) =
   await expect(page.getByRole("heading", { name: /Tania Akter/, level: 1 })).toBeVisible();
 });
 
-test("F2: the Owner adds the course's fees and sets the receipt prefix (D28, D38)", async ({ page }) => {
+test("the Owner adds the course's fees and sets the receipt prefix", async ({ page }) => {
   await signInAsOwner(page);
   await page.getByRole("navigation").first().getByRole("link", { name: "Fees" }).click();
   await expect(page.getByRole("heading", { name: "Fees", level: 1 })).toBeVisible();
@@ -113,7 +113,7 @@ test("F2: the Owner adds the course's fees and sets the receipt prefix (D28, D38
   await expect(page.getByLabel("Receipt prefix")).toHaveValue("SHK");
 });
 
-test("F2: a student's own amount, with a reason (D29)", async ({ page }) => {
+test("a student's own amount, with a reason", async ({ page }) => {
   await signInAsOwner(page);
   await page.goto(url("/app/students"));
   await page.getByRole("row", { name: /Tania Akter/ }).click();
@@ -131,7 +131,7 @@ const MONTHS = ["January", "February", "March", "April", "May", "June", "July", 
 const now = new Date(Date.now() + 6 * 3600_000); // Bangladesh date (UTC+6)
 const thisMonth = `${MONTHS[now.getUTCMonth()]} ${now.getUTCFullYear()}`;
 
-test("F3: the Owner generates this month's tuition and the admission fee from a preview (D30, D62)", async ({ page }) => {
+test("the Owner generates this month's tuition and the admission fee from a preview", async ({ page }) => {
   await signInAsOwner(page);
   await page.goto(url("/app/fees"));
   await page.getByRole("link", { name: "Generate charges" }).click();
@@ -159,7 +159,7 @@ test("F3: the Owner generates this month's tuition and the admission fee from a 
   await expect(preview).toContainText("Already charged");
 });
 
-test("F3: the student's fees page lists the charges; a fine is added and cancelled with reasons (D34, D43)", async ({ page }) => {
+test("the student's fees page lists the charges; a fine is added and cancelled with reasons", async ({ page }) => {
   await signInAsOwner(page);
   await page.goto(url("/app/students"));
   await page.getByRole("row", { name: /Tania Akter/ }).click();
@@ -193,7 +193,7 @@ async function openStudentFees(page: Page) {
   await expect(page.getByRole("heading", { name: "Tania Akter — fees", level: 1 })).toBeVisible();
 }
 
-test("F4: collect whole charges in cash and print the receipt (D31, D38, D69)", async ({ page }) => {
+test("collect whole charges in cash and print the receipt", async ({ page }) => {
   await openStudentFees(page);
   const collect = page.getByTestId("collect");
   await collect.getByLabel(/Tuition/).check();
@@ -212,7 +212,7 @@ test("F4: collect whole charges in cash and print the receipt (D31, D38, D69)", 
   await expect(receipt.getByRole("button", { name: "Print" })).toBeVisible();
 });
 
-test("F4: a voided payment makes its charges due again and its receipt prints VOID; re-collected with a new number (D35, D71)", async ({ page }) => {
+test("a voided payment makes its charges due again and its receipt prints VOID; re-collected with a new number", async ({ page }) => {
   await openStudentFees(page);
   const payments = page.getByTestId("payments");
   await payments.getByRole("button", { name: "Void" }).click();
@@ -228,13 +228,13 @@ test("F4: a voided payment makes its charges due again and its receipt prints VO
   await collect.getByLabel(/Tuition/).check();
   await collect.getByLabel(/Admission/).check();
   await pick(page, "Method", "bKash");
-  await expect(collect.getByRole("button", { name: "Record payment" })).toBeDisabled(); // reference needed (D39)
+  await expect(collect.getByRole("button", { name: "Record payment" })).toBeDisabled(); // reference needed
   await collect.getByLabel("Reference").fill("BK7Q2X");
   await collect.getByRole("button", { name: "Record payment" }).click();
   await expect(collect.getByRole("status")).toContainText("SHK-000002"); // 000001 is never reused
 });
 
-test("F4: a fine is waived by half and paid; a paid charge is partly refunded (D33, D37)", async ({ page }) => {
+test("a fine is waived by half and paid; a paid charge is partly refunded", async ({ page }) => {
   await openStudentFees(page);
   await page.getByRole("button", { name: "Add fine", exact: true }).click();
   await page.getByLabel("Amount (৳)").fill("200");
@@ -263,7 +263,7 @@ test("F4: a fine is waived by half and paid; a paid charge is partly refunded (D
   await expect(charges.getByRole("listitem").filter({ hasText: "Tuition" })).toContainText("Paid");
 });
 
-test("F5: reports show collections net of refunds with voids apart, and dues; both print (D75–D78)", async ({ page }) => {
+test("reports show collections net of refunds with voids apart, and dues; both print", async ({ page }) => {
   await signInAsOwner(page);
   await page.goto(url("/app/fees"));
   await page.getByRole("link", { name: "Reports" }).click();
@@ -288,7 +288,7 @@ test("F5: reports show collections net of refunds with voids apart, and dues; bo
   await expect(page.getByTestId("dues-report")).toContainText("Nothing is due.");
 });
 
-test("F6: the student sees their own fees and reprints a receipt; corrections stay hidden (D27, D79)", async ({ page }) => {
+test("the student sees their own fees and reprints a receipt; corrections stay hidden", async ({ page }) => {
   await clearRateLimits();
   await page.goto(url("/login"));
   await page.getByLabel("Email, mobile number or student ID").fill(student.id);
@@ -319,7 +319,7 @@ test("F6: the student sees their own fees and reprints a receipt; corrections st
   await expect(page).toHaveURL(url("/app/student"));
 });
 
-test("F7: at the counter the Owner finds the student and collects a charge with a waiver and a new fine in one step (D99)", async ({ page }) => {
+test("at the counter the Owner finds the student and collects a charge with a waiver and a new fine in one step", async ({ page }) => {
   await openStudentFees(page);
   await page.getByRole("button", { name: "Add fine", exact: true }).click();
   await page.getByLabel("Amount (৳)").fill("300");
@@ -347,7 +347,7 @@ test("F7: at the counter the Owner finds the student and collects a charge with 
   await expect(page.getByTestId("collect-student")).toContainText("0 due · ৳0.00");
 });
 
-test("F7: the Payments list shows the day's receipts with the total, voids apart, and reprints (D99)", async ({ page }) => {
+test("the Payments list shows the day's receipts with the total, voids apart, and reprints", async ({ page }) => {
   await signInAsOwner(page);
   await page.goto(url("/app/fees/payments"));
   // Today: SHK-000002 (৳3,300), SHK-000003 (৳100), SHK-000004 (৳240); SHK-000001 is void.
@@ -358,7 +358,7 @@ test("F7: the Payments list shows the day's receipts with the total, voids apart
   await expect(receipt.getByTestId("receipt-total")).toHaveText("৳240.00");
 });
 
-test("F2: with Fees switched off, its page and the student's fee card disappear (D5)", async ({ page }) => {
+test("with Fees switched off, its page and the student's fee card disappear", async ({ page }) => {
   await setInstituteModules(INSTITUTE.subdomain, { fees: false });
   try {
     await signInAsOwner(page);

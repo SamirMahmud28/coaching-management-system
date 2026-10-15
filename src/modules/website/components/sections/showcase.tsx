@@ -7,7 +7,7 @@ import type { FeatureIcon } from "@/server/modules/website/site-content";
 import { VideoPlayer } from "../video-player";
 import { imageUrl, SectionHeading, sectionWords, type SectionProps } from "./shared";
 
-// The showcase sections (D138, D141): Stats, Why choose us, Faculty, Achievers, Video and FAQ. Filled from the
+// The showcase sections: Stats, Why choose us, Faculty, Achievers, Video and FAQ. Filled from the
 // Content tab and the Faculty and Achievers lists; each is left out while it has nothing to show.
 
 export const FEATURE_ICON: Record<FeatureIcon, LucideIcon> = {
@@ -78,7 +78,7 @@ function Avatar({ fileId, name, className }: { fileId: string | null; name: stri
   );
 }
 
-/** The instructors the office shows (D141): photo, name, subjects and line; never contact details. */
+/** The instructors the office shows: photo, name, subjects and line; never contact details. */
 export function Faculty(props: SectionProps) {
   const { site, sig } = props;
   const words = sectionWords(props, "FACULTY");
@@ -103,7 +103,7 @@ export function Faculty(props: SectionProps) {
   );
 }
 
-/** Top results typed in by the office (D141). */
+/** Top results typed in by the office. */
 export function Achievers(props: SectionProps) {
   const { site, sig } = props;
   const words = sectionWords(props, "ACHIEVERS");
@@ -128,7 +128,7 @@ export function Achievers(props: SectionProps) {
   );
 }
 
-/** The institute's YouTube videos (D138, D147), each loaded only when played: one large, or several in a grid. */
+/** The institute's YouTube videos, each loaded only when played: one large, or several in a grid. */
 export function Video(props: SectionProps) {
   const { site, sig, t } = props;
   const words = sectionWords(props, "VIDEO");
@@ -163,7 +163,7 @@ export function Video(props: SectionProps) {
   );
 }
 
-/** Questions and answers (D138), opening in place without any script: one column, or two on wide screens. */
+/** Questions and answers, opening in place without any script: one column, or two on wide screens. */
 export function Faqs(props: SectionProps) {
   const { site, sig } = props;
   const words = sectionWords(props, "FAQ");

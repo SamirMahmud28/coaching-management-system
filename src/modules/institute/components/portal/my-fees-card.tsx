@@ -12,7 +12,7 @@ function Details({ c }: { c: Item }) {
   return bits.length ? <p className="text-xs text-muted-foreground">{bits.join(" · ")}</p> : null;
 }
 
-/** The student's own fees (D27, D79): what they owe, overdue first, and what they paid with receipts to reprint. */
+/** The student's own fees: what they owe, overdue first, and what they paid with receipts to reprint. */
 export function MyFeesCard({ fees }: { fees: MyFees }) {
   return (
     <Card data-testid="my-fees">

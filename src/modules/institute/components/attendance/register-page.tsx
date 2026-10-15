@@ -27,7 +27,7 @@ const CHOICES: { status: AttendanceStatus; short: string; label: string; on: str
 ];
 
 /**
- * One class's register (D82–D86, D91). A register not yet taken starts everyone Present; tap the exceptions and save.
+ * One class's register. A register not yet taken starts everyone Present; tap the exceptions and save.
  * Students on approved leave show as Excused through their leave. After the class day only Owner/Admin can change it,
  * with a reason.
  */

@@ -39,7 +39,7 @@ export function ProgressBar({ progress }: { progress: LessonProgress }) {
   );
 }
 
-/** Every visible batch subject with its plan's progress (D118, D27). */
+/** Every visible batch subject with its plan's progress. */
 export function LessonOverviewPage({ base, fullGuide = true }: { base: string; fullGuide?: boolean }) {
   const list = useQuery({ queryKey: instituteKeys.lessons("overview"), queryFn: () => lessonsApi.overview() });
   return (
@@ -74,7 +74,7 @@ export function LessonOverviewPage({ base, fullGuide = true }: { base: string; f
   );
 }
 
-/** One batch subject's plan (D118–D120): topics in order, status by hand, Overdue, and editing for those allowed. */
+/** One batch subject's plan: topics in order, status by hand, Overdue, and editing for those allowed. */
 export function LessonPlanPage({ base, batchSubjectId, fullGuide = true }: { base: string; batchSubjectId: string; fullGuide?: boolean }) {
   const queryClient = useQueryClient();
   const plan = useQuery({ queryKey: instituteKeys.lessons("plan", batchSubjectId), queryFn: () => lessonsApi.plan(batchSubjectId) });

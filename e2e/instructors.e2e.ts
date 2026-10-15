@@ -63,7 +63,7 @@ test("the Owner adds an instructor from the Instructors page", async ({ page }) 
   await expect(row).toContainText("Active");
 });
 
-test("the instructor signs in by mobile number and lands in the instructor portal (D17, D24)", async ({ page }) => {
+test("the instructor signs in by mobile number and lands in the instructor portal", async ({ page }) => {
   await signIn(page, INSTRUCTOR.phone, instructorPassword);
   await expect(page).toHaveURL(url("/change-password"));
   await changePassword(page, instructorPassword, "Teach12345");

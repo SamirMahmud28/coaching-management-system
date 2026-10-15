@@ -2,7 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 import sharp from "sharp";
 import { clearRateLimits, instituteUrl, seedInstitute, seedTeaching, setInstituteModules, setInstituteProfile } from "./helpers";
 
-// One serial story for the Website module; each milestone (W1–W3, then Website Pro W5–W9) adds its steps.
+// One serial story for the Website module.
 test.describe.configure({ mode: "serial" });
 
 const INSTITUTE = {
@@ -50,7 +50,7 @@ test("the Owner signs in for the first time", async ({ page }) => {
   await expect(page).toHaveURL(url("/app"));
 });
 
-test("before any edit, the website shows the institute's name and its courses (D21, D131)", async ({ page }) => {
+test("before any edit, the website shows the institute's name and its courses", async ({ page }) => {
   await page.goto(url("/"));
   await expect(page.getByTestId("website")).toHaveAttribute("data-site-theme", "classic");
   await expect(page.getByTestId("hero-heading")).toHaveText(INSTITUTE.name);
@@ -58,7 +58,7 @@ test("before any edit, the website shows the institute's name and its courses (D
   await expect(page.getByTestId("section-about")).toHaveCount(0); // nothing written yet
 });
 
-test("W1 + W5: the Owner designs the website and it is public at once (D124, D126, D131, D133, D135, D136)", async ({ page }) => {
+test("the Owner designs the website and it is public at once", async ({ page }) => {
   await signInAsOwner(page);
   await page.getByRole("link", { name: "Website", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Website" })).toBeVisible();
@@ -104,7 +104,7 @@ test("W1 + W5: the Owner designs the website and it is public at once (D124, D12
   const heroLoaded = await page.locator("section[aria-label='Welcome'] img").evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0);
   expect(heroLoaded).toBe(true);
   await expect(page.getByTestId("section-courses")).toHaveCount(0); // switched off
-  // About and Contact live on their own pages (D142).
+  // About and Contact live on their own pages.
   await page.goto(url("/about"));
   await expect(page.getByTestId("section-about")).toContainText("Small batches, weekly tests");
   await page.goto(url("/contact"));
@@ -113,7 +113,7 @@ test("W1 + W5: the Owner designs the website and it is public at once (D124, D12
   expect((await page.goto(url("/courses")))?.status()).toBe(404); // switched off, so the page is gone
 });
 
-test("W2: the Owner posts a notice, fills the gallery and adds a testimonial (D125, D128, D130)", async ({ page }) => {
+test("the Owner posts a notice, fills the gallery and adds a testimonial", async ({ page }) => {
   await signInAsOwner(page);
   await page.goto(url("/app/website/notices"));
   await page.getByRole("button", { name: "Add notice" }).click();
@@ -146,7 +146,7 @@ test("W2: the Owner posts a notice, fills the gallery and adds a testimonial (D1
   await expect(page.getByText("Testimonial added.")).toBeVisible();
 
   await page.goto(url("/"));
-  await expect(page.getByTestId("public-testimonial")).toContainText("SSC 2026, GPA 5"); // on Home by default (D143)
+  await expect(page.getByTestId("public-testimonial")).toContainText("SSC 2026, GPA 5"); // on Home by default
   await expect(page.getByRole("navigation", { name: "Pages" }).getByRole("link", { name: "Gallery" })).toBeVisible();
   await page.goto(url("/notices"));
   await expect(page.getByTestId("public-notice")).toContainText("Admission open for HSC 2027");
@@ -156,7 +156,7 @@ test("W2: the Owner posts a notice, fills the gallery and adds a testimonial (D1
   await expect(page.getByRole("img", { name: "Prize-giving 2026" })).toBeVisible();
 });
 
-test("W3: a visitor sends an enquiry; the Owner calls back and converts it into an admission (D22, D129)", async ({ page }) => {
+test("a visitor sends an enquiry; the Owner calls back and converts it into an admission", async ({ page }) => {
   await page.goto(url("/"));
   await page.getByRole("link", { name: "Admission", exact: true }).click();
   await expect(page).toHaveURL(url("/admission"));
@@ -203,7 +203,7 @@ test("W3: a visitor sends an enquiry; the Owner calls back and converts it into 
   await expect(page.getByTestId("enquiry-Tanvir Alam")).toContainText(`Admitted as ${code}`);
 });
 
-test("Website disappears while the module is off and the basic page returns, with the design kept (D5, D21)", async ({ page }) => {
+test("Website disappears while the module is off and the basic page returns, with the design kept", async ({ page }) => {
   await setInstituteModules(INSTITUTE.subdomain, { website: false });
   try {
     await page.goto(url("/"));
@@ -219,7 +219,7 @@ test("Website disappears while the module is off and the basic page returns, wit
   await expect(page.getByTestId("hero-heading")).toHaveText("Your path to GPA 5");
 });
 
-test("W6: the Owner sets the layout, writes an announcement, adds Facebook and switches the site to Bangla (D135, D138, D140)", async ({ page }) => {
+test("the Owner sets the layout, writes an announcement, adds Facebook and switches the site to Bangla", async ({ page }) => {
   await signInAsOwner(page);
   await page.getByRole("link", { name: "Website", exact: true }).click();
 
@@ -272,7 +272,7 @@ test("W6: the Owner sets the layout, writes an announcement, adds Facebook and s
   await expect(form.getByText("শিক্ষার্থীর নাম লিখুন।")).toBeVisible();
 });
 
-test("W7: the Owner adds stats, a reason, a question, a video, an instructor and an achiever (D138, D141)", async ({ page }) => {
+test("the Owner adds stats, a reason, a question, a video, an instructor and an achiever", async ({ page }) => {
   await signInAsOwner(page);
   await page.getByRole("link", { name: "Website", exact: true }).click();
 
@@ -309,7 +309,7 @@ test("W7: the Owner adds stats, a reason, a question, a video, an instructor and
   await expect(page.getByTestId("achievers")).toContainText("Nabila Hossain");
 
   await page.goto(url("/"));
-  await expect(page.getByTestId("public-stat")).toContainText("১,২০০"); // the site is in Bangla since W6
+  await expect(page.getByTestId("public-stat")).toContainText("১,২০০"); // the site is in Bangla by now
   await expect(page.getByTestId("public-feature")).toContainText("Small batches");
   await expect(page.getByTestId("public-achiever")).toContainText("GPA 5.00");
   await page.goto(url("/teachers"));
@@ -327,7 +327,7 @@ test("W7: the Owner adds stats, a reason, a question, a video, an instructor and
   await expect(page.getByTestId("section-video").locator("iframe")).toHaveAttribute("src", /youtube-nocookie\.com\/embed\/dQw4w9WgXcQ/);
 });
 
-test("W8: sections rise into view, stats count up and cards tilt; with 'reduce motion' everything shows at once (D137)", async ({ page }) => {
+test("sections rise into view, stats count up and cards tilt; with 'reduce motion' everything shows at once", async ({ page }) => {
   await page.goto(url("/"));
   const site = page.getByTestId("website");
   await expect(site).toHaveAttribute("data-motion", "on");
@@ -349,9 +349,9 @@ test("W8: sections rise into view, stats count up and cards tilt; with 'reduce m
   await expect(page.getByTestId("public-stat").locator("[data-count-to]")).toHaveText("১,২০০");
 });
 
-test("W10: the website has pages; the Owner chooses what is on Home (D142, D143)", async ({ page }) => {
+test("the website has pages; the Owner chooses what is on Home", async ({ page }) => {
   await page.goto(url("/"));
-  const menu = page.getByRole("navigation", { name: "পাতাসমূহ" }); // the site is in Bangla since W6
+  const menu = page.getByRole("navigation", { name: "পাতাসমূহ" }); // the site is in Bangla by now
   await expect(menu.getByRole("link", { name: "হোম" })).toHaveAttribute("aria-current", "page");
   await menu.getByRole("link", { name: "শিক্ষক" }).click();
   await expect(page).toHaveURL(url("/teachers"));
@@ -381,7 +381,7 @@ test("W10: the website has pages; the Owner chooses what is on Home (D142, D143)
   await expect(page.getByTestId("section-testimonials")).toBeVisible(); // still on its own page
 });
 
-test("W11: the live preview shows unsaved changes, page by page, and saves nothing (D144)", async ({ page, browser }) => {
+test("the live preview shows unsaved changes, page by page, and saves nothing", async ({ page, browser }) => {
   await signInAsOwner(page);
   await page.goto(url("/app/website"));
   await page.getByRole("button", { name: "Live preview" }).click();
@@ -415,7 +415,7 @@ test("W11: the live preview shows unsaved changes, page by page, and saves nothi
   await visitor.close();
 });
 
-test("W12: the Owner picks a ready-made look and switches motion off (D145, D146)", async ({ page }) => {
+test("the Owner picks a ready-made look and switches motion off", async ({ page }) => {
   await signInAsOwner(page);
   await page.goto(url("/app/website"));
   await page.getByRole("button", { name: "Use the Lal-Sabuj Bold look" }).click();
@@ -437,7 +437,7 @@ test("W12: the Owner picks a ready-made look and switches motion off (D145, D146
   expect(await page.locator("[data-reveal]").count()).toBe(0);
 });
 
-test("W13: a banner slider, a toppers ticker and a second video (D147)", async ({ page }) => {
+test("a banner slider, a toppers ticker and a second video", async ({ page }) => {
   await signInAsOwner(page);
   await page.goto(url("/app/website"));
   await page.getByRole("tab", { name: "Content" }).click();

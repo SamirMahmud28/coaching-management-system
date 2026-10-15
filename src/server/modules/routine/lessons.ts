@@ -7,7 +7,7 @@ import { isCalendarDate, todayInDhaka } from "@/lib/dates";
 import { seesAllRoutine, type Viewer } from "./service";
 import "./references";
 
-// Lesson plans (D118–D120): a list of topics per batch subject, with start and target dates and a status set by hand;
+// Lesson plans: a list of topics per batch subject, with start and target dates and a status set by hand;
 // Overdue is derived. The subject's instructor(s) and the office edit; everyone with the routine sees progress.
 
 export type TopicStatus = "PENDING" | "ONGOING" | "COMPLETED";
@@ -16,7 +16,7 @@ const MAX_TOPICS = 200;
 
 /**
  * Batch subjects (of active batches) the viewer can see lesson plans for: all for the office; for an instructor, the
- * subjects of the batches they teach in (D24). `editable` marks the ones they may change: theirs to teach (D120).
+ * subjects of the batches they teach in. `editable` marks the ones they may change: theirs to teach.
  */
 async function scope(db: DbOrTx, viewer: Viewer, onlyIds?: string[]) {
   const all = seesAllRoutine(viewer);
@@ -71,14 +71,14 @@ async function topicsOf(db: DbOrTx, tenantId: string, batchSubjectIds: string[])
     .orderBy(asc(lessonTopics.position), asc(lessonTopics.createdAt));
 }
 
-/** The subjects of these batches (for a student's own batches, D27), unscoped. */
+/** The subjects of these batches (for a student's own batches), unscoped. */
 export async function lessonOverviewFor(db: DbOrTx, tenantId: string, batchIds: string[]) {
   // An office-wide view (no user teaches anything as the nil id).
   const office = { tenantId, userId: "00000000-0000-0000-0000-000000000000", permissions: new Set(["academic.view"]) };
   return (await scope(db, office)).filter((s) => batchIds.includes(s.batchId));
 }
 
-/** Every batch subject the viewer can see, with its plan's progress (D27). */
+/** Every batch subject the viewer can see, with its plan's progress. */
 export async function lessonOverview(db: DbOrTx, viewer: Viewer) {
   const subjectsInScope = await scope(db, viewer);
   const topics = await topicsOf(db, viewer.tenantId, subjectsInScope.map((s) => s.id));
@@ -86,12 +86,12 @@ export async function lessonOverview(db: DbOrTx, viewer: Viewer) {
   return subjectsInScope.map((s) => ({ ...s, progress: summarise(topics.filter((t) => t.batchSubjectId === s.id), today) }));
 }
 
-/** One batch subject's plan: its topics in order, each with Overdue (D119), and the progress. */
+/** One batch subject's plan: its topics in order, each with Overdue, and the progress. */
 export async function lessonPlan(db: DbOrTx, viewer: Viewer, batchSubjectId: string) {
   const bs = await inScope(db, viewer, batchSubjectId, false);
   const today = todayInDhaka();
   const topics = await topicsOf(db, viewer.tenantId, [bs.id]);
-  // Other batches of the same subject the office can copy a plan from (D118).
+  // Other batches of the same subject the office can copy a plan from.
   const sources = bs.editable && viewer.permissions.has("routine.manage") ? (await scope(db, viewer)).filter((s) => s.subjectId === bs.subjectId && s.id !== bs.id) : [];
   return {
     ...bs,
@@ -147,7 +147,7 @@ async function topicInScope(tx: DbOrTx, viewer: Viewer, topicId: string) {
   return topic;
 }
 
-/** Edits a topic or sets its status (D119): Completed records today (or the given date); leaving Completed clears it. */
+/** Edits a topic or sets its status: Completed records today (or the given date); leaving Completed clears it. */
 export async function updateTopic(db: DbOrTx, viewer: Viewer, topicId: string, input: { title?: string; startDate?: string | null; targetDate?: string | null; status?: TopicStatus; completedOn?: string | null }) {
   const clean = cleanTopic(input, true);
   if (input.status !== undefined && !STATUSES.includes(input.status)) throw new ValidationError("VALIDATION_STATUS", "Choose Pending, Ongoing or Completed.", { field: "status" });
@@ -191,7 +191,7 @@ export async function reorderTopics(db: DbOrTx, viewer: Viewer, batchSubjectId: 
   });
 }
 
-/** The office copies another batch's plan of the same subject (D118): titles only, all Pending, no dates; appended. */
+/** The office copies another batch's plan of the same subject: titles only, all Pending, no dates; appended. */
 export async function copyPlan(db: DbOrTx, viewer: Viewer, batchSubjectId: string, fromBatchSubjectId: string) {
   if (!viewer.permissions.has("routine.manage")) throw new ForbiddenError();
   return inTransaction(db, async (tx) => {
