@@ -157,7 +157,7 @@ export function StudentProfilePage({ id, perms }: { id: string; perms: StudentPe
               {student.memberships.length === 0 ? (
                 <p className="text-sm text-muted-foreground">Not in any batch yet.</p>
               ) : (
-                <ul className="divide-y rounded-md border">
+                <ul className="surface-glass-dense divide-y rounded-md border">
                   {student.memberships.map((m) => (
                     <MembershipItem key={m.id} membership={m} canManage={perms.canManageBatches} onChanged={refresh} />
                   ))}

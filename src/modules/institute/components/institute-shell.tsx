@@ -1,6 +1,5 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
 import {
   BookOpen,
   CalendarCheck,
@@ -26,8 +25,7 @@ import { AppShell, type NavItem } from "@/components/shell/app-shell";
 import type { PaletteAction, PaletteSearch } from "@/components/shell/command-palette";
 import type { AppTheme } from "@/lib/app-themes";
 import type { PortalKind } from "@/server/core/rbac/portal";
-import { enquiriesApi, instituteApi, leaveApi, studentsApi } from "../api";
-import { instituteKeys } from "../keys";
+import { instituteApi, studentsApi } from "../api";
 import { PAID_MODULE_NAV } from "../modules";
 
 const PORTAL_BADGE: Record<PortalKind, string | null> = { admin: null, instructor: "Instructor portal", student: "Student portal" };
@@ -92,27 +90,6 @@ function buildActions(portal: PortalKind, permissions: ReadonlySet<string>): Pal
   ];
 }
 
-/** "Needs attention" counts beside menu items, from lists the user can already open; refreshed with those pages. */
-function useAttentionCounts(portal: PortalKind, permissions: ReadonlySet<string>) {
-  const admin = portal === "admin";
-  const leave = useQuery({
-    queryKey: instituteKeys.leave({ status: "PENDING" }),
-    queryFn: () => leaveApi.list({ status: "PENDING" }),
-    enabled: admin && permissions.has("leave.manage"),
-    staleTime: 60_000,
-  });
-  const enquiries = useQuery({
-    queryKey: instituteKeys.website("enquiries", "NEW"),
-    queryFn: () => enquiriesApi.list("NEW"),
-    enabled: admin && permissions.has("website.manage"),
-    staleTime: 60_000,
-  });
-  return {
-    [PAID_MODULE_NAV.attendance.href]: leave.data?.length ?? 0,
-    [PAID_MODULE_NAV.website.href]: enquiries.data?.counts.NEW ?? 0,
-  } as Record<string, number>;
-}
-
 export function InstituteShell({
   portal,
   instituteName,
@@ -136,8 +113,7 @@ export function InstituteShell({
 }) {
   const router = useRouter();
   const granted = new Set(permissions);
-  const counts = useAttentionCounts(portal, granted);
-  const nav = buildNav(portal, granted).map((n) => (counts[n.href] ? { ...n, badge: counts[n.href] } : n));
+  const nav = buildNav(portal, granted);
   const badge = PORTAL_BADGE[portal];
 
   // Office phones: Home, Students and the two busiest daily pages the user has; "More" opens the full menu.

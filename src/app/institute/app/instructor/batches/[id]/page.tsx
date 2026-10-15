@@ -56,7 +56,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
             {batch.students.length === 0 ? (
               <p className="text-sm text-muted-foreground">No students in this batch yet.</p>
             ) : (
-              <ul className="divide-y rounded-md border" data-testid="roster">
+              <ul className="surface-glass-dense divide-y rounded-md border" data-testid="roster">
                 {batch.students.map((s) => (
                   <li key={s.id} className="flex items-center gap-3 px-3 py-2 text-sm">
                     <span className="w-8 font-mono text-muted-foreground">{s.rollNumber ?? "—"}</span>

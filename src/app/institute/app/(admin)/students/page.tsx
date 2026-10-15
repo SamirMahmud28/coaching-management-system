@@ -11,6 +11,7 @@ export default async function Page() {
       canAdmit={permissions.has("students.create")}
       canSeeContacts={permissions.has("students.contact.view")}
       canSeeBatches={permissions.has("academic.view")}
+      canViewFees={permissions.has("fees.view")}
     />
   );
 }

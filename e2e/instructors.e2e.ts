@@ -48,7 +48,7 @@ test("the Owner adds an instructor from the Instructors page", async ({ page }) 
   await expect(page).toHaveURL(url("/app"));
 
   await page.getByRole("navigation").first().getByRole("link", { name: "Instructors" }).click();
-  await expect(page.getByRole("heading", { name: "Instructors", level: 1 })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Instructor List", level: 1 })).toBeVisible();
   await page.getByRole("button", { name: "New instructor" }).first().click();
   await page.getByLabel("Full name").fill(INSTRUCTOR.name);
   await page.getByLabel("Mobile number").fill("+880 1911-223344");

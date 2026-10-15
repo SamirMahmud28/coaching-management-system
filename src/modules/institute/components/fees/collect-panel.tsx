@@ -110,7 +110,7 @@ export function CollectPanel({
       </CardHeader>
       <CardContent className="space-y-4">
         {lastReceipt && (
-          <p className="rounded-md border border-dashed p-3 text-sm" role="status">
+          <p className="bg-card/50 rounded-md border border-dashed p-3 text-sm" role="status">
             Receipt <span className="font-mono">{lastReceipt.label}</span> recorded.{" "}
             <a href={receiptUrl(lastReceipt.id)} target="_blank" rel="noreferrer" className="font-medium underline">
               Print receipt
@@ -146,7 +146,7 @@ export function CollectPanel({
             </ul>
 
             {(waivers.length > 0 || fines.length > 0) && (
-              <div className="space-y-3 rounded-md border p-3 text-sm" data-testid="collect-adjustments">
+              <div className="surface-glass-item space-y-3 rounded-md border p-3 text-sm" data-testid="collect-adjustments">
                 {waivers.map((w, i) => (
                   <div key={`w${i}`} className="grid gap-2 sm:grid-cols-[2fr_1fr_1fr_2fr_auto] sm:items-end">
                     <FormField id={`waiver-charge-${i}`} label="Waive on">

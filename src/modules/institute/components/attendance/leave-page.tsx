@@ -94,7 +94,7 @@ export function LeavePage({ canReport = false }: { canReport?: boolean }) {
       ) : list.data.length === 0 ? (
         <EmptyState icon={CalendarOff} title={filter === "PENDING" ? "Nothing is waiting for a decision" : "No leave here"} description="Students apply in their portal; you can also enter leave for a student." />
       ) : (
-        <ul className="divide-y rounded-lg border" data-testid="leave-list">
+        <ul className="surface-glass-dense divide-y rounded-lg border" data-testid="leave-list">
           {list.data.map((l) => (
             <li key={l.id} className="flex flex-wrap items-start gap-3 px-4 py-3" data-testid={`leave-${l.student_code}`}>
               <div className="min-w-0 flex-1 space-y-0.5 text-sm">
@@ -194,7 +194,7 @@ export function LeavePage({ canReport = false }: { canReport?: boolean }) {
       >
         <div className="space-y-3">
           {student ? (
-            <div className="flex items-center gap-2 rounded-md border p-2 text-sm">
+            <div className="surface-glass-item flex items-center gap-2 rounded-md border p-2 text-sm">
               <span className="flex-1">
                 {student.name} <span className="text-muted-foreground">· {student.code}</span>
               </span>
@@ -208,7 +208,7 @@ export function LeavePage({ canReport = false }: { canReport?: boolean }) {
             </FormField>
           )}
           {!student && found.data && (
-            <ul className="max-h-48 divide-y overflow-y-auto rounded-md border text-sm">
+            <ul className="surface-glass-dense max-h-48 divide-y overflow-y-auto rounded-md border text-sm">
               {found.data.items.length === 0 && <li className="px-3 py-2 text-muted-foreground">No student found.</li>}
               {found.data.items.map((s) => (
                 <li key={s.id}>

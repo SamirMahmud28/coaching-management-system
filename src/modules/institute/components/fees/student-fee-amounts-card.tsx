@@ -40,7 +40,7 @@ export function StudentFeeAmountsCard({ studentId, canAdjust }: { studentId: str
         ) : !query.data?.length ? (
           <p className="text-sm text-muted-foreground">No fees for this student&apos;s current courses.</p>
         ) : (
-          <ul className="divide-y rounded-md border" data-testid="fee-amounts">
+          <ul className="surface-glass-dense divide-y rounded-md border" data-testid="fee-amounts">
             {query.data.map((f) => (
               <li key={f.fee_item_id} className="flex flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2 text-sm">
                 <div className="min-w-0 flex-1">

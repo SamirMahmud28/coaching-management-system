@@ -33,6 +33,7 @@ function inShell(node: React.ReactNode, theme: "MIDNIGHT" | "PLUM" = "MIDNIGHT")
 }
 
 const shellRoot = () => document.body.querySelector(".min-h-screen")!;
+const backdrop = () => document.body.querySelector(".app-backdrop")!;
 
 describe("ThemePicker", () => {
   it("lists the five themes, marking the current one", () => {
@@ -72,15 +73,15 @@ describe("ThemePicker", () => {
     inShell(<ThemePicker value="MIDNIGHT" onSave={onSave} livePreview />);
     const paper = screen.getByRole("switch", { name: "Paper background" });
     expect(paper).not.toBeChecked();
-    expect(shellRoot()).not.toHaveAttribute("data-paper");
+    expect(backdrop()).not.toHaveAttribute("data-paper");
 
     await userEvent.click(screen.getByRole("radio", { name: /Classic Amber/ }));
     expect(paper).toBeChecked(); // automatic
-    expect(shellRoot()).toHaveAttribute("data-paper", "on");
+    expect(backdrop()).toHaveAttribute("data-paper", "on");
 
     await userEvent.click(paper);
     expect(paper).not.toBeChecked();
-    expect(shellRoot()).not.toHaveAttribute("data-paper");
+    expect(backdrop()).not.toHaveAttribute("data-paper");
     await userEvent.click(screen.getByRole("button", { name: "Save theme" }));
     expect(onSave).toHaveBeenCalledWith("AMBER", false);
   });
@@ -96,6 +97,7 @@ describe("AppShell theme", () => {
   it("puts the institute's theme on the shell and on <html>, and removes it on unmount", () => {
     const { unmount } = inShell(<p>Body</p>, "PLUM");
     expect(shellRoot()).toHaveAttribute("data-app-theme", "plum");
+    expect(backdrop()).toHaveAttribute("aria-hidden", "true");
     expect(document.documentElement.dataset.appTheme).toBe("plum");
     unmount();
     expect(document.documentElement.dataset.appTheme).toBeUndefined();

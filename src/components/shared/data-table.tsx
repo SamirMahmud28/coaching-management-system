@@ -96,18 +96,18 @@ export function DataTable<T>({
                 <button
                   type="button"
                   onClick={() => onRowClick(row)}
-                  className="block w-full cursor-pointer rounded-xl border bg-card p-4 text-left shadow-xs transition-all outline-none hover:border-primary/40 hover:shadow-md focus-visible:ring-[3px] focus-visible:ring-ring/50 active:scale-[0.99]"
+                  className="surface-glass-item block w-full cursor-pointer rounded-xl border p-4 text-left transition-all outline-none hover:border-primary/40 hover:shadow-md focus-visible:ring-[3px] focus-visible:ring-ring/50 active:scale-[0.99]"
                 >
                   {card(row)}
                 </button>
               ) : (
-                <div className="rounded-xl border bg-card p-4 shadow-xs">{card(row)}</div>
+                <div className="surface-glass-item rounded-xl border p-4">{card(row)}</div>
               )}
             </li>
           ))}
         </ul>
       ) : (
-        <div className="overflow-x-auto rounded-xl border bg-card shadow-xs">
+        <div className="surface-glass-dense overflow-x-auto rounded-xl border">
           <Table>
             {caption && <caption className="sr-only">{caption}</caption>}
             <TableHeader className="bg-muted/50">

@@ -55,7 +55,7 @@ export function CollectPage({ nav, canWaive, canFine }: { nav: FeesNav; canWaive
 
       {student ? (
         <div className="space-y-4">
-          <div className="flex flex-wrap items-center gap-3 rounded-lg border p-3" data-testid="collect-student">
+          <div className="surface-glass-item flex flex-wrap items-center gap-3 rounded-lg border p-3" data-testid="collect-student">
             <div className="min-w-0 flex-1">
               <p className="font-medium">
                 {student.name} <span className="font-normal text-muted-foreground">· {student.code}</span>
@@ -122,7 +122,7 @@ export function CollectPage({ nav, canWaive, canFine }: { nav: FeesNav; canWaive
           ) : found.data.items.length === 0 ? (
             <p className="text-sm text-muted-foreground">No student found.</p>
           ) : (
-            <ul className="divide-y rounded-lg border" data-testid="collect-results">
+            <ul className="surface-glass-dense divide-y rounded-lg border" data-testid="collect-results">
               {found.data.items.map((s) => (
                 <li key={s.id}>
                   <button

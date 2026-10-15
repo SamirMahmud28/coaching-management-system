@@ -48,7 +48,7 @@ export function StatsCard({ form }: { form: Form }) {
       </CardHeader>
       <CardContent className="space-y-3">
         {list.fields.map((f, i) => (
-          <div key={f.id} data-testid="stat-row" className="flex flex-wrap items-start gap-3 rounded-md border p-3">
+          <div key={f.id} data-testid="stat-row" className="surface-glass-item flex flex-wrap items-start gap-3 rounded-md border p-3">
             <FormField id={`stat-${i}-value`} label="Number" error={errors?.[i]?.value?.message} className="w-28">
               <Input id={`stat-${i}-value`} inputMode="numeric" placeholder="1200" {...form.register(`stats.${i}.value`)} />
             </FormField>
@@ -82,7 +82,7 @@ export function FeaturesCard({ form }: { form: Form }) {
       </CardHeader>
       <CardContent className="space-y-3">
         {list.fields.map((f, i) => (
-          <div key={f.id} data-testid="feature-row" className="grid gap-3 rounded-md border p-3 sm:grid-cols-[12rem_1fr_auto]">
+          <div key={f.id} data-testid="feature-row" className="surface-glass-item grid gap-3 rounded-md border p-3 sm:grid-cols-[12rem_1fr_auto]">
             <FormField id={`feature-${i}-icon`} label="Icon">
               <Controller
                 control={form.control}
@@ -144,7 +144,7 @@ export function FaqCard({ form }: { form: Form }) {
       </CardHeader>
       <CardContent className="space-y-3">
         {list.fields.map((f, i) => (
-          <div key={f.id} data-testid="faq-row" className="flex gap-3 rounded-md border p-3">
+          <div key={f.id} data-testid="faq-row" className="surface-glass-item flex gap-3 rounded-md border p-3">
             <div className="min-w-0 flex-1 space-y-3">
               <FormField id={`faq-${i}-question`} label="Question" error={errors?.[i]?.question?.message}>
                 <Input id={`faq-${i}-question`} maxLength={150} {...form.register(`faqs.${i}.question`)} />
@@ -179,7 +179,7 @@ export function VideosCard({ form }: { form: Form }) {
       </CardHeader>
       <CardContent className="space-y-3">
         {list.fields.map((f, i) => (
-          <div key={f.id} data-testid="video-row" className="flex flex-wrap items-start gap-3 rounded-md border p-3">
+          <div key={f.id} data-testid="video-row" className="surface-glass-item flex flex-wrap items-start gap-3 rounded-md border p-3">
             <FormField id={`video-${i}-url`} label="YouTube address" hint="From YouTube's Share button." error={errors?.[i]?.url?.message} className="min-w-64 flex-1">
               <Input id={`video-${i}-url`} inputMode="url" placeholder="https://youtu.be/…" {...form.register(`videos.${i}.url`)} />
             </FormField>
@@ -213,7 +213,7 @@ export function SlidesCard({ form }: { form: Form }) {
       </CardHeader>
       <CardContent className="space-y-3">
         {list.fields.map((f, i) => (
-          <div key={f.id} data-testid="slide-row" className="grid gap-3 rounded-md border p-3 sm:grid-cols-[10rem_1fr_auto]">
+          <div key={f.id} data-testid="slide-row" className="surface-glass-item grid gap-3 rounded-md border p-3 sm:grid-cols-[10rem_1fr_auto]">
             <FormField id={`slide-${i}-image`} label={`Slide ${i + 2} picture`} error={errors?.[i]?.image_file_id?.message}>
               <Controller
                 control={form.control}

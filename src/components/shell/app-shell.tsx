@@ -154,12 +154,12 @@ export function AppShell({
     <AppThemeContext.Provider value={themeControl}>
     <div
       data-app-theme={themeAttribute(shown)}
-      data-paper={paperOn ? "on" : undefined}
       className={cn(
-        "flex min-h-screen flex-1 bg-background text-foreground",
+        "isolate flex min-h-screen flex-1 text-foreground",
         tabItems.length > 1 && "[--app-bottom-inset:calc(4rem+env(safe-area-inset-bottom))] lg:[--app-bottom-inset:0px]",
       )}
     >
+      <div className="app-backdrop" data-paper={paperOn ? "on" : undefined} aria-hidden="true" />
       <a
         href="#main"
         className="sr-only z-50 rounded-md bg-card px-3 py-2 text-sm font-medium shadow-lg focus:not-sr-only focus:fixed focus:top-3 focus:left-3"
@@ -167,12 +167,14 @@ export function AppShell({
         Skip to content
       </a>
 
-      <aside
-        className={cn(
-          "sticky top-0 hidden h-screen shrink-0 flex-col border-r bg-sidebar text-sidebar-foreground transition-[width] duration-200 lg:flex print:hidden",
-          collapsed ? "w-[4.5rem]" : "w-64",
-        )}
-      >
+      {/* A floating panel resting on the page (D162): inset from the edges, rounded, with a soft shadow. */}
+      <aside className="sticky top-0 hidden h-screen shrink-0 py-3 pl-3 lg:flex print:hidden">
+        <div
+          className={cn(
+            "glass-sidebar flex h-full flex-col overflow-hidden rounded-2xl border border-sidebar-border text-sidebar-foreground transition-[width] duration-200",
+            collapsed ? "w-[4.5rem]" : "w-60",
+          )}
+        >
         <div className={cn("flex h-16 items-center border-b border-sidebar-border", collapsed ? "justify-center px-2" : "px-4")}>
           <BrandBlock brand={brand} compact={collapsed} />
         </div>
@@ -189,10 +191,16 @@ export function AppShell({
             {!collapsed && "Collapse"}
           </Button>
         </div>
+        </div>
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="glass sticky top-0 z-30 flex h-16 items-center gap-2 border-b px-3 sm:px-4 md:px-6 print:hidden">
+        {/* A floating bar matching the sidebar panel (D162): inset 12 px, rounded, aligned with the sidebar's brand row. */}
+        {/* The gap above the bar blurs content out as it scrolls up behind it. */}
+        <div className="sticky top-0 z-30 px-3 pt-3 print:hidden">
+          {/* No colour of its own: it only blurs what passes behind, fading out downwards, so it takes the paper's colour. */}
+          <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-10 backdrop-blur-md [mask-image:linear-gradient(to_bottom,black_40%,transparent)]" />
+        <header className="glass flex h-16 items-center gap-2 rounded-2xl border border-border/70 px-3 sm:px-4">
           <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Open navigation" onClick={() => setMobileOpen(true)}>
             <Menu />
           </Button>
@@ -277,6 +285,7 @@ export function AppShell({
             </DropdownMenu>
           </div>
         </header>
+        </div>
 
         <div className="print:hidden">{banner}</div>
         <main
@@ -289,7 +298,7 @@ export function AppShell({
       </div>
 
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-        <SheetContent side="left" className="w-72 gap-0 border-sidebar-border bg-sidebar p-0 text-sidebar-foreground">
+        <SheetContent side="left" className="glass-sidebar w-72 gap-0 border-sidebar-border p-0 text-sidebar-foreground">
           <SheetHeader className="h-16 justify-center border-b border-sidebar-border px-4">
             <SheetTitle asChild>
               <div>

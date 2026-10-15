@@ -80,7 +80,7 @@ export function LayoutTab({ designField, design, theme, headingFont, brand }: { 
                 role="radio"
                 aria-checked={hero.value === o.value}
                 onClick={() => hero.onChange(o.value)}
-                className={cn("space-y-1.5 rounded-lg border p-2 text-left text-xs", hero.value === o.value ? "border-primary ring-2 ring-primary/40" : "hover:bg-muted/50")}
+                className={cn("surface-glass-item space-y-1.5 rounded-lg border p-2 text-left text-xs", hero.value === o.value ? "border-primary ring-2 ring-primary/40" : "hover:bg-muted/50")}
               >
                 <HeroThumb kind={o.value === "THEME" ? THEMES[theme].hero : o.value} theme={theme} headingFont={headingFont} design={design} brand={brand} />
                 <span className="block font-medium">{o.label}</span>
@@ -141,7 +141,7 @@ export function ContentTab({ form, designField, brandPhone }: { form: Form; desi
                 role="radio"
                 aria-checked={language.value === o.value}
                 onClick={() => language.onChange(o.value)}
-                className={cn("space-y-1 rounded-lg border p-3 text-left", language.value === o.value ? "border-primary ring-2 ring-primary/40" : "hover:bg-muted/50")}
+                className={cn("surface-glass-item space-y-1 rounded-lg border p-3 text-left", language.value === o.value ? "border-primary ring-2 ring-primary/40" : "hover:bg-muted/50")}
               >
                 <span className="block font-medium">{o.label}</span>
                 <span lang={o.value === "BN" ? "bn" : "en"} className="block text-xs text-muted-foreground">
@@ -282,7 +282,7 @@ export function SectionsTab({ form, language }: { form: Form; language: WebsiteD
               field.onChange(next);
             };
             return (
-              <ol data-testid="website-sections" className="divide-y rounded-md border">
+              <ol data-testid="website-sections" className="surface-glass-dense divide-y rounded-md border">
                 {field.value.map((s, i) => {
                   const meta = SECTION_LABELS[s.key];
                   const open = renaming === s.key;

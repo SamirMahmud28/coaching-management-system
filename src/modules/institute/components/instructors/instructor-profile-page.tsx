@@ -141,7 +141,7 @@ function Details({ instructor }: { instructor: InstructorRow }) {
     ["Added", formatDate(instructor.created_at)],
   ];
   return (
-    <dl className="grid gap-x-8 gap-y-3 rounded-lg border p-4 text-sm sm:grid-cols-[10rem_1fr]">
+    <dl className="surface-glass-item grid gap-x-8 gap-y-3 rounded-lg border p-4 text-sm sm:grid-cols-[10rem_1fr]">
       {rows.map(([label, value]) => (
         <div key={label} className="contents">
           <dt className="text-muted-foreground">{label}</dt>

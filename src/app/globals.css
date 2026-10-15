@@ -138,6 +138,11 @@
   --elevation-lg: 0 16px 40px -12px rgb(15 22 49 / 0.18);
   --elevation-xl: 0 28px 60px -16px rgb(15 22 49 / 0.25);
   --elevation-soft: 0 10px 35px rgb(15 22 49 / 0.07);
+  /* Glass (D159): the sidebar's tint and how opaque it is; tested over the brightest backdrop. */
+  --sidebar-glass-tint: #0f1631;
+  --sidebar-glass-alpha: 88%;
+  --glass-edge: rgb(255 255 255 / 0.6);
+  --glass-highlight: rgb(255 255 255 / 0.75);
 }
 
 .dark,
@@ -186,6 +191,11 @@
   --elevation-lg: 0 16px 40px -12px rgb(0 0 0 / 0.6);
   --elevation-xl: 0 28px 60px -16px rgb(0 0 0 / 0.7);
   --elevation-soft: 0 10px 35px rgb(0 0 0 / 0.35);
+  /* Glass (D159): the sidebar's tint and how opaque it is; tested over the brightest backdrop. */
+  --sidebar-glass-tint: #080c1a;
+  --sidebar-glass-alpha: 82%;
+  --glass-edge: rgb(255 255 255 / 0.08);
+  --glass-highlight: rgb(255 255 255 / 0.06);
 }
 
 /*
@@ -221,18 +231,21 @@
   --chart-3: #8b5cf6;
   --chart-4: #10b981;
   --chart-5: #f43f5e;
-  --sidebar: #ffffff;
-  --sidebar-foreground: #44403c;
-  --sidebar-muted-foreground: #736b64;
+  --sidebar: #2a1f17;
+  --sidebar-foreground: #f5ead8;
+  --sidebar-muted-foreground: #c9b59a;
   --sidebar-primary: #feac00;
   --sidebar-primary-foreground: #1c1204;
-  --sidebar-accent: #fff4d6;
-  --sidebar-accent-foreground: #7c4a03;
-  --sidebar-hover: #f2f0ee;
-  --sidebar-border: #e7e5e4;
-  --sidebar-ring: #d97706;
+  --sidebar-accent: #4a3420;
+  --sidebar-accent-foreground: #fcd34d;
+  --sidebar-hover: rgb(255 255 255 / 0.07);
+  --sidebar-border: rgb(255 255 255 / 0.09);
+  --sidebar-ring: #fbbf24;
   --brand-gradient: linear-gradient(135deg, #feac00, #f97316);
   --brand-glow: radial-gradient(60rem 30rem at 0% 0%, rgb(254 172 0 / 0.14), transparent 60%), radial-gradient(50rem 26rem at 100% 0%, rgb(249 115 22 / 0.08), transparent 60%);
+  /* Glass (D159): the sidebar's tint and how opaque it is; tested over the brightest backdrop. */
+  --sidebar-glass-tint: #2a1f17;
+  --sidebar-glass-alpha: 92%;
 }
 
 .dark[data-app-theme="amber"],
@@ -264,17 +277,20 @@
   --chart-3: #a78bfa;
   --chart-4: #34d399;
   --chart-5: #fb7185;
-  --sidebar: #110f0e;
-  --sidebar-foreground: #d6d3d1;
-  --sidebar-muted-foreground: #a29b95;
+  --sidebar: #1a130d;
+  --sidebar-foreground: #f5ead8;
+  --sidebar-muted-foreground: #c9b59a;
   --sidebar-primary: #feac00;
   --sidebar-primary-foreground: #1c1204;
-  --sidebar-accent: #2a1f0a;
+  --sidebar-accent: #3a2816;
   --sidebar-accent-foreground: #fcd34d;
-  --sidebar-hover: rgb(255 255 255 / 0.05);
-  --sidebar-border: rgb(255 255 255 / 0.08);
+  --sidebar-hover: rgb(255 255 255 / 0.07);
+  --sidebar-border: rgb(255 255 255 / 0.09);
   --sidebar-ring: #fbbf24;
   --brand-glow: radial-gradient(60rem 30rem at 0% 0%, rgb(254 172 0 / 0.1), transparent 60%), radial-gradient(50rem 26rem at 100% 0%, rgb(249 115 22 / 0.06), transparent 60%);
+  /* Glass (D159): the sidebar's tint and how opaque it is; tested over the brightest backdrop. */
+  --sidebar-glass-tint: #1a130d;
+  --sidebar-glass-alpha: 88%;
 }
 
 [data-app-theme="indigo"] {
@@ -305,18 +321,21 @@
   --chart-3: #f59e0b;
   --chart-4: #14b8a6;
   --chart-5: #f43f5e;
-  --sidebar: #ffffff;
-  --sidebar-foreground: #2e2f4f;
-  --sidebar-muted-foreground: #666985;
-  --sidebar-primary: #4f46e5;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #eef0ff;
-  --sidebar-accent-foreground: #3730a3;
-  --sidebar-hover: #f3f3f9;
-  --sidebar-border: #e4e4ef;
-  --sidebar-ring: #6366f1;
+  --sidebar: #1b1d3a;
+  --sidebar-foreground: #e6e8f7;
+  --sidebar-muted-foreground: #a9aed4;
+  --sidebar-primary: #a5b4fc;
+  --sidebar-primary-foreground: #14142b;
+  --sidebar-accent: #2f3270;
+  --sidebar-accent-foreground: #c7d2fe;
+  --sidebar-hover: rgb(255 255 255 / 0.07);
+  --sidebar-border: rgb(255 255 255 / 0.09);
+  --sidebar-ring: #a5b4fc;
   --brand-gradient: linear-gradient(135deg, #4f46e5, #7c3aed);
   --brand-glow: radial-gradient(60rem 30rem at 0% 0%, rgb(79 70 229 / 0.12), transparent 60%), radial-gradient(50rem 26rem at 100% 0%, rgb(168 85 247 / 0.1), transparent 60%);
+  /* Glass (D159): the sidebar's tint and how opaque it is; tested over the brightest backdrop. */
+  --sidebar-glass-tint: #1b1d3a;
+  --sidebar-glass-alpha: 92%;
 }
 
 .dark[data-app-theme="indigo"],
@@ -348,18 +367,21 @@
   --chart-3: #fbbf24;
   --chart-4: #2dd4bf;
   --chart-5: #fb7185;
-  --sidebar: #0a0a18;
-  --sidebar-foreground: #d4d5ea;
-  --sidebar-muted-foreground: #8b8daa;
-  --sidebar-primary: #818cf8;
-  --sidebar-primary-foreground: #0c0c1d;
-  --sidebar-accent: #1f1f4a;
+  --sidebar: #0f1024;
+  --sidebar-foreground: #e6e8f7;
+  --sidebar-muted-foreground: #a9aed4;
+  --sidebar-primary: #a5b4fc;
+  --sidebar-primary-foreground: #14142b;
+  --sidebar-accent: #252760;
   --sidebar-accent-foreground: #c7d2fe;
-  --sidebar-hover: rgb(255 255 255 / 0.05);
-  --sidebar-border: rgb(255 255 255 / 0.07);
-  --sidebar-ring: #818cf8;
+  --sidebar-hover: rgb(255 255 255 / 0.07);
+  --sidebar-border: rgb(255 255 255 / 0.09);
+  --sidebar-ring: #a5b4fc;
   --brand-gradient: linear-gradient(135deg, #6366f1, #8b5cf6);
   --brand-glow: radial-gradient(60rem 30rem at 0% 0%, rgb(99 102 241 / 0.14), transparent 60%), radial-gradient(50rem 26rem at 100% 0%, rgb(168 85 247 / 0.08), transparent 60%);
+  /* Glass (D159): the sidebar's tint and how opaque it is; tested over the brightest backdrop. */
+  --sidebar-glass-tint: #0f1024;
+  --sidebar-glass-alpha: 88%;
 }
 
 [data-app-theme="emerald"] {
@@ -392,7 +414,7 @@
   --chart-5: #f43f5e;
   --sidebar: #0b3b36;
   --sidebar-foreground: #d6ebe7;
-  --sidebar-muted-foreground: #94bcb5;
+  --sidebar-muted-foreground: #a9cfc8;
   --sidebar-primary: #f5a700;
   --sidebar-primary-foreground: #1a1300;
   --sidebar-accent: #145049;
@@ -402,6 +424,9 @@
   --sidebar-ring: #f5a700;
   --brand-gradient: linear-gradient(135deg, #0f766e, #14b8a6);
   --brand-glow: radial-gradient(60rem 30rem at 0% 0%, rgb(13 148 136 / 0.12), transparent 60%), radial-gradient(50rem 26rem at 100% 0%, rgb(245 167 0 / 0.08), transparent 60%);
+  /* Glass (D159): the sidebar's tint and how opaque it is; tested over the brightest backdrop. */
+  --sidebar-glass-tint: #0b3b36;
+  --sidebar-glass-alpha: 88%;
 }
 
 .dark[data-app-theme="emerald"],
@@ -445,6 +470,9 @@
   --sidebar-ring: #fbbf24;
   --brand-gradient: linear-gradient(135deg, #14b8a6, #0d9488);
   --brand-glow: radial-gradient(60rem 30rem at 0% 0%, rgb(45 212 191 / 0.1), transparent 60%), radial-gradient(50rem 26rem at 100% 0%, rgb(251 191 36 / 0.06), transparent 60%);
+  /* Glass (D159): the sidebar's tint and how opaque it is; tested over the brightest backdrop. */
+  --sidebar-glass-tint: #04100e;
+  --sidebar-glass-alpha: 82%;
 }
 
 [data-app-theme="plum"] {
@@ -487,6 +515,9 @@
   --sidebar-ring: #fb7185;
   --brand-gradient: linear-gradient(135deg, #7c3aed, #fb7185);
   --brand-glow: radial-gradient(60rem 30rem at 0% 0%, rgb(124 58 237 / 0.12), transparent 60%), radial-gradient(50rem 26rem at 100% 0%, rgb(251 113 133 / 0.1), transparent 60%);
+  /* Glass (D159): the sidebar's tint and how opaque it is; tested over the brightest backdrop. */
+  --sidebar-glass-tint: #2e1065;
+  --sidebar-glass-alpha: 88%;
 }
 
 .dark[data-app-theme="plum"],
@@ -530,6 +561,9 @@
   --sidebar-ring: #fda4af;
   --brand-gradient: linear-gradient(135deg, #8b5cf6, #f472b6);
   --brand-glow: radial-gradient(60rem 30rem at 0% 0%, rgb(139 92 246 / 0.14), transparent 60%), radial-gradient(50rem 26rem at 100% 0%, rgb(251 113 133 / 0.07), transparent 60%);
+  /* Glass (D159): the sidebar's tint and how opaque it is; tested over the brightest backdrop. */
+  --sidebar-glass-tint: #0d0616;
+  --sidebar-glass-alpha: 82%;
 }
 
 @utility bg-brand-gradient {
@@ -543,9 +577,9 @@
 
 /* Frosted surfaces for the top bar and floating bars. */
 @utility glass {
-  background-color: color-mix(in srgb, var(--background) 78%, transparent);
-  backdrop-filter: blur(14px) saturate(1.5);
-  -webkit-backdrop-filter: blur(14px) saturate(1.5);
+  background-color: color-mix(in srgb, var(--background) 68%, transparent);
+  backdrop-filter: blur(20px) saturate(1.6);
+  box-shadow: inset 0 1px 0 0 var(--glass-highlight), var(--elevation-md);
 }
 
 /*
@@ -553,13 +587,13 @@
  * tables, inputs and the sidebar keep their solid surfaces, so text contrast is unchanged. Not printed.
  */
 :root {
-  --paper-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.36 0 0 0 0 0.27 0 0 0 0 0.15 0.11 0 0 0 0'/%3E%3C/filter%3E%3Cfilter id='m'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.012' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.36 0 0 0 0 0.27 0 0 0 0 0.15 0.05 0 0 0 0'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23m)'/%3E%3Crect width='100%' height='100%' filter='url(%23g)'/%3E%3C/svg%3E");
+  --paper-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='320'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.52 0 0 0 0 0.44 0 0 0 0 0.33 0.26 0 0 0 0'/%3E%3C/filter%3E%3Cfilter id='h'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.05 .2' numOctaves='2' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.52 0 0 0 0 0.44 0 0 0 0 0.33 0.14 0 0 0 -0.063'/%3E%3C/filter%3E%3Cfilter id='v'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.2 .05' numOctaves='2' seed='11' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.52 0 0 0 0 0.44 0 0 0 0 0.33 0.14 0 0 0 -0.063'/%3E%3C/filter%3E%3Cfilter id='m'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.012' numOctaves='2' seed='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.52 0 0 0 0 0.44 0 0 0 0 0.33 0.08 0 0 0 0'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23m)'/%3E%3Crect width='100%' height='100%' filter='url(%23h)'/%3E%3Crect width='100%' height='100%' filter='url(%23v)'/%3E%3Crect width='100%' height='100%' filter='url(%23g)'/%3E%3C/svg%3E");
 }
 .dark {
-  --paper-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 0.96 0 0 0 0 0.88 0.05 0 0 0 0'/%3E%3C/filter%3E%3Cfilter id='m'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.012' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 0.96 0 0 0 0 0.88 0.03 0 0 0 0'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23m)'/%3E%3Crect width='100%' height='100%' filter='url(%23g)'/%3E%3C/svg%3E");
+  --paper-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='320'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 0.95 0 0 0 0 0.86 0.1 0 0 0 0'/%3E%3C/filter%3E%3Cfilter id='h'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.05 .2' numOctaves='2' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 0.95 0 0 0 0 0.86 0.06 0 0 0 -0.027'/%3E%3C/filter%3E%3Cfilter id='v'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.2 .05' numOctaves='2' seed='11' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 0.95 0 0 0 0 0.86 0.06 0 0 0 -0.027'/%3E%3C/filter%3E%3Cfilter id='m'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.012' numOctaves='2' seed='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 0.95 0 0 0 0 0.86 0.04 0 0 0 0'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23m)'/%3E%3Crect width='100%' height='100%' filter='url(%23h)'/%3E%3Crect width='100%' height='100%' filter='url(%23v)'/%3E%3Crect width='100%' height='100%' filter='url(%23g)'/%3E%3C/svg%3E");
 }
 [data-paper="on"] {
-  background-color: color-mix(in srgb, var(--primary) 3%, var(--background));
+  background-color: color-mix(in srgb, var(--primary) 1.5%, var(--background));
   background-image:
     var(--paper-grain),
     radial-gradient(70rem 40rem at 0% 0%, color-mix(in srgb, var(--primary) 8%, transparent), transparent 70%),
@@ -578,6 +612,135 @@
   [data-paper="on"] {
     background: none;
   }
+}
+
+/*
+ * The app backdrop (D160): fixed behind the shell so frosted glass always has colour to blur. Static soft glows in the
+ * theme's colours; the paper grain and an edge vignette when the paper switch is on.
+ */
+.app-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-color: var(--background);
+  background-image:
+    radial-gradient(52rem 38rem at 6% 0%, color-mix(in srgb, var(--primary) 11%, transparent), transparent 72%),
+    radial-gradient(46rem 36rem at 100% 42%, color-mix(in srgb, var(--chart-2) 12%, transparent), transparent 72%),
+    radial-gradient(42rem 32rem at 22% 100%, color-mix(in srgb, var(--chart-3) 10%, transparent), transparent 72%);
+}
+.app-backdrop[data-paper="on"] {
+  background-color: color-mix(in srgb, var(--primary) 1.5%, var(--background));
+  background-image:
+    var(--paper-grain),
+    radial-gradient(ellipse at 50% 40%, transparent 55%, color-mix(in srgb, var(--foreground) 4%, transparent) 100%),
+    radial-gradient(52rem 38rem at 6% 0%, color-mix(in srgb, var(--primary) 11%, transparent), transparent 72%),
+    radial-gradient(46rem 36rem at 100% 42%, color-mix(in srgb, var(--chart-2) 12%, transparent), transparent 72%),
+    radial-gradient(42rem 32rem at 22% 100%, color-mix(in srgb, var(--chart-3) 10%, transparent), transparent 72%);
+}
+.dark .app-backdrop {
+  background-image:
+    radial-gradient(52rem 38rem at 6% 0%, color-mix(in srgb, var(--primary) 10%, transparent), transparent 72%),
+    radial-gradient(46rem 36rem at 100% 42%, color-mix(in srgb, var(--chart-2) 8%, transparent), transparent 72%),
+    radial-gradient(42rem 32rem at 22% 100%, color-mix(in srgb, var(--chart-3) 7%, transparent), transparent 72%);
+}
+.dark .app-backdrop[data-paper="on"] {
+  background-color: color-mix(in srgb, var(--primary) 2%, var(--background));
+  background-image:
+    var(--paper-grain),
+    radial-gradient(52rem 38rem at 6% 0%, color-mix(in srgb, var(--primary) 10%, transparent), transparent 72%),
+    radial-gradient(46rem 36rem at 100% 42%, color-mix(in srgb, var(--chart-2) 8%, transparent), transparent 72%),
+    radial-gradient(42rem 32rem at 22% 100%, color-mix(in srgb, var(--chart-3) 7%, transparent), transparent 72%);
+}
+
+/*
+ * Glass surfaces (D159). Text sits on the resulting colour, which design-tokens.test.ts checks over the brightest
+ * backdrop. Inputs and buttons stay solid.
+ */
+@utility surface-glass {
+  background-color: color-mix(in srgb, var(--card) 78%, transparent);
+  border-color: color-mix(in srgb, var(--border) 70%, var(--glass-edge));
+  box-shadow: inset 0 1px 0 0 var(--glass-highlight), var(--elevation-sm);
+  backdrop-filter: blur(16px) saturate(1.4);
+}
+/* Lists and tables read best on a denser frost. */
+@utility surface-glass-dense {
+  background-color: color-mix(in srgb, var(--card) 92%, transparent);
+  border-color: color-mix(in srgb, var(--border) 70%, var(--glass-edge));
+  box-shadow: inset 0 1px 0 0 var(--glass-highlight), var(--elevation-xs);
+  backdrop-filter: blur(16px) saturate(1.4);
+}
+/* Menus, pop-ups and dialogs float over content: a strong frost. */
+@utility surface-glass-overlay {
+  background-color: color-mix(in srgb, var(--popover) 88%, transparent);
+  border-color: color-mix(in srgb, var(--border) 60%, var(--glass-edge));
+  backdrop-filter: blur(20px) saturate(1.5);
+}
+/* Repeated cards in phone lists: frosted look without the cost of a blur per card. */
+@utility surface-glass-item {
+  background-color: color-mix(in srgb, var(--card) 94%, transparent);
+  border-color: color-mix(in srgb, var(--border) 70%, var(--glass-edge));
+  box-shadow: inset 0 1px 0 0 var(--glass-highlight), var(--elevation-xs);
+}
+@utility glass-sidebar {
+  background-color: color-mix(in srgb, var(--sidebar-glass-tint) var(--sidebar-glass-alpha), transparent);
+  backdrop-filter: blur(20px) saturate(1.5);
+  box-shadow: inset 0 1px 0 0 rgb(255 255 255 / 0.08), var(--elevation-lg);
+}
+@layer utilities {
+  .surface-glass:has(table) {
+    background-color: color-mix(in srgb, var(--card) 92%, transparent);
+  }
+  /* Beats a component's own surface class (e.g. the phone menu sheet). */
+  .glass-sidebar.glass-sidebar {
+    background-color: color-mix(in srgb, var(--sidebar-glass-tint) var(--sidebar-glass-alpha), transparent);
+  }
+}
+
+/* Solid surfaces when the device asks for less transparency, the browser can't blur, or the page is printed. */
+@media (prefers-reduced-transparency: reduce) {
+  .surface-glass, .surface-glass-dense, .surface-glass-item, .surface-glass-overlay, .glass {
+    background-color: var(--card) !important;
+    backdrop-filter: none !important;
+  }
+  .glass-sidebar {
+    background-color: var(--sidebar) !important;
+    backdrop-filter: none !important;
+  }
+}
+@supports not (backdrop-filter: blur(1px)) {
+  .surface-glass, .surface-glass-dense, .surface-glass-overlay, .glass {
+    background-color: var(--card) !important;
+  }
+  .glass-sidebar {
+    background-color: var(--sidebar) !important;
+  }
+}
+@media print {
+  .app-backdrop {
+    display: none;
+  }
+  .surface-glass, .surface-glass-dense, .surface-glass-item, .surface-glass-overlay {
+    background-color: #fff !important;
+    backdrop-filter: none !important;
+    box-shadow: none !important;
+  }
+}
+
+/*
+ * Register lines for the record lists (ported from the EMS, whose beige lines are #d6c7a1 with a #f7f1e6 header):
+ * drawn from the theme's primary so the ruled table follows every app theme.
+ */
+:root {
+  --rule: color-mix(in srgb, var(--primary) 30%, var(--border));
+  --rule-head: color-mix(in srgb, var(--primary) 9%, var(--card));
+  --rule-head-foreground: color-mix(in srgb, var(--primary-strong) 35%, var(--foreground));
+}
+[data-app-theme],
+.dark {
+  --rule: color-mix(in srgb, var(--primary) 30%, var(--border));
+  --rule-head: color-mix(in srgb, var(--primary) 9%, var(--card));
+  --rule-head-foreground: color-mix(in srgb, var(--primary-strong) 35%, var(--foreground));
 }
 
 /* Letter-spacing splits Bangla conjuncts apart: spaced-out labels keep it for Latin text only. */

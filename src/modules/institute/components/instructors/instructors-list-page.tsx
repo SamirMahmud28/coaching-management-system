@@ -1,42 +1,90 @@
 "use client";
 
 import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
-import { GraduationCap, Plus } from "lucide-react";
+import { Eye, GraduationCap, Plus } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { DataTable, type Column } from "@/components/shared/data-table";
 import { OneTimePasswordDialog } from "@/components/shared/one-time-password-dialog";
-import { PageHeader } from "@/components/shared/page-header";
+import { ActionIcons, FilterCard, ListPageHeader, RecordPhoto, RecordTable, type RecordColumn, type RowAction } from "@/components/shared/record-list";
 import { EmptyState } from "@/components/shared/states";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { formatDate } from "@/lib/format";
 import { useDebouncedValue } from "@/lib/use-debounced-value";
 import { instructorsApi, type InstructorRow, type InstructorStatus } from "../../api";
 import { instituteKeys } from "../../keys";
 import { InstructorFormDialog } from "./instructor-form-dialog";
 import { HowThisWorks } from "@/modules/institute/help/how-this-works";
 
-const PAGE_SIZE = 25;
+const ALL = "ALL";
+const GENDERS = { MALE: "Male", FEMALE: "Female", OTHER: "Other" } as const;
+const DEFAULT_FILTERS: Record<string, string> = { status: "ACTIVE" };
 
+/** The Instructor List (EMS record-list layout, as the EMS Teacher List). */
 export function InstructorsListPage({ canManage }: { canManage: boolean }) {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [search, setSearch] = useState("");
-  const [status, setStatus] = useState<InstructorStatus | "ALL">("ACTIVE");
+  const [q, setQ] = useState("");
+  const search = useDebouncedValue(q.trim(), 300);
+  const [draft, setDraft] = useState(DEFAULT_FILTERS);
+  const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
   const [creating, setCreating] = useState(false);
   const [oneTime, setOneTime] = useState<{ name: string; password: string } | null>(null);
-  const q = useDebouncedValue(search.trim(), 300);
-  const params = { q: q || undefined, status: status === "ALL" ? undefined : status, page, page_size: PAGE_SIZE };
+  const status = filters.status as InstructorStatus | typeof ALL;
+  const params = { q: search || undefined, status: status === ALL ? undefined : status, page, page_size: pageSize };
   const query = useQuery({ queryKey: instituteKeys.instructors(params), queryFn: () => instructorsApi.list(params), placeholderData: keepPreviousData });
+  const filtering = search !== "" || filters.status !== DEFAULT_FILTERS.status;
 
-  const columns: Column<InstructorRow>[] = [
-    { key: "name", header: "Name", cell: (i) => <span className="font-medium">{i.full_name}</span> },
-    { key: "phone", header: "Mobile", cell: (i) => <span className="font-mono text-sm">{i.phone ?? "—"}</span> },
-    { key: "email", header: "Email", cell: (i) => i.email ?? "—", className: "hidden md:table-cell" },
-    { key: "status", header: "Status", cell: (i) => <StatusBadge status={i.status} /> },
+  const columns: RecordColumn<InstructorRow>[] = [
+    { key: "sl", header: "SL", className: "w-10 text-center tabular-nums", cell: (_, n) => n },
+    { key: "photo", header: "Photo", className: "w-16", cell: (r) => <RecordPhoto fileId={r.photo_file_id} name={r.full_name} /> },
+    {
+      key: "instructor",
+      header: "Instructor",
+      cell: (r) => (
+        <div className="min-w-36">
+          <Link href={`/app/instructors/${r.id}`} className="text-[0.95rem] font-bold hover:underline">
+            {r.full_name}
+          </Link>
+          <div className="text-xs text-muted-foreground">{r.must_change_password ? "Hasn't signed in yet" : "Instructor"}</div>
+        </div>
+      ),
+    },
+    {
+      key: "gender",
+      header: "Gender / Joined",
+      className: "whitespace-nowrap",
+      cell: (r) => (
+        <div className="text-xs">
+          <div>{r.gender ? GENDERS[r.gender] : "—"}</div>
+          <div className="text-muted-foreground">Joined: {formatDate(r.created_at)}</div>
+        </div>
+      ),
+    },
+    {
+      key: "phone",
+      header: "Phone No",
+      className: "whitespace-nowrap",
+      cell: (r) => (
+        <div>
+          <div className="tabular-nums">{r.phone ?? "—"}</div>
+          {r.email && <div className="text-xs text-muted-foreground">{r.email}</div>}
+        </div>
+      ),
+    },
+    { key: "status", header: "Status", cell: (r) => <StatusBadge status={r.status} /> },
+    {
+      key: "action",
+      header: "Action",
+      className: "whitespace-nowrap",
+      cell: (r) => {
+        const actions: RowAction[] = [{ label: "View", icon: Eye, href: `/app/instructors/${r.id}` }];
+        return <ActionIcons name={r.full_name} actions={actions} />;
+      },
+    },
   ];
 
   const add = canManage ? (
@@ -47,46 +95,70 @@ export function InstructorsListPage({ canManage }: { canManage: boolean }) {
 
   return (
     <>
-      <PageHeader title="Instructors" description="Everyone who teaches at your institute. Each instructor signs in to the instructor portal." actions={add} />
+      <ListPageHeader title="Instructor List" crumb="Instructors" action={add} />
       <HowThisWorks topic="instructors" />
-      <div className="flex flex-col gap-2 sm:flex-row">
-        <Input
-          className="sm:w-72"
-          placeholder="Search name, mobile or email"
-          aria-label="Search instructors"
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setPage(1);
-          }}
-        />
-        <Select
-          value={status}
-          onValueChange={(v) => {
-            setStatus(v as InstructorStatus | "ALL");
-            setPage(1);
-          }}
-        >
-          <SelectTrigger className="sm:w-40" aria-label="Filter by status">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="ACTIVE">Active</SelectItem>
-            <SelectItem value="INACTIVE">Inactive</SelectItem>
-            <SelectItem value="ALL">All</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-      <DataTable
+
+      <FilterCard
+        fields={[
+          {
+            key: "status",
+            label: "Status",
+            placeholder: "Active",
+            options: [
+              { value: "ACTIVE", label: "Active" },
+              { value: "INACTIVE", label: "Inactive" },
+              { value: ALL, label: "All statuses" },
+            ],
+          },
+        ]}
+        draft={draft}
+        onDraftChange={(key, value) => setDraft((d) => ({ ...d, [key]: value }))}
+        onSearch={() => {
+          setFilters(draft);
+          setPage(1);
+        }}
+        onReset={() => {
+          setQ("");
+          setDraft(DEFAULT_FILTERS);
+          setFilters(DEFAULT_FILTERS);
+          setPage(1);
+        }}
+        canReset={q !== "" || draft.status !== DEFAULT_FILTERS.status || filters.status !== DEFAULT_FILTERS.status}
+      />
+
+      <RecordTable
+        label="Instructors"
         columns={columns}
         rows={query.data?.items}
-        getRowId={(i) => i.id}
-        onRowClick={(i) => router.push(`/app/instructors/${i.id}`)}
+        getRowId={(r) => r.id}
+        onRowClick={(r) => router.push(`/app/instructors/${r.id}`)}
         isLoading={query.isPending}
         error={query.error}
         onRetry={() => query.refetch()}
-        pagination={query.data ? { page, pageSize: PAGE_SIZE, total: query.data.total, onPageChange: setPage } : undefined}
-        empty={<EmptyState icon={GraduationCap} title={q || status !== "ACTIVE" ? "No instructors match." : "No instructors yet"} action={q ? undefined : add} />}
+        empty={
+          filtering ? (
+            <EmptyState icon={GraduationCap} title="No instructors match" description="Try a different search, or reset the filters." />
+          ) : (
+            <EmptyState icon={GraduationCap} title="No instructors yet" action={add} />
+          )
+        }
+        page={page}
+        pageSize={pageSize}
+        total={query.data?.total ?? 0}
+        onPageChange={setPage}
+        onPageSizeChange={(n) => {
+          setPageSize(n);
+          setPage(1);
+        }}
+        search={{
+          value: q,
+          onChange: (v) => {
+            setQ(v);
+            setPage(1);
+          },
+          placeholder: "Name, mobile or email",
+          label: "Search instructors",
+        }}
       />
 
       <InstructorFormDialog

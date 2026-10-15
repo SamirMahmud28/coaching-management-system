@@ -64,7 +64,7 @@ export function FeeItemsPage({ canConfigure, nav }: { canConfigure: boolean; nav
                 {c.items.length === 0 ? (
                   <p className="text-sm text-muted-foreground">No fees yet.</p>
                 ) : (
-                  <ul className="divide-y rounded-md border">
+                  <ul className="surface-glass-dense divide-y rounded-md border">
                     {c.items.map((i) => (
                       <FeeItemRowView key={i.id} item={i} canConfigure={canConfigure} onEdit={() => setEditing({ courseId, item: i })} onChanged={refresh} />
                     ))}

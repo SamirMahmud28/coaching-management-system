@@ -93,7 +93,7 @@ export function CoursePage({ id, canManage }: { id: string; canManage: boolean }
         actions={actions}
       />
       <HowThisWorks topic="courses" />
-      {!active && <p className="rounded-md border border-dashed p-3 text-sm text-muted-foreground">This course is archived. Restore it to add subjects or batches.</p>}
+      {!active && <p className="bg-card/50 rounded-md border border-dashed p-3 text-sm text-muted-foreground">This course is archived. Restore it to add subjects or batches.</p>}
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
@@ -112,7 +112,7 @@ export function CoursePage({ id, canManage }: { id: string; canManage: boolean }
             {course.batches.length === 0 ? (
               <p className="text-sm text-muted-foreground">{course.subjects.length === 0 ? "Add the course's subjects first, then its batches." : "No batches yet."}</p>
             ) : (
-              <ul className="divide-y rounded-md border">
+              <ul className="surface-glass-dense divide-y rounded-md border">
                 {course.batches.map((b) => (
                   <li key={b.id}>
                     <Link href={`/app/batches/${b.id}`} className="flex items-center gap-3 px-3 py-2 hover:bg-muted/50">
@@ -146,7 +146,7 @@ export function CoursePage({ id, canManage }: { id: string; canManage: boolean }
             {course.subjects.length === 0 ? (
               <p className="text-sm text-muted-foreground">No subjects yet.</p>
             ) : (
-              <ul className="divide-y rounded-md border">
+              <ul className="surface-glass-dense divide-y rounded-md border">
                 {course.subjects.map((s) => (
                   <SubjectItem key={s.id} subject={s} canManage={canManage} onChanged={refresh} />
                 ))}

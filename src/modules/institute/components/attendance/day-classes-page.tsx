@@ -107,7 +107,7 @@ export function DayClassesPage({
           description={subjects.length ? "Nothing is on the weekly schedule for this day. Add an extra class if one is held." : "You have no batch subjects to take attendance for."}
         />
       ) : (
-        <ul className="divide-y rounded-lg border" data-testid="day-classes">
+        <ul className="surface-glass-dense divide-y rounded-lg border" data-testid="day-classes">
           {classes.map((c) => {
             const state = CLASS_STATE[c.state];
             return (

@@ -54,7 +54,7 @@ export function HowThisWorks({ topic, fullGuide = true }: { topic: HelpTopicKey;
             <div className="space-y-2">
               <p className="font-medium">Common questions</p>
               {t.faqs.map((f) => (
-                <details key={f.q} className="rounded-md border px-3 py-2">
+                <details key={f.q} className="surface-glass-item rounded-md border px-3 py-2">
                   <summary className="cursor-pointer font-medium">{f.q}</summary>
                   <p className="mt-1 text-muted-foreground">{f.a}</p>
                 </details>

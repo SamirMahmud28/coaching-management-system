@@ -83,3 +83,18 @@ describe("DatePicker", () => {
     expect(onChange).toHaveBeenCalledWith("2026-10-20");
   });
 });
+
+describe("glass surfaces (D159)", () => {
+  it("cards are frosted glass and tables sit on the denser frost", async () => {
+    const { Card } = await import("@/components/ui/card");
+    const { DataTable } = await import("./data-table");
+    const { container } = render(
+      <>
+        <Card data-testid="card">x</Card>
+        <DataTable columns={[{ key: "n", header: "Name", cell: (r: { id: string }) => r.id }]} rows={[{ id: "a" }]} getRowId={(r) => r.id} />
+      </>,
+    );
+    expect(screen.getByTestId("card")).toHaveClass("surface-glass");
+    expect(container.querySelector("table")!.closest(".surface-glass-dense")).not.toBeNull();
+  });
+});

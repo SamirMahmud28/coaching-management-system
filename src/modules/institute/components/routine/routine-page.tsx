@@ -155,7 +155,7 @@ function ClassesView({ view, options, canManage }: { view: Exclude<View, "change
                 {classes.length === 0 ? (
                   <p className="text-sm text-muted-foreground">No classes.</p>
                 ) : (
-                  <ul className="divide-y rounded-lg border">
+                  <ul className="surface-glass-dense divide-y rounded-lg border">
                     {classes.map((c) => {
                       const s = STATUS[c.status];
                       const note = changeNote(c);
@@ -326,7 +326,7 @@ function ChangesView({ canManage, today }: { canManage: boolean; today: string }
         {holidays.length === 0 ? (
           <p className="text-sm text-muted-foreground">No holidays coming up.</p>
         ) : (
-          <ul className="divide-y rounded-lg border" data-testid="holidays">
+          <ul className="surface-glass-dense divide-y rounded-lg border" data-testid="holidays">
             {holidays.map((h) => (
               <li key={h.id} className="flex items-center gap-3 px-3 py-2 text-sm">
                 <span className="flex-1">
@@ -348,7 +348,7 @@ function ChangesView({ canManage, today }: { canManage: boolean; today: string }
         {changes.length === 0 ? (
           <p className="text-sm text-muted-foreground">No changes.</p>
         ) : (
-          <ul className="divide-y rounded-lg border" data-testid="changes">
+          <ul className="surface-glass-dense divide-y rounded-lg border" data-testid="changes">
             {changes.map((c) => (
               <li key={c.id} className="flex flex-wrap items-center gap-3 px-3 py-2 text-sm">
                 <div className="min-w-0 flex-1">

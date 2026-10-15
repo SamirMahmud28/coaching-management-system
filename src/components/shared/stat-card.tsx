@@ -75,7 +75,7 @@ export function StatCard({
     </>
   );
 
-  const base = "relative block rounded-2xl border bg-card p-5 text-card-foreground shadow-xs";
+  const base = "surface-glass relative block rounded-2xl border p-5 text-card-foreground";
   if (href) {
     return (
       <Link

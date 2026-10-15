@@ -33,7 +33,7 @@ export function UpcomingChangesCard({ changes }: { changes: RoutineClass[] }) {
         {changes.length === 0 ? (
           <p className="text-sm text-muted-foreground">No changes — classes run at their usual times.</p>
         ) : (
-          <ul className="divide-y rounded-md border text-sm">
+          <ul className="surface-glass-dense divide-y rounded-md border text-sm">
             {changes.map((c) => (
               <li key={`${c.batchSubjectId}-${c.date}-${c.startsAt}-${c.status}`} className="flex items-start gap-3 px-3 py-2">
                 <CalendarClock aria-hidden className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
@@ -66,7 +66,7 @@ export function LessonProgressCard({ plans }: { plans: Awaited<ReturnType<typeof
           <p className="text-sm text-muted-foreground">No lesson plans yet.</p>
         ) : (
           plans.map((p) => (
-            <details key={p.id} className="rounded-md border px-3 py-2">
+            <details key={p.id} className="surface-glass-item rounded-md border px-3 py-2">
               <summary className="cursor-pointer list-none">
                 <p className="mb-1 text-sm font-medium">
                   {p.subjectName} <span className="font-normal text-muted-foreground">· {p.batchName}</span>

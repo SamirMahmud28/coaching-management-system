@@ -24,7 +24,7 @@ export function SectionCard({
   as?: "h2" | "h3";
 }) {
   return (
-    <section className={cn("rounded-2xl border bg-card text-card-foreground shadow-xs", className)}>
+    <section className={cn("surface-glass rounded-2xl border text-card-foreground", className)}>
       <header className="flex flex-wrap items-start justify-between gap-3 px-5 pt-5">
         <div className="flex min-w-0 items-start gap-3">
           {Icon && (

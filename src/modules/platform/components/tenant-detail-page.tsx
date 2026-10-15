@@ -204,7 +204,7 @@ function ProfileTab({ tenant }: { tenant: TenantDetail }) {
   if (tenant.status === "DEACTIVATED") rows.push(["Deactivated", formatDateTime(tenant.deactivated_at)]);
 
   return (
-    <dl className="grid gap-x-8 gap-y-3 rounded-lg border p-4 text-sm sm:grid-cols-[10rem_1fr]">
+    <dl className="surface-glass-item grid gap-x-8 gap-y-3 rounded-lg border p-4 text-sm sm:grid-cols-[10rem_1fr]">
       {rows.map(([label, value]) => (
         <div key={label} className="contents">
           <dt className="text-muted-foreground">{label}</dt>

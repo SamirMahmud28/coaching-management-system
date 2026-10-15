@@ -1,57 +1,129 @@
 "use client";
 
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { Plus, UserRound } from "lucide-react";
+import { Eye, Plus, UserRound, Wallet } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { DataTable, type Column } from "@/components/shared/data-table";
-import { PageHeader } from "@/components/shared/page-header";
+import { ActionIcons, FilterCard, ListPageHeader, RecordPhoto, RecordTable, type FilterField, type RecordColumn, type RowAction } from "@/components/shared/record-list";
 import { EmptyState } from "@/components/shared/states";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useDebouncedValue } from "@/lib/use-debounced-value";
 import { academicApi, studentsApi, type StudentListRow, type StudentStatus } from "../../api";
 import { instituteKeys } from "../../keys";
 import { HowThisWorks } from "@/modules/institute/help/how-this-works";
 
-const PAGE_SIZE = 25;
-const ANY = "any";
-const NO_BATCH = "none";
+const ALL = "ALL";
+const NO_BATCH = "NONE";
+const GENDERS = { MALE: "Male", FEMALE: "Female", OTHER: "Other" } as const;
+const STATUSES: { value: StudentStatus | typeof ALL; label: string }[] = [
+  { value: "ACTIVE", label: "Active" },
+  { value: "ON_HOLD", label: "On hold" },
+  { value: "COMPLETED", label: "Completed" },
+  { value: "LEFT", label: "Left" },
+  { value: ALL, label: "All statuses" },
+];
+const DEFAULT_FILTERS: Record<string, string> = { courseId: ALL, batchId: ALL, status: "ACTIVE" };
+const pick = (value: string) => (value === ALL || value === NO_BATCH ? undefined : value);
 
-export function StudentsListPage({ canAdmit, canSeeContacts, canSeeBatches }: { canAdmit: boolean; canSeeContacts: boolean; canSeeBatches: boolean }) {
+/** The Student List (EMS record-list layout): filters applied with Search, a ruled table, row actions, numbered pages. */
+export function StudentsListPage({
+  canAdmit,
+  canSeeContacts,
+  canSeeBatches,
+  canViewFees = false,
+}: {
+  canAdmit: boolean;
+  canSeeContacts: boolean;
+  canSeeBatches: boolean;
+  canViewFees?: boolean;
+}) {
   const router = useRouter();
-  const [search, setSearch] = useState("");
-  const [status, setStatus] = useState<StudentStatus | "ALL">("ACTIVE");
-  const [batch, setBatch] = useState(ANY);
+  const [q, setQ] = useState("");
+  const search = useDebouncedValue(q.trim(), 300);
+  // What is chosen in the filter card, and what was last applied with Search.
+  const [draft, setDraft] = useState(DEFAULT_FILTERS);
+  const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const [page, setPage] = useState(1);
-  const q = useDebouncedValue(search.trim(), 300);
+  const [pageSize, setPageSize] = useState(25);
+  const filtering = search !== "" || Object.keys(DEFAULT_FILTERS).some((k) => filters[k] !== DEFAULT_FILTERS[k]);
+
   const params = {
-    q: q || undefined,
-    status,
-    batch_id: batch === ANY || batch === NO_BATCH ? undefined : batch,
-    no_batch: batch === NO_BATCH ? ("true" as const) : undefined,
+    q: search || undefined,
+    status: filters.status as StudentStatus | "ALL",
+    course_id: pick(filters.courseId),
+    batch_id: pick(filters.batchId),
+    no_batch: filters.batchId === NO_BATCH ? ("true" as const) : undefined,
     page,
-    page_size: PAGE_SIZE,
+    page_size: pageSize,
   };
   const query = useQuery({ queryKey: instituteKeys.students(params), queryFn: () => studentsApi.list(params), placeholderData: keepPreviousData });
+  const courses = useQuery({ queryKey: instituteKeys.courses({ status: "ACTIVE" }), queryFn: () => academicApi.courses({ status: "ACTIVE" }), enabled: canSeeBatches });
   const batches = useQuery({ queryKey: instituteKeys.batches({ status: "ACTIVE" }), queryFn: () => academicApi.batches({ status: "ACTIVE" }), enabled: canSeeBatches });
 
-  const columns: Column<StudentListRow>[] = [
-    { key: "id", header: "ID", cell: (s) => <span className="font-mono text-sm">{s.student_code}</span> },
-    { key: "name", header: "Name", cell: (s) => <span className="font-medium">{s.full_name}</span> },
+  const batchOptions = (batches.data ?? []).filter((b) => draft.courseId === ALL || b.course_id === draft.courseId);
+  const fields: FilterField[] = [
+    ...(canSeeBatches
+      ? [
+          {
+            key: "courseId",
+            label: "Course",
+            placeholder: "All courses",
+            options: [{ value: ALL, label: "All courses" }, ...(courses.data ?? []).map((c) => ({ value: c.id, label: c.name }))],
+          },
+          {
+            key: "batchId",
+            label: "Batch",
+            placeholder: "All batches",
+            options: [
+              { value: ALL, label: "All batches" },
+              { value: NO_BATCH, label: "No batch" },
+              ...batchOptions.map((b) => ({ value: b.id, label: draft.courseId === ALL ? `${b.name} · ${b.course_name}` : b.name })),
+            ],
+          },
+        ]
+      : []),
+    { key: "status", label: "Status", placeholder: "Active", options: STATUSES },
+  ];
+
+  const columns: RecordColumn<StudentListRow>[] = [
+    { key: "sl", header: "SL", className: "w-10 text-center tabular-nums", cell: (_, n) => n },
+    { key: "photo", header: "Photo", className: "w-16", cell: (r) => <RecordPhoto fileId={r.photo_file_id} name={r.full_name} /> },
     {
-      key: "batches",
-      header: "Batches",
-      cell: (s) => (s.batches.length ? s.batches.map((b) => b.name).join(", ") : <span className="text-muted-foreground">No batch</span>),
-      className: "hidden md:table-cell",
+      key: "student",
+      header: "Student",
+      cell: (r) => (
+        <div className="min-w-36">
+          <Link href={`/app/students/${r.id}`} className="text-[0.95rem] font-bold hover:underline">
+            {r.full_name}
+          </Link>
+          <div className="text-xs text-muted-foreground">{r.batches.length ? r.batches.map((b) => b.name).join(" - ") : "No batch"}</div>
+        </div>
+      ),
+    },
+    { key: "guardian", header: "Guardian", cell: (r) => <div className="font-medium">{r.guardian_name || "—"}</div> },
+    { key: "gender", header: "Gender", className: "whitespace-nowrap text-xs", cell: (r) => GENDERS[r.gender] },
+    {
+      key: "id",
+      header: "Student ID",
+      className: "whitespace-nowrap",
+      cell: (r) => <span className="font-mono text-xs">{r.student_code}</span>,
     },
     ...(canSeeContacts
-      ? [{ key: "guardian", header: "Guardian's mobile", cell: (s: StudentListRow) => <span className="font-mono text-sm">{s.guardian_phone}</span>, className: "hidden lg:table-cell" }]
+      ? [{ key: "phone", header: "Guardian's Phone", className: "whitespace-nowrap tabular-nums", cell: (r: StudentListRow) => r.guardian_phone ?? "—" }]
       : []),
-    { key: "status", header: "Status", cell: (s) => <StatusBadge status={s.status} /> },
+    { key: "status", header: "Status", cell: (r) => <StatusBadge status={r.status} /> },
+    {
+      key: "action",
+      header: "Action",
+      className: "whitespace-nowrap",
+      cell: (r) => {
+        const actions: RowAction[] = [{ label: "View", icon: Eye, href: `/app/students/${r.id}` }];
+        if (canViewFees) actions.push({ label: "Fees", ariaLabel: `Fees of ${r.full_name}`, icon: Wallet, href: `/app/fees/students/${r.id}` });
+        return <ActionIcons name={r.full_name} actions={actions} />;
+      },
+    },
   ];
 
   const add = canAdmit ? (
@@ -61,74 +133,62 @@ export function StudentsListPage({ canAdmit, canSeeContacts, canSeeBatches }: { 
       </Link>
     </Button>
   ) : null;
-  const filtered = !!q || status !== "ACTIVE" || batch !== ANY;
 
   return (
     <>
-      <PageHeader title="Students" description="Everyone admitted to your institute. Students sign in with their student ID." actions={add} />
+      <ListPageHeader title="Student List" crumb="Students" action={add} />
       <HowThisWorks topic="student-records" />
-      <div className="flex flex-col gap-2 sm:flex-row">
-        <Input
-          className="sm:w-72"
-          placeholder={canSeeContacts ? "Search name, ID or mobile" : "Search name or ID"}
-          aria-label="Search students"
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setPage(1);
-          }}
-        />
-        <Select
-          value={status}
-          onValueChange={(v) => {
-            setStatus(v as StudentStatus | "ALL");
-            setPage(1);
-          }}
-        >
-          <SelectTrigger className="sm:w-40" aria-label="Filter by status">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="ACTIVE">Active</SelectItem>
-            <SelectItem value="ON_HOLD">On hold</SelectItem>
-            <SelectItem value="COMPLETED">Completed</SelectItem>
-            <SelectItem value="LEFT">Left</SelectItem>
-            <SelectItem value="ALL">All</SelectItem>
-          </SelectContent>
-        </Select>
-        {canSeeBatches && (
-          <Select
-            value={batch}
-            onValueChange={(v) => {
-              setBatch(v);
-              setPage(1);
-            }}
-          >
-            <SelectTrigger className="sm:w-56" aria-label="Filter by batch">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={ANY}>All batches</SelectItem>
-              <SelectItem value={NO_BATCH}>No batch</SelectItem>
-              {(batches.data ?? []).map((b) => (
-                <SelectItem key={b.id} value={b.id}>
-                  {b.name} · {b.course_name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        )}
-      </div>
-      <DataTable
+
+      <FilterCard
+        fields={fields}
+        draft={draft}
+        onDraftChange={(key, value) => setDraft((d) => ({ ...d, [key]: value, ...(key === "courseId" ? { batchId: ALL } : {}) }))}
+        onSearch={() => {
+          setFilters(draft);
+          setPage(1);
+        }}
+        onReset={() => {
+          setQ("");
+          setDraft(DEFAULT_FILTERS);
+          setFilters(DEFAULT_FILTERS);
+          setPage(1);
+        }}
+        canReset={q !== "" || Object.keys(DEFAULT_FILTERS).some((k) => draft[k] !== DEFAULT_FILTERS[k] || filters[k] !== DEFAULT_FILTERS[k])}
+      />
+
+      <RecordTable
+        label="Students"
         columns={columns}
         rows={query.data?.items}
-        getRowId={(s) => s.id}
-        onRowClick={(s) => router.push(`/app/students/${s.id}`)}
+        getRowId={(r) => r.id}
+        onRowClick={(r) => router.push(`/app/students/${r.id}`)}
         isLoading={query.isPending}
         error={query.error}
         onRetry={() => query.refetch()}
-        pagination={query.data ? { page, pageSize: PAGE_SIZE, total: query.data.total, onPageChange: setPage } : undefined}
-        empty={<EmptyState icon={UserRound} title={filtered ? "No students match." : "No students yet"} action={filtered ? undefined : add} />}
+        empty={
+          filtering ? (
+            <EmptyState icon={UserRound} title="No students match" description="Try a different search, or reset the filters." />
+          ) : (
+            <EmptyState icon={UserRound} title="No students yet" action={add} />
+          )
+        }
+        page={page}
+        pageSize={pageSize}
+        total={query.data?.total ?? 0}
+        onPageChange={setPage}
+        onPageSizeChange={(n) => {
+          setPageSize(n);
+          setPage(1);
+        }}
+        search={{
+          value: q,
+          onChange: (v) => {
+            setQ(v);
+            setPage(1);
+          },
+          placeholder: canSeeContacts ? "Name, ID or mobile" : "Name or ID",
+          label: "Search students",
+        }}
       />
     </>
   );

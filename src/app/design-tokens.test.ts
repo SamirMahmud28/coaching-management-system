@@ -92,6 +92,34 @@ describe.each(CASES)("paper background, app theme %s (%s) (D158)", (theme, mode)
   });
 });
 
+/**
+ * The backdrop's brightest or most tinted spots (D160): the paper base under each colour glow at full strength, and
+ * under the edge vignette. Glass is composited over each of them.
+ */
+function backdropSpots(t: Record<string, string>, mode: "light" | "dark"): string[] {
+  const base = mix(t.primary!, t.background!, mode === "light" ? 0.015 : 0.02);
+  const [a, b, c] = mode === "light" ? [0.11, 0.12, 0.1] : [0.1, 0.08, 0.07];
+  return [base, mix(t.primary!, base, a), mix(t["chart-2"]!, base, b), mix(t["chart-3"]!, base, c), mix(t.foreground!, base, 0.04)];
+}
+
+describe.each(CASES)("glass surfaces, app theme %s (%s) (D159)", (theme, mode) => {
+  const t = tokens(theme, mode);
+  const spots = backdropSpots(t, mode);
+  const alpha = parseFloat(t["sidebar-glass-alpha"]!) / 100;
+
+  it.each(["foreground", "muted-foreground", "primary-strong"])("%s stays at least 4.5:1 on a frosted card", (fg) => {
+    for (const spot of spots) expect(contrast(t[fg]!, mix(t.card!, spot, 0.78))).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it.each(["popover-foreground", "muted-foreground"])("%s stays at least 4.5:1 on a frosted menu or dialog", (fg) => {
+    for (const spot of spots) expect(contrast(t[fg]!, mix(t.popover!, spot, 0.88))).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it.each(["sidebar-foreground", "sidebar-muted-foreground"])("%s stays at least 4.5:1 on the glass sidebar", (fg) => {
+    for (const spot of spots) expect(contrast(t[fg]!, mix(t["sidebar-glass-tint"]!, spot, alpha))).toBeGreaterThanOrEqual(4.5);
+  });
+});
+
 it("every non-default theme has a light and a dark block", () => {
   for (const t of APP_THEMES.filter((x) => x.key !== "MIDNIGHT")) {
     expect(() => tokens(t.key.toLowerCase(), "dark")).not.toThrow();

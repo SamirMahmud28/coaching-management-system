@@ -96,7 +96,7 @@ function RegisterForm({ data, queryKey, fullGuide }: { data: Register; queryKey:
       <HowThisWorks topic="attendance-registers" fullGuide={fullGuide} />
 
       {data.state === "NOT_HELD" && (
-        <p role="status" className="rounded-md border border-dashed p-3 text-sm">
+        <p role="status" className="bg-card/50 rounded-md border border-dashed p-3 text-sm">
           Marked as <strong>no class held</strong>: {data.not_held_reason}. It counts for nobody&apos;s attendance.
           {data.can_edit && " If the class did happen, take the register below."}
         </p>
@@ -114,7 +114,7 @@ function RegisterForm({ data, queryKey, fullGuide }: { data: Register; queryKey:
           <p className="text-sm text-muted-foreground" data-testid="register-counts">
             {counts.map((c) => `${c.label} ${c.n}`).join(" · ")}
           </p>
-          <ul className="divide-y rounded-lg border" data-testid="register">
+          <ul className="surface-glass-dense divide-y rounded-lg border" data-testid="register">
             {data.rows.map((r) => {
               const current = marks.get(r.student_id);
               return (

@@ -28,7 +28,7 @@ export function MyFeesCard({ fees }: { fees: MyFees }) {
           {fees.due.length === 0 ? (
             <p className="text-muted-foreground">Nothing is due.</p>
           ) : (
-            <ul className="divide-y rounded-md border">
+            <ul className="surface-glass-dense divide-y rounded-md border">
               {fees.due.map((c) => (
                 <li key={c.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2">
                   <div className="min-w-0 flex-1">
@@ -48,7 +48,7 @@ export function MyFeesCard({ fees }: { fees: MyFees }) {
           {fees.paid.length === 0 ? (
             <p className="text-muted-foreground">No payments yet.</p>
           ) : (
-            <ul className="divide-y rounded-md border">
+            <ul className="surface-glass-dense divide-y rounded-md border">
               {fees.paid.map((c) => (
                 <li key={c.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2">
                   <div className="min-w-0 flex-1">

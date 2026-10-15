@@ -99,7 +99,7 @@ export function WebsiteGalleryPage() {
                 return (
                   <li key={p.id} data-testid="gallery-photo" className="space-y-2">
                     {/* eslint-disable-next-line @next/next/no-img-element -- authenticated, tenant-scoped bytes */}
-                    <img src={`/api/v1/files/${p.file_id}`} alt={name} className="aspect-square w-full rounded-md border object-cover" />
+                    <img src={`/api/v1/files/${p.file_id}`} alt={name} className="surface-glass-item aspect-square w-full rounded-md border object-cover" />
                     <p className="truncate text-sm">{p.caption ?? <span className="text-muted-foreground">No caption</span>}</p>
                     <div className="flex gap-1">
                       <Button variant="ghost" size="icon" aria-label={`Move ${name} earlier`} disabled={i === 0} onClick={() => move(i, i - 1)}>

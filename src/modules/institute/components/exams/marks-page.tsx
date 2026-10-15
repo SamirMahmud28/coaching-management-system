@@ -103,7 +103,7 @@ function MarksForm({ base, data, fullGuide }: { base: string; data: Roster; full
           <p className="text-sm text-muted-foreground" data-testid="marks-progress">
             {entered} of {data.rows.length} entered
           </p>
-          <ul className="divide-y rounded-lg border" data-testid="marks">
+          <ul className="surface-glass-dense divide-y rounded-lg border" data-testid="marks">
             {data.rows.map((r) => {
               const d = drafts.get(r.student_id)!;
               return (

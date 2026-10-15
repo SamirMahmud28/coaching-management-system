@@ -84,7 +84,7 @@ export default async function Page() {
                       </h3>
                       <ul className="space-y-2 text-sm">
                         {b.subjects.map((s) => (
-                          <li key={s.subjectName} className="rounded-md border px-3 py-2">
+                          <li key={s.subjectName} className="surface-glass-item rounded-md border px-3 py-2">
                             <p className="font-medium">{s.subjectName}</p>
                             <p className="text-muted-foreground">{s.instructors.join(", ") || "Instructor to be announced"}</p>
                             <p className="text-muted-foreground">{classTimes(s.slots)}</p>

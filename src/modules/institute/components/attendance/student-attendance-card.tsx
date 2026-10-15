@@ -30,7 +30,7 @@ export function AttendanceSummary({ data, emptyText }: { data: AttendanceHistory
           · {data.overall.present + data.overall.late} attended, {data.overall.absent} absent, {data.overall.excused} excused
         </span>
       </p>
-      <ul className="divide-y rounded-md border">
+      <ul className="surface-glass-dense divide-y rounded-md border">
         {data.by_subject.map((s) => (
           <li key={`${s.batch_name}-${s.subject_name}`} className="flex items-center gap-2 px-3 py-1.5">
             <span className="flex-1">
@@ -40,7 +40,7 @@ export function AttendanceSummary({ data, emptyText }: { data: AttendanceHistory
           </li>
         ))}
       </ul>
-      <details className="rounded-md border px-3 py-2">
+      <details className="surface-glass-item rounded-md border px-3 py-2">
         <summary className="cursor-pointer font-medium">Each class ({data.entries.length})</summary>
         <ul className="mt-2 max-h-72 space-y-1 overflow-y-auto">
           {data.entries.map((e, i) => (

@@ -150,7 +150,7 @@ export function ThemeSample({ theme, paper = false, className }: { theme: AppThe
       aria-hidden="true"
       className={cn("flex h-28 overflow-hidden rounded-xl border bg-background", className)}
     >
-      <div className="flex w-1/4 flex-col gap-1.5 bg-sidebar p-2">
+      <div className="glass-sidebar flex w-1/4 flex-col gap-1.5 p-2">
         <div className="mb-1 size-3.5 rounded-md bg-sidebar-primary" />
         <div className="h-1.5 w-4/5 rounded-full bg-sidebar-muted-foreground/50" />
         <div className="flex h-3 items-center rounded bg-sidebar-accent px-1">
@@ -165,11 +165,11 @@ export function ThemeSample({ theme, paper = false, className }: { theme: AppThe
           <div className="h-3.5 w-10 rounded-md bg-primary" />
         </div>
         <div className="grid flex-1 grid-cols-2 gap-1.5">
-          <div className="rounded-lg border bg-card p-1.5">
+          <div className="surface-glass rounded-lg border p-1.5">
             <div className="h-1.5 w-1/2 rounded-full bg-muted-foreground/40" />
             <div className="mt-1.5 h-2.5 w-2/3 rounded-full bg-foreground/80" />
           </div>
-          <div className="flex items-end gap-1 rounded-lg border bg-card p-1.5">
+          <div className="surface-glass flex items-end gap-1 rounded-lg border p-1.5">
             <div className="h-2/5 flex-1 rounded-sm bg-chart-1" />
             <div className="h-4/5 flex-1 rounded-sm bg-chart-2" />
             <div className="h-3/5 flex-1 rounded-sm bg-chart-3" />

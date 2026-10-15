@@ -81,7 +81,7 @@ export function MyLeavePage() {
             ) : mine.data.length === 0 ? (
               <p className="text-sm text-muted-foreground">You haven&apos;t applied for leave yet.</p>
             ) : (
-              <ul className="divide-y rounded-md border" data-testid="my-leave">
+              <ul className="surface-glass-dense divide-y rounded-md border" data-testid="my-leave">
                 {mine.data.map((l) => (
                   <li key={l.id} className="flex flex-wrap items-start gap-3 px-3 py-2.5 text-sm">
                     <div className="min-w-0 flex-1 space-y-0.5">

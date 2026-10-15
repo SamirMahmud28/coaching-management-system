@@ -19,7 +19,7 @@ export function HelpGuide({ topic: t }: { topic: HelpTopic }) {
   const open = toggled ?? hash === t.key;
 
   return (
-    <article id={t.key} className="scroll-mt-20 rounded-lg border text-sm" data-testid={`guide-${t.key}`}>
+    <article id={t.key} className="surface-glass-item scroll-mt-20 rounded-lg border text-sm" data-testid={`guide-${t.key}`}>
       <button type="button" onClick={() => setToggled(!open)} aria-expanded={open} className="flex w-full items-start gap-3 p-4 text-left">
         <span className="min-w-0 flex-1">
           <span className="block text-base font-semibold">{t.title}</span>
@@ -51,7 +51,7 @@ export function HelpGuide({ topic: t }: { topic: HelpTopic }) {
             <div className="space-y-2">
               <p className="font-medium">Common questions</p>
               {t.faqs.map((f) => (
-                <details key={f.q} className="rounded-md border px-3 py-2">
+                <details key={f.q} className="surface-glass-item rounded-md border px-3 py-2">
                   <summary className="cursor-pointer font-medium">{f.q}</summary>
                   <p className="mt-1 text-muted-foreground">{f.a}</p>
                 </details>

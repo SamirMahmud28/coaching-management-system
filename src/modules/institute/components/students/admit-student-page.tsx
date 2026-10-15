@@ -159,7 +159,7 @@ export function AdmitStudentPage({ canJoinBatches, enquiryId = null }: { canJoin
                   {batchOptions.length === 0 ? (
                     <p className="text-sm text-muted-foreground">No active batches yet. You can add the student to batches later.</p>
                   ) : (
-                    <ul className="max-h-56 space-y-2 overflow-y-auto rounded-md border p-3">
+                    <ul className="surface-glass-dense max-h-56 space-y-2 overflow-y-auto rounded-md border p-3">
                       {batchOptions.map((b) => (
                         <li key={b.id} className="flex items-center gap-2">
                           <Checkbox

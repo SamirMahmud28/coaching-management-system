@@ -76,13 +76,13 @@ export function StudentFeesPage({ studentId, perms }: { studentId: string; perms
       />
       <HowThisWorks topic="fees-student" />
       <div className="grid gap-3 sm:grid-cols-3">
-        <div className="rounded-lg border p-4">
+        <div className="surface-glass-item rounded-lg border p-4">
           <p className="text-2xl font-semibold tabular-nums" data-testid="due-total">
             {formatAmount(dueTotal)}
           </p>
           <p className="text-sm text-muted-foreground">Due now ({due.length} {due.length === 1 ? "charge" : "charges"})</p>
         </div>
-        <div className="rounded-lg border p-4">
+        <div className="surface-glass-item rounded-lg border p-4">
           <p className="text-2xl font-semibold tabular-nums">{overdue}</p>
           <p className="text-sm text-muted-foreground">Overdue</p>
         </div>
@@ -105,7 +105,7 @@ export function StudentFeesPage({ studentId, perms }: { studentId: string; perms
             {charges.data.length === 0 ? (
               <p className="text-sm text-muted-foreground">No charges yet.</p>
             ) : (
-              <ul className="divide-y rounded-md border text-sm" data-testid="charges">
+              <ul className="surface-glass-dense divide-y rounded-md border text-sm" data-testid="charges">
                 {charges.data.map((c) => {
                   const actions = [
                     ...(perms.canWaive && c.state === "DUE" ? [{ label: "Waive", run: () => open({ kind: "waive", charge: c }) }] : []),

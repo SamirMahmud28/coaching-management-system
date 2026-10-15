@@ -251,7 +251,7 @@ function Refunds({ filters }: { filters: ReportFilters }) {
     <Card>
       <CardContent className="space-y-4 pt-6" data-testid="refunds-report">
         <Stat label="Refunded" value={formatAmount(q.data.total)} />
-        <ul className="divide-y rounded-md border text-sm">
+        <ul className="surface-glass-dense divide-y rounded-md border text-sm">
           {q.data.refunds.length === 0 ? (
             <li className="px-3 py-2 text-muted-foreground">No refunds in this period.</li>
           ) : (
@@ -274,7 +274,7 @@ function Refunds({ filters }: { filters: ReportFilters }) {
 
 function Stat({ label, value, testId }: { label: string; value: string; testId?: string }) {
   return (
-    <div className="rounded-lg border p-4">
+    <div className="surface-glass-item rounded-lg border p-4">
       <p className="text-2xl font-semibold tabular-nums" data-testid={testId}>
         {value}
       </p>

@@ -59,7 +59,7 @@ export function ExamsListPage({ base, canManage, fullGuide = true }: { base: str
       ) : list.data.length === 0 ? (
         <EmptyState icon={ClipboardList} title="No exams yet" description={canManage ? "Create an exam for one or more batches of a course." : "Exams of your batches appear here once the office creates them."} />
       ) : (
-        <ul className="divide-y rounded-lg border" data-testid="exams-list">
+        <ul className="surface-glass-dense divide-y rounded-lg border" data-testid="exams-list">
           {list.data.map((e) => (
             <li key={e.id}>
               <Link href={`${base}/${e.id}`} className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50">

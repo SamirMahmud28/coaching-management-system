@@ -136,7 +136,7 @@ export function BatchPage({ id, canManage, canViewStudents }: { id: string; canM
       )}
 
       {batch.subjects.length === 0 ? (
-        <p className="rounded-md border border-dashed p-6 text-center text-sm text-muted-foreground">
+        <p className="bg-card/50 rounded-md border border-dashed p-6 text-center text-sm text-muted-foreground">
           {canManage ? "No subjects yet. Add the subjects this batch takes." : "No subjects yet."}
         </p>
       ) : (

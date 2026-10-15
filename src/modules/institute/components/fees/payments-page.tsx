@@ -73,7 +73,7 @@ export function PaymentsPage({ nav, canVoid }: { nav: FeesNav; canVoid: boolean 
             {list.data.count} valid {list.data.count === 1 ? "receipt" : "receipts"} · <span className="font-mono font-semibold">{formatAmount(list.data.total)}</span>
             <span className="text-muted-foreground"> (voided receipts aren&apos;t counted)</span>
           </p>
-          <div className="overflow-x-auto rounded-lg border" data-testid="payments-list">
+          <div className="surface-glass-dense overflow-x-auto rounded-lg border" data-testid="payments-list">
             <Table>
               <TableHeader>
                 <TableRow>

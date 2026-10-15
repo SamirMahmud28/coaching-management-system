@@ -65,7 +65,7 @@ function ChartTooltipContent({
   const config = React.useContext(ChartContext) ?? {}
   if (!active || !payload?.length) return null
   return (
-    <div className="min-w-36 rounded-xl border bg-popover px-3 py-2 text-xs text-popover-foreground shadow-lg">
+    <div className="min-w-36 rounded-xl border surface-glass-overlay px-3 py-2 text-xs text-popover-foreground shadow-lg">
       {label !== undefined && <p className="mb-1.5 font-semibold">{formatLabel(label)}</p>}
       <ul className="space-y-1">
         {payload.map((item) => {

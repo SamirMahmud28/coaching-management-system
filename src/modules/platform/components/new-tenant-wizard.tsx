@@ -166,13 +166,13 @@ export function NewTenantWizard({ open, onOpenChange }: { open: boolean; onOpenC
               <DialogDescription>Send these to the institute Owner through a channel you trust. No email is sent.</DialogDescription>
             </DialogHeader>
             <div className="space-y-3">
-              <div className="rounded-md border p-3">
+              <div className="surface-glass-item rounded-md border p-3">
                 <p className="text-xs text-muted-foreground">Institute address</p>
                 <a href={instituteUrl(created.subdomain)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 font-mono text-sm text-primary-strong hover:underline">
                   {instituteUrl(created.subdomain)} <ExternalLink className="size-3" />
                 </a>
               </div>
-              <div className="rounded-md border p-3">
+              <div className="surface-glass-item rounded-md border p-3">
                 <p className="text-xs text-muted-foreground">Owner&apos;s temporary password</p>
                 <div className="flex items-center justify-between gap-2">
                   <code className="font-mono text-base" data-testid="one-time-password">{created.password}</code>
@@ -297,7 +297,7 @@ export function NewTenantWizard({ open, onOpenChange }: { open: boolean; onOpenC
               )}
 
               {step === 3 && (
-                <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 rounded-md border p-4 text-sm">
+                <dl className="surface-glass-item grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 rounded-md border p-4 text-sm">
                   <dt className="text-muted-foreground">Institute</dt>
                   <dd>{form.getValues("name")}</dd>
                   <dt className="text-muted-foreground">Address</dt>
@@ -386,7 +386,7 @@ function ModuleOption({
   onChange?: (checked: boolean) => void;
 }) {
   return (
-    <label htmlFor={`module-${id}`} className={cn("flex items-center gap-3 rounded-md border px-3 py-2.5", !disabled && "cursor-pointer hover:bg-accent/50")}>
+    <label htmlFor={`module-${id}`} className={cn("surface-glass-item flex items-center gap-3 rounded-md border px-3 py-2.5", !disabled && "cursor-pointer hover:bg-accent/50")}>
       <Checkbox id={`module-${id}`} checked={checked} disabled={disabled} onCheckedChange={(v) => onChange?.(v === true)} />
       <span className="flex-1 text-sm font-medium">{label}</span>
       {note && <span className="text-xs text-muted-foreground">{note}</span>}

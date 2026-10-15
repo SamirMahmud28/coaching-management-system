@@ -101,7 +101,7 @@ export function ResultsPage({ base, examId, canPublish, fullGuide = true }: { ba
       {rows.length === 0 ? (
         <EmptyState title="No students sit this exam" description="Students in the exam's batches on its first day sit it; On Hold students are left off." />
       ) : (
-        <div className="overflow-x-auto rounded-lg border" data-testid="results">
+        <div className="surface-glass-dense overflow-x-auto rounded-lg border" data-testid="results">
           <Table>
             <TableHeader>
               <TableRow>

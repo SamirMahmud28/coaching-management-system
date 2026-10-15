@@ -268,7 +268,7 @@ function Editor({ settings }: { settings: WebsiteSettingsRow }) {
                           role="radio"
                           aria-checked={design.appearance === o.value}
                           onClick={() => setDesign({ appearance: o.value })}
-                          className={cn("rounded-md border p-3 text-left", design.appearance === o.value ? "border-primary ring-1 ring-primary/40" : "hover:bg-muted/50")}
+                          className={cn("surface-glass-item rounded-md border p-3 text-left", design.appearance === o.value ? "border-primary ring-1 ring-primary/40" : "hover:bg-muted/50")}
                         >
                           <span className="block text-sm font-medium">{o.label}</span>
                           <span className="block text-xs text-muted-foreground">{o.description}</span>
@@ -293,7 +293,7 @@ function Editor({ settings }: { settings: WebsiteSettingsRow }) {
                         role="radio"
                         aria-checked={design.motion === o.value}
                         onClick={() => setDesign({ motion: o.value })}
-                        className={cn("rounded-md border p-3 text-left", design.motion === o.value ? "border-primary ring-1 ring-primary/40" : "hover:bg-muted/50")}
+                        className={cn("surface-glass-item rounded-md border p-3 text-left", design.motion === o.value ? "border-primary ring-1 ring-primary/40" : "hover:bg-muted/50")}
                       >
                         <span className="block text-sm font-medium">{o.label}</span>
                         <span className="block text-xs text-muted-foreground">{o.description}</span>

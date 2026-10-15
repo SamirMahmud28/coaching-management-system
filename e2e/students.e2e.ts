@@ -76,7 +76,7 @@ test("the Owner sets up a course with a batch", async ({ page }) => {
 test("the Owner admits a student into the batch; the ID comes from the pattern", async ({ page }) => {
   await signInAsOwner(page);
   await page.getByRole("navigation").first().getByRole("link", { name: "Students" }).click();
-  await expect(page.getByRole("heading", { name: "Students", level: 1 })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Student List", level: 1 })).toBeVisible();
   await page.getByRole("link", { name: "Admit student" }).first().click();
 
   await page.getByLabel("Full name").fill("Nusrat Jahan");

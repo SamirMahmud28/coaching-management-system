@@ -43,7 +43,7 @@ export default async function Page() {
             {home.batches.length === 0 ? (
               <p className="text-sm text-muted-foreground">You aren&apos;t teaching any batch yet. The office assigns instructors to batches.</p>
             ) : (
-              <ul className="divide-y rounded-md border">
+              <ul className="surface-glass-dense divide-y rounded-md border">
                 {home.batches.map((b) => (
                   <li key={b.id}>
                     <Link href={`/app/instructor/batches/${b.id}`} className="flex items-center gap-3 px-3 py-2 hover:bg-muted/50">

@@ -45,7 +45,7 @@ export function MyResultsPage({ data }: { data: MyResultsWire }) {
                   </Button>
                 </CardHeader>
                 <CardContent className="space-y-3 text-sm">
-                  <ul className="divide-y rounded-md border">
+                  <ul className="surface-glass-dense divide-y rounded-md border">
                     {row.outcome.papers.map((p) => (
                       <li key={p.paper_id} className="flex items-center gap-2 px-3 py-1.5">
                         <span className="flex-1">

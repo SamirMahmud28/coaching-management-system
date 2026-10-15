@@ -156,7 +156,7 @@ function AddAdminDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (
                 Share the temporary password with {created.email} through a channel you trust. They must change it when they first sign in. It won&apos;t be shown again.
               </DialogDescription>
             </DialogHeader>
-            <code className="block rounded-md border p-3 font-mono">{created.password}</code>
+            <code className="surface-glass-item block rounded-md border p-3 font-mono">{created.password}</code>
             <DialogFooter>
               <Button onClick={() => onOpenChange(false)}>Done</Button>
             </DialogFooter>

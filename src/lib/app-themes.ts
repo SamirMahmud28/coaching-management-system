@@ -17,8 +17,8 @@ export interface AppThemeInfo {
 
 export const APP_THEMES: AppThemeInfo[] = [
   { key: "MIDNIGHT", name: "Midnight & Gold", description: "Deep navy menu, soft grey pages and gold highlights. Premium and calm.", swatches: ["#0f1631", "#f5f6fa", "#f5a700", "#6366f1"] },
-  { key: "AMBER", name: "Classic Amber", description: "Warm white with the classic amber. Bright and friendly.", swatches: ["#ffffff", "#fafaf9", "#feac00", "#f97316"] },
-  { key: "INDIGO", name: "Royal Indigo", description: "Crisp white with indigo and violet. Modern and sharp.", swatches: ["#ffffff", "#f7f7fb", "#4f46e5", "#7c3aed"] },
+  { key: "AMBER", name: "Classic Amber", description: "Espresso menu, cream paper and the classic amber. Warm and friendly.", swatches: ["#2a1f17", "#fafaf9", "#feac00", "#f97316"] },
+  { key: "INDIGO", name: "Royal Indigo", description: "Deep ink menu with indigo and violet. Modern and sharp.", swatches: ["#1b1d3a", "#f7f7fb", "#4f46e5", "#7c3aed"] },
   { key: "EMERALD", name: "Emerald & Gold", description: "Deep green menu with teal and gold. Calm and academic.", swatches: ["#0b3b36", "#f4f8f7", "#0f766e", "#f5a700"] },
   { key: "PLUM", name: "Plum & Coral", description: "Rich plum menu with violet and coral. Bold and lively.", swatches: ["#2e1065", "#faf7fb", "#7c3aed", "#fb7185"] },
 ];

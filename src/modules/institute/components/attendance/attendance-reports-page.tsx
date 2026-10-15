@@ -151,7 +151,7 @@ function RegisterReport({ options }: { options: AttendanceReportOptions }) {
       ) : report.data.classes.length === 0 ? (
         <EmptyState title="No registers taken in this month" description={report.data.not_held ? `${report.data.not_held} class(es) were marked not held.` : undefined} />
       ) : (
-        <div className="overflow-x-auto rounded-lg border" data-testid="monthly-register">
+        <div className="surface-glass-dense overflow-x-auto rounded-lg border" data-testid="monthly-register">
           <Table>
             <TableHeader>
               <TableRow>
@@ -226,7 +226,7 @@ function LowReport({ options, canViewStudents }: { options: AttendanceReportOpti
       ) : report.data.rows.length === 0 ? (
         <EmptyState title={`Nobody is below ${report.data.below}%`} description="Only students with at least one counted class appear." />
       ) : (
-        <div className="overflow-x-auto rounded-lg border" data-testid="low-attendance">
+        <div className="surface-glass-dense overflow-x-auto rounded-lg border" data-testid="low-attendance">
           <Table>
             <TableHeader>
               <TableRow>
@@ -287,7 +287,7 @@ function AbsenteesReport({ options, canViewStudents }: { options: AttendanceRepo
       ) : report.data.rows.length === 0 ? (
         <EmptyState title="Nobody was absent" description="Only registers taken that day count. Students on approved leave are Excused, not absent." />
       ) : (
-        <div className="overflow-x-auto rounded-lg border" data-testid="absentees">
+        <div className="surface-glass-dense overflow-x-auto rounded-lg border" data-testid="absentees">
           <Table>
             <TableHeader>
               <TableRow>

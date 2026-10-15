@@ -54,7 +54,7 @@ export function LessonOverviewPage({ base, fullGuide = true }: { base: string; f
       ) : list.data.length === 0 ? (
         <EmptyState icon={BookOpenCheck} title="No subjects yet" description="Lesson plans belong to a subject of a batch. Add subjects to batches first." />
       ) : (
-        <ul className="divide-y rounded-lg border" data-testid="lesson-overview">
+        <ul className="surface-glass-dense divide-y rounded-lg border" data-testid="lesson-overview">
           {list.data.map((p) => (
             <li key={p.id}>
               <Link href={`${base}/lessons/${p.id}`} className="flex items-center gap-4 px-4 py-3 hover:bg-muted/50">
@@ -126,7 +126,7 @@ export function LessonPlanPage({ base, batchSubjectId, fullGuide = true }: { bas
       {p.topics.length === 0 ? (
         <EmptyState icon={BookOpenCheck} title="No topics yet" description={p.editable ? "Add the chapters or topics this batch will cover, in order." : "The instructor hasn't added topics yet."} />
       ) : (
-        <ol className="divide-y rounded-lg border" data-testid="lesson-topics">
+        <ol className="surface-glass-dense divide-y rounded-lg border" data-testid="lesson-topics">
           {p.topics.map((t, i) => (
             <li key={t.id} className="flex flex-wrap items-center gap-3 px-3 py-2.5" data-testid={`topic-${t.title}`}>
               <span className="w-6 text-right text-sm text-muted-foreground tabular-nums">{i + 1}.</span>
@@ -191,7 +191,7 @@ export function LessonPlanPage({ base, batchSubjectId, fullGuide = true }: { bas
       )}
 
       {p.editable && (
-        <div className="grid gap-3 rounded-lg border p-3 sm:grid-cols-[3fr_1fr_1fr_auto] sm:items-end" data-testid="add-topic">
+        <div className="surface-glass-item grid gap-3 rounded-lg border p-3 sm:grid-cols-[3fr_1fr_1fr_auto] sm:items-end" data-testid="add-topic">
           <FormField id="topic-title" label="Chapter or topic">
             <Input id="topic-title" maxLength={200} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
           </FormField>

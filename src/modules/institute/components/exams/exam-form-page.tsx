@@ -216,7 +216,7 @@ function Form({ base, options, exam }: { base: string; options: ExamSetupCourse[
               {d.papers.map((p, i) => {
                 const fixed = p.locked || published;
                 return (
-                  <div key={p.subjectId} className="space-y-3 rounded-md border p-3" data-testid={`paper-${p.subjectName}`}>
+                  <div key={p.subjectId} className="surface-glass-item space-y-3 rounded-md border p-3" data-testid={`paper-${p.subjectName}`}>
                     <div className="flex items-center gap-2">
                       <p className="flex-1 font-medium">{p.subjectName}</p>
                       {p.locked && (

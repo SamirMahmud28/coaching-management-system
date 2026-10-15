@@ -23,7 +23,7 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center gap-4 rounded-2xl border border-dashed bg-card/60 px-6 py-12 text-center",
+        "surface-glass flex flex-col items-center justify-center gap-4 rounded-2xl border border-dashed px-6 py-12 text-center",
         className,
       )}
     >
@@ -81,7 +81,7 @@ export function ErrorState({
 /** A table-shaped placeholder while a list loads: a header strip and rows with a round avatar and text bars. */
 export function LoadingState({ rows = 5, className }: { rows?: number; className?: string }) {
   return (
-    <div className={cn("overflow-hidden rounded-xl border bg-card", className)} aria-busy="true" aria-label="Loading">
+    <div className={cn("surface-glass-dense overflow-hidden rounded-xl border", className)} aria-busy="true" aria-label="Loading">
       <div className="flex gap-6 border-b bg-muted/50 px-4 py-3">
         <Skeleton className="h-3 w-24" />
         <Skeleton className="h-3 w-16" />
@@ -106,7 +106,7 @@ export function StatCardsSkeleton({ count = 4, className }: { count?: number; cl
   return (
     <div className={cn("grid gap-4 sm:grid-cols-2 xl:grid-cols-4", className)} aria-busy="true" aria-label="Loading">
       {Array.from({ length: count }, (_, i) => (
-        <div key={i} className="space-y-3 rounded-2xl border bg-card p-5">
+        <div key={i} className="surface-glass space-y-3 rounded-2xl border p-5">
           <div className="flex items-center justify-between">
             <Skeleton className="h-3.5 w-24" />
             <Skeleton className="size-9 rounded-xl" />
@@ -122,7 +122,7 @@ export function StatCardsSkeleton({ count = 4, className }: { count?: number; cl
 /** Placeholder for a card with a heading and a block of content (a chart, a form or a short list). */
 export function CardSkeleton({ height = 220, className }: { height?: number; className?: string }) {
   return (
-    <div className={cn("space-y-4 rounded-2xl border bg-card p-5", className)} aria-busy="true" aria-label="Loading">
+    <div className={cn("surface-glass space-y-4 rounded-2xl border p-5", className)} aria-busy="true" aria-label="Loading">
       <Skeleton className="h-4 w-40" />
       <Skeleton className="w-full rounded-xl" style={{ height }} />
     </div>

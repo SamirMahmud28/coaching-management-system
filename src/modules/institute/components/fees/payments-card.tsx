@@ -23,7 +23,7 @@ export function PaymentsCard({ payments, canVoid, onChanged }: { payments: Payme
         {payments.length === 0 ? (
           <p className="text-sm text-muted-foreground">No payments yet.</p>
         ) : (
-          <ul className="divide-y rounded-md border text-sm" data-testid="payments">
+          <ul className="surface-glass-dense divide-y rounded-md border text-sm" data-testid="payments">
             {payments.map((p) => (
               <li key={p.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2">
                 <div className="min-w-0 flex-1">

@@ -177,7 +177,7 @@ export function ThemePicker({ value, onChange, design, brand }: { value: Website
             role="radio"
             aria-checked={selected}
             onClick={() => onChange(o.value)}
-            className={cn("relative space-y-2 rounded-lg border p-2.5 text-left transition-colors", selected ? "border-primary ring-2 ring-primary/40" : "hover:bg-muted/50")}
+            className={cn("surface-glass-item relative space-y-2 rounded-lg border p-2.5 text-left transition-colors", selected ? "border-primary ring-2 ring-primary/40" : "hover:bg-muted/50")}
           >
             <StyleSample theme={o.value} headingFont={p.headingFont} design={{ ...design, ...p }} brand={brand} size="thumb" />
             <span className="block text-sm font-medium">{o.label}</span>
@@ -237,7 +237,7 @@ export function PalettePicker({ design, onChange, brand }: { design: WebsiteDesi
         ))}
       </div>
       {custom && (
-        <div className="flex flex-wrap gap-6 rounded-md border p-3">
+        <div className="surface-glass-item flex flex-wrap gap-6 rounded-md border p-3">
           <ColourInput id="custom_primary" label="Main colour" value={design.custom_primary} onChange={(v) => onChange({ custom_primary: v })} />
           <ColourInput id="custom_accent" label="Second colour" value={design.custom_accent} onChange={(v) => onChange({ custom_accent: v })} optional />
           {light && <p className="basis-full text-xs text-muted-foreground">A light main colour: text in it is darkened automatically so it stays readable, and buttons get dark text.</p>}
@@ -303,7 +303,7 @@ export function Segmented<T extends string>({ label, value, onChange, options, r
           role="radio"
           aria-checked={value === o.value}
           onClick={() => onChange(o.value)}
-          className={cn("flex min-w-20 flex-col items-center gap-1.5 rounded-md border px-3 py-2 text-xs transition-colors", value === o.value ? "border-primary bg-primary/5 font-medium ring-1 ring-primary/40" : "hover:bg-muted/50")}
+          className={cn("surface-glass-item flex min-w-20 flex-col items-center gap-1.5 rounded-md border px-3 py-2 text-xs transition-colors", value === o.value ? "border-primary bg-accent! font-medium ring-1 ring-primary/40" : "hover:bg-muted/50")}
         >
           {render?.(o.value)}
           {o.label}
